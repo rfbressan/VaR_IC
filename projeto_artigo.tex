@@ -112,11 +112,13 @@ This template helps you to create a properly formatted \LaTeX\ manuscript.
 
 \linenumbers
 
+\section{Introdução}
+
 \paragraph{Teoria do valor extremo} EVT da sigla em inglês, é um ramo da estatística que lida diretamente com eventos raros, extremos. Seu objetivo é modelar eventos que se distanciam muito da mediana de uma distribuição. Justamente por esta característica, a EVT está sendo utilizada para modelar riscos que possuem distribuição com caudas longas, um dos fatos estilizados que apresentamos sobre retornos de ativos financeiros.
 
 Ao utilizarmos a EVT, e mais especificamente o método conhecido como \emph{peaks over treshold} – POT, estamos interessados em modelar apenas a parte da cauda da distribuição das perdas de um ativo financeiro maiores que um determinado valor de limiar \emph{u}. É da modelagem desta cauda, portanto, que faremos as estimativas de risco $VaR_\alpha$ e $ES_\alpha$.
 
-\section{Função de distribuição de valores extremos generalizada}\label{sec:GEV}
+\section{O método \emph{peaks over treshold}}
 
 Consideremos uma amostra de uma variável aleatória cujas observações sejam independentes e igualmente distribuídas (\emph{iid rv}) $L_i,i\in \mathbb{N}$ que represente as perdas financeiras de um determinado ativo.
 
@@ -157,42 +159,11 @@ exp(-e^{-x}), & \xi = 0,\\
 \end{cases}
 \end{equation}
 
-O parâmetro $\xi$ (leia-se qsi) é conhecido como o parâmetro de forma da distribuição e dependendo deste valor teremos diferentes tipos de distribuição (casos particulares da GEV). Quando $\xi=0$ a distribuição resultante é uma Gumbel, quando  $\xi>0$ uma Fréchet surge, e por fim quando $\xi<0$ temos uma Weibull.
+O parâmetro $\xi$ é conhecido como o parâmetro de forma da distribuição e dependendo deste valor teremos diferentes tipos de distribuição (casos particulares da GEV). Quando $\xi=0$ a distribuição resultante é uma Gumbel, quando  $\xi>0$ uma Fréchet surge, e por fim quando $\xi<0$ temos uma Weibull.
 
-Tomemos como exemplo a distribuição exponencial e calcularemos seu MDA e verificaremos se este está entre umas das distribuições GEV.
-Uma distribuição exponencial é caracterizada pela seguinte função de distribuição (c.d.f):
+Para este trabalho não necessitamos calcular a qual $MDA$ pertencem nossas distribuições, bastando saber que basicamente todas as distribuições contínuas de utilidade prática estão contidas em $MDA(H_\xi)$ para algum valor de $\xi$. \todo{Fonte?}
 
-\begin{equation*}
-F(x)=1-e^{- \beta x}, \beta > 0 \text{ e } x \geq 0
-\end{equation*}
-
-Se escolhermos as sequências $c_n=1/\beta$ e $d_n=\ln n /\beta$ podemos substituir diretamente na equação \eqref{eq:H} e calcular $H(x)$.
-
-\begin{equation*}
-F^n \left(c_nx+d_n \right)=\left(1-\frac{1}{n}e^{-x} \right)^n
-\end{equation*}
-
-\begin{equation*}
-\lim_{n \rightarrow \infty} \left(1-\frac{1}{n}e^{-x} \right)^n = H(x)
-\end{equation*}
-
-Fazendo uma simples substituição de variáveis, $i=-e^{-x}$, então:
-
-\begin{equation*}
-H(x)=\lim_{n \rightarrow \infty}\left(1+\frac{i}{n} \right)^n
-\end{equation*}
-
-Que é o limite fundamental $e^i$, o qual substituindo novamente $i$ temos:
-
-\begin{equation*}
-H(x)=exp\left(-e^{-x}\right)=H_0(x), \text{Distribuição Gumbel}
-\end{equation*}
-
-Ou seja, a distribuição exponencial pertence ao $MDA$ da distribuição Gumbel, a qual por sua vez é um dos casos particulares da GEV quando $\xi=0$.
-
-Para este trabalho não necessitamos calcular a qual $MDA$ pertencem nossas distribuições, bastando saber que basicamente todas as distribuições contínuas de utilidade prática estão contidas em $MDA(H_\xi)$ para algum valor de $\xi$.
-
-\section{Excessos acima de um limiar}
+\subsection{Excessos acima de um limiar}
 \label{sec:excess}
 
 O método conhecido como POT, para calcular a função de distribuição dos valores que excedem um determinado limiar de um conjunto de dados vem sendo empregado no mundo financeiro para ajustar as caudas das distribuições de retornos, ou perdas, dos ativos. Este método é preferido a teoria clássica de valores extremos (e.g. máximos em bloco), pois, desperdiça uma quantidade menor de dados da série original. Qualquer valor que exceda o limiar pré-determinado é considerado na distribuição dos excessos. Esta distribuição dos valores da série que estão acima de um determinado limiar \emph{u} é definida como:
@@ -226,7 +197,7 @@ onde $\beta > 0$, e $x\geq 0$ quando $\xi  \geq 0$ ou $0 \leq x \leq -\beta / \x
 
 Os parâmetros $\xi$ e $\beta$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. Na figura \ref{fig:figevt1} abaixo, são mostradas três parametrizações para a função de distribuição acumulada (c.d.f) e para a densidade de probabilidades (p.d.f) de GPD com parâmetro $\xi$ iguais a -0,5, 0 e 0,5 enquanto que o parâmetro de escala $\beta$ é mantido constante e igual a 1. Perceba como para $\xi <0$ a p.d.f tem um limite direito que é dado por $-\beta / \xi$ a partir do qual os valores de $g(x)$ são zero.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.9\linewidth]{figs/figevt1}
 	\caption[Função de distribuição e densidade de probabilidades de uma GPD]{Três parametrizações para uma GPD. A linha sólida corresponde a $\xi=0,5$, a linha pontilhada a $\xi=-0,5$ e a linha tracejada a $\xi=0$.}
@@ -353,8 +324,8 @@ De fato, uma das características marcantes das perdas (ou retornos, como o leit
 
 Assim, ao passo que as estimativas de risco desenvolvidas nesta seção são valiosas para prazos mais longos, ainda é necessário desenvolver um modelo que lide com o fato das autocorrelações de volatilidades e portanto, que nossa variável aleatória não é independente e igualmente distribuída ao longo do tempo. O modelo proposto por \cite{McNeil2000} pode ser utilizado para encontrar as medidas de risco $VaR_\alpha$ e $ES_\alpha$ condicionais que desejamos, ainda dentro da metodologia de \emph{peaks over treshold} - POT.
 
-\subsection{Medidas condicionais de risco}
-\label{sec:riscocond}
+\section{Modelo ARMA-GARCH-EVT}
+\label{sec:armagarchevt}
 
 Ativos financeiros possuem características de autocorrelação, senão em seus retornos propriamente ditos, ao menos em suas volatilidades ou variações absolutas. Ou seja, dada uma grande variação no momento \emph{t} é de se esperar novamente uma grande variação, não necessariamente na mesma direção daquela anterior, para o momento \emph{t+1} e posteriores. Desta forma, medidas de risco incondicionais, conforme aquelas derivadas na Seção \ref{sec:caudas} podem ser adequadas somente para horizontes temporais mais longos, pois implicitamente tomam em consideração os fatos mais recentes com o mesmo valor de predição que fatos mais longínquos.
 
@@ -452,174 +423,180 @@ Pode-se verificar através da figura \ref{fig:figevtAAPL2} que os ajustes feitos
 Possuímos todos os parâmetros de nosso modelo híbrido AR-GARCH-POT para então calcularmos os valores das medidas de risco condicional dadas pelas equações \eqref{eq:varcond} e \eqref{eq:escond}. Com o modelo AR-GARCH executado no período \emph{t} obtemos as estimativas de $\mu_{t+1}$ e de $\sigma_{t+1}$ e através do modelo POT obtemos os valores de $z_\alpha$ e $E[Z|Z>z_\alpha]$, no caso do nosso exemplo escolhemos $\alpha=0,99$.
 
 Toda esta metodologia pode ser aplicada período a período, mantendo uma memória fixa das últimas \emph{n} observações de perdas e que resultará em valores calculados para $VaR_\alpha^{t+1}$ e $ES_\alpha^{t+1}$, os quais poderão ser comparados com a realização futura de perda.
-\section{Processos pontuais}
-\label{sec:pp}
 
-Na seção anterior consideramos apenas a magnitude das perdas em excesso, sem nos preocuparmos com o momento da ocorrência destas. Implicitamente, consideramos que as ocorrências eram independentes entre si, uma condição necessária para a modelagem POT.
+\section{Conclusão}
 
-Entretanto, esta suposição tipicamente é violada pelas séries financeiras, devido a autocorrelação entre retornos e principalmente ao \emph{clustering} de volatilidade nestas séries.
 
-Modelos de processos pontuais, especialmente aqueles conhecidos como processos de Hawkes, ou processos pontuais de auto-excitação, nos permitem modelar tanto as magnitudes das perdas em excesso, como a probabilidade de sua ocorrência em período futuro a depender da atual situação. Estes processos tem natureza dinâmica, assim como aquele desenvolvido na subseção anterior \ref{sec:riscocond}, e nos permitem calcular medidas condicionais de risco com a vantagem de todo o processo ser feito em apenas um único passo.
+\section{Função de distribuição de valores extremos generalizada}\label{sec:GEV}
 
-A seguir apresentamos alguns conceitos teóricos sobre processos pontuais de Poisson que nos possibilitarão desenvolver o modelo de processos pontuais de auto-excitação, nos quais realmente estamos interessados. Para uma abordagem mais formal e completa sobre processos pontuais, é sugerida a leitura de \cite{Daley2003,Daley2008}.
-
-Consideremos uma sequência de variáveis aleatórias $Y_1, \ldots , Y_n$ as quais assumem valores dentro de um determinado espaço de estados $\mathcal{S}$. Dado um subconjunto $A\subset\mathcal{S}$, podemos definir a variável aleatória
-\begin{equation}
-\label{eq:pp}
-N(A)=\sum_{i=1}^{n}I_{\{Y_i\in A\}}
-\end{equation}
-que é a contagem do número de observações $Y_i$ que recaem dentro do conjunto $A$. A função $I_{\{Y_i\in A\}}$ é a chamada função indicador, sendo seu valor igual a 1 caso $Y_i$ esteja contido no subconjunto $A$ e 0 caso contrário, de forma que a soma dada pela equação \eqref{eq:pp} será justamente a contagem desejada. Neste caso diz-se que \eqref{eq:pp} define um processo pontual $N(\cdot)$. Um tipo de processo pontual de interesse é aquele de Poisson.
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.9\linewidth]{figs/figevtPP}
-	\caption[Exemplo de processo pontual]{Processo pontual. Cada vez que o indicador alterna para 1 a contagem soma este valor.}
-	\label{fig:figevtpp}
-\end{figure}
-
-\begin{defi}[Processo pontual de Poisson]
-	\label{defi:poissonpp}
-	O processo pontual $N(\cdot)$ é chamado de Poisson no espaço de estados $\mathcal{S}$ e com medida de intensidade $\Lambda$ se as duas condições seguintes são satisfeitas.
-\end{defi}
-\begin{enumerate}[label=(\alph*)]
-	\item Para $A\subset\mathcal{S}$ e $k\geq 0$,
-	\begin{equation*}
-	P\left(N(A)=k\right)=
-	\begin{cases}
-	e^{-\Lambda(A)\frac{\Lambda(A)^k}{k!}}, &\Lambda(A)<\infty, \\
-	0, &\Lambda(A)=\infty .
-	\end{cases}
-	\end{equation*}
-	\item Para qualquer $m\geq 1$, se $A_1, \ldots , A_m$ são conjuntos mutuamente exclusivos de $\mathcal{S}$, então as variáveis aleatórias $N(A_1), \ldots , N(A_m)$ são independentes.
-\end{enumerate}
-
-Também deve ser definida a função intensidade (ou somente intensidade) do processo pontual, que é a derivada da medida de intensidade $\Lambda(A)$ satisfazendo a equação $\Lambda(A)=\int_A\lambda(\mathbf{x}) d\mathbf{x}$. De modo que $\lambda(\mathbf{x})$ é a função intensidade, que pela sugestão de nossa notação, pode ser uma função multivariável em um vetor $\mathbf{x}$.
-
-\begin{defi}[Processo de Poisson homogêneo]
-	\label{defi:poihomo}
-	Seja $N$ um processo de Poisson no espaço $\mathcal{S}$ com intensidade $\lambda$, então $N$ é dito homogêneo se $\lambda$ não for dependente do espaço $\mathcal{S}$, caso contrário é dito não-homogêneo.
-\end{defi}
-
-Ou seja, em um processo de Poisson homogêneo, sua intensidade depende apenas do tamanho do intervalo onde se está contando o número de ocorrências, mas não da localização deste intervalo. 
-
-Um processo de Poisson é dito \emph{marcado}, quando além dos pontos pertencentes ao subconjunto $A$, atribuímos a cada um destes pontos uma "marca"  com valor dentro do espaço $\mathcal{M}$, de forma que a série aleatória passa a ser de pares $\{(i, L_i): i\in A \text{ e } L_i \in \mathcal{M}\}$. Estas marcas podem ser entendidas como a magnitude das perdas em excesso em nosso modelo, enquanto que os pontos do processo serão os períodos em que estas perdas extraordinárias ocorrem.
-
-\begin{defi}[Processos pontuais de Poisson marcados]
-	\label{defi:pppmarcados}
-	Suponha um processo pontual de Poisson $Y(\cdot)$ em $\mathcal{S}$ com função de intensidade $\lambda$. Suponha também que, condicionalmente a $Y(\cdot)$, as marcas $\{m_i : i \in Y\}$ sejam independentes. Então $N=\{(i, m_i): i \in Y\}$ é um processo de Poisson marcado. Se as marcas são \emph{iid} com uma distribuição de probabilidades comum \emph{H}, então esta é conhecida como a distribuição das marcas.
-\end{defi}
-
-De acordo com nosso modelo de perdas extremas, podemos entendê-lo como um processo pontual de Poisson marcado ao atribuir aos eventos (i.e. perdas extremas) uma outra informação vinculada, qual seja, o valor desta perda e portanto, os pontos do processo passam a carregar a informação extra da magnitude das perdas. Assim temos um processo que mapeia pares $(i, l)$ de períodos e perdas a uma probabilidade de uma nova perda extrema.
-
-\subsection{Processos pontuais de auto-excitação}
-\label{sec:autoex}
-
-São conhecidas as evidências encontradas na literatura que os retornos de séries financeiras não são de fato \emph{iid} e portanto tampouco o são as perdas acima de um limiar. Assim, estas perdas, consideradas no tempo, não ocorrem de acordo com um processo de Poisson homogêneo, tendendo a formarem \emph{clusters} de perdas (ou retornos) extremos, que correspondem a episódios de concentração de volatilidade. Para contornar este fato, uma dentre várias possibilidades estão os processos de Hawkes, os quais fornecem uma base teórica robusta para este tipo de processos com autocorrelação.
-
-Passamos nossa atenção aos processos de Hawkes, ou processos pontuais de auto-excitação. Neste tipo de modelagem, a intensidade do processo, $\lambda(\mathbf{x})$ é dependente dos períodos e magnitudes das marcações anteriores. Traduzindo para nosso modelo de perdas acima de um limiar, a probabilidade de um novo excesso é dependente do histórico dos períodos e magnitudes dos excessos anteriores. Desta forma temos um modelo dinâmico e condicional para avaliar a probabilidade de eventos extremos, no caso em tela, de perdas excessivas.
-
-Dada a distribuição de perdas realizadas $L_1, \ldots , L_n$ e um valor de limiar \emph{u}, assumimos que existam $N_u$ excessos, cada um ocorrido em um período \emph{i}, de modo que temos a série de pares $\{(i, L_i): 1\leq i \leq n, \quad L_i > u\}$. Aqui adotamos o indexador de tempo das observações das perdas pertencente aos números naturais, logo $i\in \mathbb{N}$. Será também necessária adotar uma notação alternativa apenas para os valores das perdas que foram acima do limiar, e enumerá-las de forma consecutiva. Assim, $\{(T_j, \tilde{L}_j): j=1, \ldots , N_u\}$, com $T_j \in [1,n]$ e $\tilde{L}_j$ é o valor original da perda dado que ela esteja acima do limiar.
-
-Primeiramente consideraremos um modelo de processo pontual para os tempos das perdas em excesso somente. Façamos $Y_i=i I_{\{L_i>u\}}$, logo $Y_i$ retornará o período em que um excesso ocorreu, gerando uma lista de números naturais crescente e não repetidos. O processo pontual dos períodos destes excessos é $N(\cdot)$ no espaço $\mathcal{S}=(0, n]$, e é dado por $N(A)=\sum_{i=1}^{n}I_{\{Y_i\in A\}}$ para $A \subset \mathcal{S}$. Ou seja, nosso processo é a contagem do número de excessos ocorridos dentro de um intervalo de tempo $A$ contido em nossa amostra $\mathcal{S}$.
-
-Assumimos que este processo pontual seja do tipo Hawkes, com características de auto-excitação, portanto a intensidade em um período $i$ é condicional aos acontecimentos passados até $i$, da seguinte forma
-
-\begin{equation}
-\label{eq:condintensity}
-\lambda^*(i)=\tau + \psi \displaystyle\sum_{j:0<T_j<i}h(i-T_j, \tilde{L}_j -u)
-\end{equation}
-onde $\tau>0$, $\psi \geq 0$ e $h$ é uma função positiva, decrescente no intervalo de tempo $s=i-T_j$ e crescente na magnitude do excesso $l=\tilde{L}_j-u$. Assim, cada par ordenado de tempo e valor da perda em excesso $(T_j, \tilde{L}_j)$ anteriores ao período $t$ contribuem para a intensidade condicional do processo de Poisson. Uma conhecida parametrização para a função $h$ vem da sismologia através de \cite{Ogata1988}. Os processos pontuais de auto-excitação já vêm sendo aplicados a inferência e previsão de tremores sísmicos há décadas, e somente mais recentemente estão sendo aplicados aos "tremores"  financeiros e suas ondas de choque. O modelo proposto é chamado de \emph{Epidemic Type Aftershock Sequence} (ETAS) e adotamos a parametrização proposta em \cite{Harte2010}, abaixo:
-\begin{equation*}
-\label{eq:hsl}
-h(s, l)=e^{\delta l}\left(1+\frac{s}{\gamma}\right)^{-\rho}, \text{onde } \delta, \gamma, \rho > 0.
-\end{equation*}
-
-A função intensidade pode ser encarada como a chance instantânea de ocorrência de um ponto do processo no período $t$, \cite{Chiu2013}, portanto o fato de a transformarmos em uma função condicional resulta que temos agora uma probabilidade condicional de verificarmos no instante $t$ uma perda em excesso e por conseguinte, temos nossas medidas condicionais de risco $VaR_\alpha^t$ e $ES_\alpha^t$.
-
-Podemos então tomar nosso modelo POT de perdas acima de um determinado limiar e adequá-lo a um processo de Poisson marcado, com função intensidade auto-excitável. Pode-se separar este modelo em dois tipos, o primeiro com a distribuição das marcas do tipo \emph{iid} GPD, de forma que o valor das marcas (i.e. a magnitude das perdas em excesso) é incondicional e distribuído conforme uma distribuição genreralizada de Pareto, e um segundo tipo, onde a distribuição das próprias marcas é condicional a informação histórica, mas ainda GPD. Em \cite{ChavezDemoulin2005} existe uma implementação similar destes modelos e neste artigo alega-se a pouca evidência a favor do segundo modelo, onde os parâmetros da GPD seriam também dependentes dos pontos e marcas. Desta forma, adotamos aqui o modelo de processo de Hawkes marcado, sendo a distribuição das marcas uma distribuição do tipo GPD, dada pela equação \eqref{eq:GPD} e com a restrição adicional que $\xi>0$ de tal modo que obtemos uma distribuição com caudas longas para as perdas em excesso.
-
-Vejamos que este modelo não perde a generalização que queremos com relação ao fato de os retornos financeiros não serem \emph{iid}. Este fato está bem descrito ao adotarmos um processo de Hawkes para os pontos destes, ou seja, a dependência dos retornos é dada pela modelagem dos momentos quando estes ocorrem em excesso. A magnitude destes excessos não interferem na probabilidade de um novo evento extremo no futuro imediato. 
-
-A primeira vista esta abordagem pode parecer pouco intuitiva, mas ela está de acordo com os fatos estilizados das séries financeiras já apresentados, em especial, demonstramos que as autocorrelações entre os retornos propriamente ditos dos ativos é baixa, quando verificável. E este fato está presente em nossa abordagem quando afirmamos que a magnitude das perdas em excesso não interferem diretamente na probabilidade e na magnitude de uma nova perda extrema. As autocorrelações tipicamente encontradas nas séries financeiras são entre os retornos ao quadrado, fato que nos remete imediatamente a volatilidade. Esta sim está modelada através do processo pontual de auto-excitação, quando a função intensidade é dependente do histórico do processo até o período atual.
-
-Para encontrarmos a função densidade de probabilide (p.d.f) conjunta de nosso modelo de processo de Poisson marcado (MPP - \emph{Marked Poisson Process}) faremos uso da definição de intensidade condicional para um MPP econtrada em, \cite{Daley2003}[p. ~249] e também da p.d.f de uma GPD. Começamos pela última.
-
-A função densidade de probabilidade de uma distribuição generalizada de Pareto, parametrizada em $\xi$ e $\beta$ é dada por:
-\begin{align}
-\label{eq:pdfgpd}
-g_{\xi, \beta}(x)=\frac{1}{\beta}\left(1+\xi\frac{x}{\beta}\right)^{-1-1/\xi}, &\,\xi \neq 0
-\end{align}
-e estamos interessados nos valores de $\xi$ no intervalo $(0, 1)$.
-
-\begin{defi}[Intensidade condicional de um processo marcado de Poisson]
-	Seja N um processo regular marcado de Poisson em $\mathbb{N}\times\mathcal{M}$. A intensidade condicional de N, em relação ao seu histórico $\mathcal{H}$, é a função $\lambda^*(i, m)=\lambda^*_g(i)f^*(m|i)$.
-\end{defi}
-Onde $\lambda^*_g(i)$ é a função intensidade do processo base (i.e. dos tempos dos pontos, no nosso casso a intensidade do processo de Hawkes, dado pela equação \eqref{eq:condintensity}) e $f^*(m|i)$ é a densidade condicional das marcas no período $i$. Como estamos trabalhando com uma distribuição GPD independente dos períodos em que ocorrem as perdas extremas, $f^*(m|i)$ resume-se a nossa p.d.f de uma GPD, dada pela equação \eqref{eq:pdfgpd}.
-
-Portanto, nossa p.d.f conjunta para o modelo de processo pontual de auto-excitação das perdas acima de um limiar \emph{u}, assumindo uma função núcleo $h(s, l)=e^{\delta l}\left(1+\frac{s}{\gamma}\right)^{-\rho}$ pode ser descrita através das seguintes equações:
-\begin{align}
-g_{\xi, \beta}(x)=&\frac{1}{\beta}\left(1+\xi\frac{x-u}{\beta}\right)^{-1-1/\xi} \\
-\lambda^*_g(i)=&\tau+\psi\sum_{j:0<T_j<i}h(i-T_j, \tilde{L}_j-u) \\
-h(s, l)=&e^{\delta l}\left(1+\frac{s}{\gamma}\right)^{-\rho} \\
-s=&i-T_j, \quad l=\tilde{L}_j-u \\
-\lambda^*(i, m)=&\lambda^*_g(i)\, g_{\xi, \beta}(m) \label{eq:hawkesgpd}
-\end{align}
-
-Coletando todos os parâmetros a serem estimados no vetor $\boldsymbol{\theta}=(\tau, \psi, \delta, \gamma, \rho, \xi, \beta )$ e considerando que informamos ao modelo o valor do limiar \emph{u}, poderemos estimar todos os parâmetros do modelo através do método de estimação de máxima verossimilhança (MLE - \emph{maximum likelihood estimation}) em um único passo. A função de verossimilhança logarítimica pode ser deduzida diretamente deste conjunto de equações, sendo a equação \eqref{eq:hawkesgpd} a densidade de probabilidades de interesse para a aplicação do método.
-
-\begin{exemplo}[Processo pontual de auto-excitação da Goldman Sachs]
-	\label{exe:GS}
-	Tomaremos como exemplo a aplicação de um processo de Hawkes aos retornos da Goldman Sachs Group Inc. (\emph{ticker} GS) no período entre 05/05/1999 a 04/10/2016, compreendendo 4.384 observações.
-\end{exemplo}
-Primeiramente é necessário montar a série de pontos do processo, que nada mais são que os pares $(T_j, \tilde{L}_j-u)$, onde o valor do limiar $u$ foi escolhido como sendo o quantil $q=0,90$ de nossa amostra. Ou seja, tomamos apenas as 10\% maiores perdas de nossa amostra. A partir deste ponto, podemos fazer uma estimativa dos parâmetros do modelo através do método de maximização da verossimilhança, sendo a função de verossimilhança aquela encontrada em \cite[eq. (7) p. ~6]{Harte2010}.
-
-Uma vez obtidos os parâmetros do modelo, podemos plotar a função intensidade de base do processo de Hawkes (i. e. $\lambda^*_g(i)$) contra os períodos $i$ para verificar como esta de fato variou conforme os eventos ocorreram. Na figura \ref{fig:figevtGS} é possível verificarmos nossa estimativa da função intensidade de base e compará-la ao eventos do processo de Hawkes, ou seja, as perdas extremas verificadas.
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.9\linewidth]{figs/figevtGS}
-	\caption[Intensidade de Hawkes para Goldman Sachs]{Função intensidade de Hawkes e perdas extremas da Goldman Sachs (GS) no período entre 05/05/1999 a 04/10/2016.}
-	\label{fig:figevtGS}
-\end{figure}
-
-Podemos então calcular a probabilidade condicional de ultrapassarmos um determinado valor de perda $x$ do nosso ativo, no período $i$, dado o conjunto de informações disponíveis. Esta probabilidade nada mais é que a cauda da distribuição das perdas e portanto, o valor $1-\alpha$, onde $\alpha$ é o intervalo de confiança de nossas medidas de risco. Chamamos de $\tau^*(i+1, x)$ esta probabilidade:
-\begin{align}
-\label{eq:tau}
-\tau^*(i+1, x)=&\displaystyle\int\limits_x^\infty \lambda^*(i, y)dy \nonumber \\
-=&\lambda^*_g(i) \bar{G}_{\xi, \beta}(x-u)
-\end{align}
-
-O que esta equação nos informa é que a probabilidade de ocorrência de uma perda acima de um valor $x\geq u$ é dada pelo produto entre nossa função intensidade de base, que não depende de $x$ e a cauda da distribuição GPD das marcas do processo de Poisson. Ambas já calculadas conforme o exemplo \ref{exe:GS}. Este resultado não deve vir como uma surpresa, uma vez que a probabilidade de termos uma perda maior que um dado valor $x\geq u$, considerando o conjunto de informações até o período $i$, $\mathcal{G}_i$, sempre pode ser decomposto da seguinte forma:
-\begin{equation*}
-P(X_{i+1}>x|G_i)=P(X_{i+1}-u>x-u|X_{i+1}>u, G_i)\, P(X_{i+1}>u|G_i)
-\end{equation*}
-
-Onde primeiro termo a direita da igualdade é a cauda da distribuição das perdas em excesso, a qual supomos uma GPD independente do período $i$ e o segundo termo é a probabilidade de ocorrência de um "ponto" no processo pontual, que é justamente a função intensidade de base em um dado período $i$.
-
-Assim, a partir de $\tau^*(i+1, x)$ para encontrarmos digamos, $VaR_\alpha^{i+1}$, o que precisamos fazer é igualar $\tau^*(i+1, x)$ a $1-\alpha$ e inverter a equação para $x$. Este valor de $x$ é nossa medida de risco. Para valores de $\alpha$ suficientemente grandes, de modo que nosso quantil $VaR_\alpha^{i+1} > u$, este cálculo pode ser feito e resulta em:
-
-\begin{equation}
-\label{eq:VaRpp}
-VaR_\alpha^{i+1} = u+\frac{\beta}{\xi}\left[ \left( \frac{1-\alpha}{\lambda^*_g(i)}\right)^{-\xi}-1 \right].
-\end{equation}
-
-Veja a semelhança desta equação com aquela em \eqref{eq:VaRGPD}. Para a abordagem através de processo de Hawkes marcado, substituímos a estimação empírica não-condicional da probabilidade de acontecer um evento extremo, $\bar{F}(u)=N_u/N$ por uma estimação que acreditamos mais adequada, o processo de Hawkes na forma de sua função intensidade de base. Da mesma forma, o $ES_\alpha^{i+1}$ pode ser calculado através da equação \eqref{eq:ESGPD}.
-
-\begin{equation}
-\label{eq:ESpp}
-ES_\alpha^{i+1} = \frac{VaR_\alpha^{i+1}}{1-\xi}+\frac{\beta-\xi u}{1-\xi}
-\end{equation}
-
-Voltando ao nosso exemplo \ref{exe:GS} e aplicando as equações \eqref{eq:VaRpp} e \eqref{eq:ESpp} para a série de perdas de \emph{Goldman Sachs}, obtemos o seguinte resultado demonstrado na figura \ref{fig:figevtGS2} abaixo.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.9\linewidth]{figs/figevtGS2}
-	\caption[VaR e ES condicionais através de um processo pontual de auto-excitação]{VaR e ES condicionais de \emph{GS}. Linhas contínuas são as medidas condicionais, com ES sempre mais alto que o VaR. As medidas incondicionais são apresentadas para referência.}
-	\label{fig:figevtGS2}
-\end{figure}
-
-Conforme mostra a figura \ref{fig:figevtGS2}, em momentos de baixa volatilidade as medidas condicionais de risco podem cair abaixo de seus valores históricos (i.e. incondicionais) e portanto, esta abordagem pode liberar capital da instituição financeira de seus requerimentos mínimos. Por outro lado, em momentos de alta volatilidade as medidas condicionais de risco se elevam subitamente e, neste caso, a instituição deveria levantar capital rapidamente.
+%\section{Processos pontuais}
+%\label{sec:pp}
+%
+%Na seção anterior consideramos apenas a magnitude das perdas em excesso, sem nos preocuparmos com o momento da ocorrência destas. Implicitamente, consideramos que as ocorrências eram independentes entre si, uma condição necessária para a modelagem POT.
+%
+%Entretanto, esta suposição tipicamente é violada pelas séries financeiras, devido a autocorrelação entre retornos e principalmente ao \emph{clustering} de volatilidade nestas séries.
+%
+%Modelos de processos pontuais, especialmente aqueles conhecidos como processos de Hawkes, ou processos pontuais de auto-excitação, nos permitem modelar tanto as magnitudes das perdas em excesso, como a probabilidade de sua ocorrência em período futuro a depender da atual situação. Estes processos tem natureza dinâmica, assim como aquele desenvolvido na subseção anterior \ref{sec:riscocond}, e nos permitem calcular medidas condicionais de risco com a vantagem de todo o processo ser feito em apenas um único passo.
+%
+%A seguir apresentamos alguns conceitos teóricos sobre processos pontuais de Poisson que nos possibilitarão desenvolver o modelo de processos pontuais de auto-excitação, nos quais realmente estamos interessados. Para uma abordagem mais formal e completa sobre processos pontuais, é sugerida a leitura de \cite{Daley2003,Daley2008}.
+%
+%Consideremos uma sequência de variáveis aleatórias $Y_1, \ldots , Y_n$ as quais assumem valores dentro de um determinado espaço de estados $\mathcal{S}$. Dado um subconjunto $A\subset\mathcal{S}$, podemos definir a variável aleatória
+%\begin{equation}
+%\label{eq:pp}
+%N(A)=\sum_{i=1}^{n}I_{\{Y_i\in A\}}
+%\end{equation}
+%que é a contagem do número de observações $Y_i$ que recaem dentro do conjunto $A$. A função $I_{\{Y_i\in A\}}$ é a chamada função indicador, sendo seu valor igual a 1 caso $Y_i$ esteja contido no subconjunto $A$ e 0 caso contrário, de forma que a soma dada pela equação \eqref{eq:pp} será justamente a contagem desejada. Neste caso diz-se que \eqref{eq:pp} define um processo pontual $N(\cdot)$. Um tipo de processo pontual de interesse é aquele de Poisson.
+%
+%\begin{figure}[ht]
+%	\centering
+%	\includegraphics[width=0.9\linewidth]{figs/figevtPP}
+%	\caption[Exemplo de processo pontual]{Processo pontual. Cada vez que o indicador alterna para 1 a contagem soma este valor.}
+%	\label{fig:figevtpp}
+%\end{figure}
+%
+%\begin{defi}[Processo pontual de Poisson]
+%	\label{defi:poissonpp}
+%	O processo pontual $N(\cdot)$ é chamado de Poisson no espaço de estados $\mathcal{S}$ e com medida de intensidade $\Lambda$ se as duas condições seguintes são satisfeitas.
+%\end{defi}
+%\begin{enumerate}[label=(\alph*)]
+%	\item Para $A\subset\mathcal{S}$ e $k\geq 0$,
+%	\begin{equation*}
+%	P\left(N(A)=k\right)=
+%	\begin{cases}
+%	e^{-\Lambda(A)\frac{\Lambda(A)^k}{k!}}, &\Lambda(A)<\infty, \\
+%	0, &\Lambda(A)=\infty .
+%	\end{cases}
+%	\end{equation*}
+%	\item Para qualquer $m\geq 1$, se $A_1, \ldots , A_m$ são conjuntos mutuamente exclusivos de $\mathcal{S}$, então as variáveis aleatórias $N(A_1), \ldots , N(A_m)$ são independentes.
+%\end{enumerate}
+%
+%Também deve ser definida a função intensidade (ou somente intensidade) do processo pontual, que é a derivada da medida de intensidade $\Lambda(A)$ satisfazendo a equação $\Lambda(A)=\int_A\lambda(\mathbf{x}) d\mathbf{x}$. De modo que $\lambda(\mathbf{x})$ é a função intensidade, que pela sugestão de nossa notação, pode ser uma função multivariável em um vetor $\mathbf{x}$.
+%
+%\begin{defi}[Processo de Poisson homogêneo]
+%	\label{defi:poihomo}
+%	Seja $N$ um processo de Poisson no espaço $\mathcal{S}$ com intensidade $\lambda$, então $N$ é dito homogêneo se $\lambda$ não for dependente do espaço $\mathcal{S}$, caso contrário é dito não-homogêneo.
+%\end{defi}
+%
+%Ou seja, em um processo de Poisson homogêneo, sua intensidade depende apenas do tamanho do intervalo onde se está contando o número de ocorrências, mas não da localização deste intervalo. 
+%
+%Um processo de Poisson é dito \emph{marcado}, quando além dos pontos pertencentes ao subconjunto $A$, atribuímos a cada um destes pontos uma "marca"  com valor dentro do espaço $\mathcal{M}$, de forma que a série aleatória passa a ser de pares $\{(i, L_i): i\in A \text{ e } L_i \in \mathcal{M}\}$. Estas marcas podem ser entendidas como a magnitude das perdas em excesso em nosso modelo, enquanto que os pontos do processo serão os períodos em que estas perdas extraordinárias ocorrem.
+%
+%\begin{defi}[Processos pontuais de Poisson marcados]
+%	\label{defi:pppmarcados}
+%	Suponha um processo pontual de Poisson $Y(\cdot)$ em $\mathcal{S}$ com função de intensidade $\lambda$. Suponha também que, condicionalmente a $Y(\cdot)$, as marcas $\{m_i : i \in Y\}$ sejam independentes. Então $N=\{(i, m_i): i \in Y\}$ é um processo de Poisson marcado. Se as marcas são \emph{iid} com uma distribuição de probabilidades comum \emph{H}, então esta é conhecida como a distribuição das marcas.
+%\end{defi}
+%
+%De acordo com nosso modelo de perdas extremas, podemos entendê-lo como um processo pontual de Poisson marcado ao atribuir aos eventos (i.e. perdas extremas) uma outra informação vinculada, qual seja, o valor desta perda e portanto, os pontos do processo passam a carregar a informação extra da magnitude das perdas. Assim temos um processo que mapeia pares $(i, l)$ de períodos e perdas a uma probabilidade de uma nova perda extrema.
+%
+%\subsection{Processos pontuais de auto-excitação}
+%\label{sec:autoex}
+%
+%São conhecidas as evidências encontradas na literatura que os retornos de séries financeiras não são de fato \emph{iid} e portanto tampouco o são as perdas acima de um limiar. Assim, estas perdas, consideradas no tempo, não ocorrem de acordo com um processo de Poisson homogêneo, tendendo a formarem \emph{clusters} de perdas (ou retornos) extremos, que correspondem a episódios de concentração de volatilidade. Para contornar este fato, uma dentre várias possibilidades estão os processos de Hawkes, os quais fornecem uma base teórica robusta para este tipo de processos com autocorrelação.
+%
+%Passamos nossa atenção aos processos de Hawkes, ou processos pontuais de auto-excitação. Neste tipo de modelagem, a intensidade do processo, $\lambda(\mathbf{x})$ é dependente dos períodos e magnitudes das marcações anteriores. Traduzindo para nosso modelo de perdas acima de um limiar, a probabilidade de um novo excesso é dependente do histórico dos períodos e magnitudes dos excessos anteriores. Desta forma temos um modelo dinâmico e condicional para avaliar a probabilidade de eventos extremos, no caso em tela, de perdas excessivas.
+%
+%Dada a distribuição de perdas realizadas $L_1, \ldots , L_n$ e um valor de limiar \emph{u}, assumimos que existam $N_u$ excessos, cada um ocorrido em um período \emph{i}, de modo que temos a série de pares $\{(i, L_i): 1\leq i \leq n, \quad L_i > u\}$. Aqui adotamos o indexador de tempo das observações das perdas pertencente aos números naturais, logo $i\in \mathbb{N}$. Será também necessária adotar uma notação alternativa apenas para os valores das perdas que foram acima do limiar, e enumerá-las de forma consecutiva. Assim, $\{(T_j, \tilde{L}_j): j=1, \ldots , N_u\}$, com $T_j \in [1,n]$ e $\tilde{L}_j$ é o valor original da perda dado que ela esteja acima do limiar.
+%
+%Primeiramente consideraremos um modelo de processo pontual para os tempos das perdas em excesso somente. Façamos $Y_i=i I_{\{L_i>u\}}$, logo $Y_i$ retornará o período em que um excesso ocorreu, gerando uma lista de números naturais crescente e não repetidos. O processo pontual dos períodos destes excessos é $N(\cdot)$ no espaço $\mathcal{S}=(0, n]$, e é dado por $N(A)=\sum_{i=1}^{n}I_{\{Y_i\in A\}}$ para $A \subset \mathcal{S}$. Ou seja, nosso processo é a contagem do número de excessos ocorridos dentro de um intervalo de tempo $A$ contido em nossa amostra $\mathcal{S}$.
+%
+%Assumimos que este processo pontual seja do tipo Hawkes, com características de auto-excitação, portanto a intensidade em um período $i$ é condicional aos acontecimentos passados até $i$, da seguinte forma
+%
+%\begin{equation}
+%\label{eq:condintensity}
+%\lambda^*(i)=\tau + \psi \displaystyle\sum_{j:0<T_j<i}h(i-T_j, \tilde{L}_j -u)
+%\end{equation}
+%onde $\tau>0$, $\psi \geq 0$ e $h$ é uma função positiva, decrescente no intervalo de tempo $s=i-T_j$ e crescente na magnitude do excesso $l=\tilde{L}_j-u$. Assim, cada par ordenado de tempo e valor da perda em excesso $(T_j, \tilde{L}_j)$ anteriores ao período $t$ contribuem para a intensidade condicional do processo de Poisson. Uma conhecida parametrização para a função $h$ vem da sismologia através de \cite{Ogata1988}. Os processos pontuais de auto-excitação já vêm sendo aplicados a inferência e previsão de tremores sísmicos há décadas, e somente mais recentemente estão sendo aplicados aos "tremores"  financeiros e suas ondas de choque. O modelo proposto é chamado de \emph{Epidemic Type Aftershock Sequence} (ETAS) e adotamos a parametrização proposta em \cite{Harte2010}, abaixo:
+%\begin{equation*}
+%\label{eq:hsl}
+%h(s, l)=e^{\delta l}\left(1+\frac{s}{\gamma}\right)^{-\rho}, \text{onde } \delta, \gamma, \rho > 0.
+%\end{equation*}
+%
+%A função intensidade pode ser encarada como a chance instantânea de ocorrência de um ponto do processo no período $t$, \cite{Chiu2013}, portanto o fato de a transformarmos em uma função condicional resulta que temos agora uma probabilidade condicional de verificarmos no instante $t$ uma perda em excesso e por conseguinte, temos nossas medidas condicionais de risco $VaR_\alpha^t$ e $ES_\alpha^t$.
+%
+%Podemos então tomar nosso modelo POT de perdas acima de um determinado limiar e adequá-lo a um processo de Poisson marcado, com função intensidade auto-excitável. Pode-se separar este modelo em dois tipos, o primeiro com a distribuição das marcas do tipo \emph{iid} GPD, de forma que o valor das marcas (i.e. a magnitude das perdas em excesso) é incondicional e distribuído conforme uma distribuição genreralizada de Pareto, e um segundo tipo, onde a distribuição das próprias marcas é condicional a informação histórica, mas ainda GPD. Em \cite{ChavezDemoulin2005} existe uma implementação similar destes modelos e neste artigo alega-se a pouca evidência a favor do segundo modelo, onde os parâmetros da GPD seriam também dependentes dos pontos e marcas. Desta forma, adotamos aqui o modelo de processo de Hawkes marcado, sendo a distribuição das marcas uma distribuição do tipo GPD, dada pela equação \eqref{eq:GPD} e com a restrição adicional que $\xi>0$ de tal modo que obtemos uma distribuição com caudas longas para as perdas em excesso.
+%
+%Vejamos que este modelo não perde a generalização que queremos com relação ao fato de os retornos financeiros não serem \emph{iid}. Este fato está bem descrito ao adotarmos um processo de Hawkes para os pontos destes, ou seja, a dependência dos retornos é dada pela modelagem dos momentos quando estes ocorrem em excesso. A magnitude destes excessos não interferem na probabilidade de um novo evento extremo no futuro imediato. 
+%
+%A primeira vista esta abordagem pode parecer pouco intuitiva, mas ela está de acordo com os fatos estilizados das séries financeiras já apresentados, em especial, demonstramos que as autocorrelações entre os retornos propriamente ditos dos ativos é baixa, quando verificável. E este fato está presente em nossa abordagem quando afirmamos que a magnitude das perdas em excesso não interferem diretamente na probabilidade e na magnitude de uma nova perda extrema. As autocorrelações tipicamente encontradas nas séries financeiras são entre os retornos ao quadrado, fato que nos remete imediatamente a volatilidade. Esta sim está modelada através do processo pontual de auto-excitação, quando a função intensidade é dependente do histórico do processo até o período atual.
+%
+%Para encontrarmos a função densidade de probabilide (p.d.f) conjunta de nosso modelo de processo de Poisson marcado (MPP - \emph{Marked Poisson Process}) faremos uso da definição de intensidade condicional para um MPP econtrada em, \cite{Daley2003}[p. ~249] e também da p.d.f de uma GPD. Começamos pela última.
+%
+%A função densidade de probabilidade de uma distribuição generalizada de Pareto, parametrizada em $\xi$ e $\beta$ é dada por:
+%\begin{align}
+%\label{eq:pdfgpd}
+%g_{\xi, \beta}(x)=\frac{1}{\beta}\left(1+\xi\frac{x}{\beta}\right)^{-1-1/\xi}, &\,\xi \neq 0
+%\end{align}
+%e estamos interessados nos valores de $\xi$ no intervalo $(0, 1)$.
+%
+%\begin{defi}[Intensidade condicional de um processo marcado de Poisson]
+%	Seja N um processo regular marcado de Poisson em $\mathbb{N}\times\mathcal{M}$. A intensidade condicional de N, em relação ao seu histórico $\mathcal{H}$, é a função $\lambda^*(i, m)=\lambda^*_g(i)f^*(m|i)$.
+%\end{defi}
+%Onde $\lambda^*_g(i)$ é a função intensidade do processo base (i.e. dos tempos dos pontos, no nosso casso a intensidade do processo de Hawkes, dado pela equação \eqref{eq:condintensity}) e $f^*(m|i)$ é a densidade condicional das marcas no período $i$. Como estamos trabalhando com uma distribuição GPD independente dos períodos em que ocorrem as perdas extremas, $f^*(m|i)$ resume-se a nossa p.d.f de uma GPD, dada pela equação \eqref{eq:pdfgpd}.
+%
+%Portanto, nossa p.d.f conjunta para o modelo de processo pontual de auto-excitação das perdas acima de um limiar \emph{u}, assumindo uma função núcleo $h(s, l)=e^{\delta l}\left(1+\frac{s}{\gamma}\right)^{-\rho}$ pode ser descrita através das seguintes equações:
+%\begin{align}
+%g_{\xi, \beta}(x)=&\frac{1}{\beta}\left(1+\xi\frac{x-u}{\beta}\right)^{-1-1/\xi} \\
+%\lambda^*_g(i)=&\tau+\psi\sum_{j:0<T_j<i}h(i-T_j, \tilde{L}_j-u) \\
+%h(s, l)=&e^{\delta l}\left(1+\frac{s}{\gamma}\right)^{-\rho} \\
+%s=&i-T_j, \quad l=\tilde{L}_j-u \\
+%\lambda^*(i, m)=&\lambda^*_g(i)\, g_{\xi, \beta}(m) \label{eq:hawkesgpd}
+%\end{align}
+%
+%Coletando todos os parâmetros a serem estimados no vetor $\boldsymbol{\theta}=(\tau, \psi, \delta, \gamma, \rho, \xi, \beta )$ e considerando que informamos ao modelo o valor do limiar \emph{u}, poderemos estimar todos os parâmetros do modelo através do método de estimação de máxima verossimilhança (MLE - \emph{maximum likelihood estimation}) em um único passo. A função de verossimilhança logarítimica pode ser deduzida diretamente deste conjunto de equações, sendo a equação \eqref{eq:hawkesgpd} a densidade de probabilidades de interesse para a aplicação do método.
+%
+%\begin{exemplo}[Processo pontual de auto-excitação da Goldman Sachs]
+%	\label{exe:GS}
+%	Tomaremos como exemplo a aplicação de um processo de Hawkes aos retornos da Goldman Sachs Group Inc. (\emph{ticker} GS) no período entre 05/05/1999 a 04/10/2016, compreendendo 4.384 observações.
+%\end{exemplo}
+%Primeiramente é necessário montar a série de pontos do processo, que nada mais são que os pares $(T_j, \tilde{L}_j-u)$, onde o valor do limiar $u$ foi escolhido como sendo o quantil $q=0,90$ de nossa amostra. Ou seja, tomamos apenas as 10\% maiores perdas de nossa amostra. A partir deste ponto, podemos fazer uma estimativa dos parâmetros do modelo através do método de maximização da verossimilhança, sendo a função de verossimilhança aquela encontrada em \cite[eq. (7) p. ~6]{Harte2010}.
+%
+%Uma vez obtidos os parâmetros do modelo, podemos plotar a função intensidade de base do processo de Hawkes (i. e. $\lambda^*_g(i)$) contra os períodos $i$ para verificar como esta de fato variou conforme os eventos ocorreram. Na figura \ref{fig:figevtGS} é possível verificarmos nossa estimativa da função intensidade de base e compará-la ao eventos do processo de Hawkes, ou seja, as perdas extremas verificadas.
+%
+%\begin{figure}[ht]
+%	\centering
+%	\includegraphics[width=0.9\linewidth]{figs/figevtGS}
+%	\caption[Intensidade de Hawkes para Goldman Sachs]{Função intensidade de Hawkes e perdas extremas da Goldman Sachs (GS) no período entre 05/05/1999 a 04/10/2016.}
+%	\label{fig:figevtGS}
+%\end{figure}
+%
+%Podemos então calcular a probabilidade condicional de ultrapassarmos um determinado valor de perda $x$ do nosso ativo, no período $i$, dado o conjunto de informações disponíveis. Esta probabilidade nada mais é que a cauda da distribuição das perdas e portanto, o valor $1-\alpha$, onde $\alpha$ é o intervalo de confiança de nossas medidas de risco. Chamamos de $\tau^*(i+1, x)$ esta probabilidade:
+%\begin{align}
+%\label{eq:tau}
+%\tau^*(i+1, x)=&\displaystyle\int\limits_x^\infty \lambda^*(i, y)dy \nonumber \\
+%=&\lambda^*_g(i) \bar{G}_{\xi, \beta}(x-u)
+%\end{align}
+%
+%O que esta equação nos informa é que a probabilidade de ocorrência de uma perda acima de um valor $x\geq u$ é dada pelo produto entre nossa função intensidade de base, que não depende de $x$ e a cauda da distribuição GPD das marcas do processo de Poisson. Ambas já calculadas conforme o exemplo \ref{exe:GS}. Este resultado não deve vir como uma surpresa, uma vez que a probabilidade de termos uma perda maior que um dado valor $x\geq u$, considerando o conjunto de informações até o período $i$, $\mathcal{G}_i$, sempre pode ser decomposto da seguinte forma:
+%\begin{equation*}
+%P(X_{i+1}>x|G_i)=P(X_{i+1}-u>x-u|X_{i+1}>u, G_i)\, P(X_{i+1}>u|G_i)
+%\end{equation*}
+%
+%Onde primeiro termo a direita da igualdade é a cauda da distribuição das perdas em excesso, a qual supomos uma GPD independente do período $i$ e o segundo termo é a probabilidade de ocorrência de um "ponto" no processo pontual, que é justamente a função intensidade de base em um dado período $i$.
+%
+%Assim, a partir de $\tau^*(i+1, x)$ para encontrarmos digamos, $VaR_\alpha^{i+1}$, o que precisamos fazer é igualar $\tau^*(i+1, x)$ a $1-\alpha$ e inverter a equação para $x$. Este valor de $x$ é nossa medida de risco. Para valores de $\alpha$ suficientemente grandes, de modo que nosso quantil $VaR_\alpha^{i+1} > u$, este cálculo pode ser feito e resulta em:
+%
+%\begin{equation}
+%\label{eq:VaRpp}
+%VaR_\alpha^{i+1} = u+\frac{\beta}{\xi}\left[ \left( \frac{1-\alpha}{\lambda^*_g(i)}\right)^{-\xi}-1 \right].
+%\end{equation}
+%
+%Veja a semelhança desta equação com aquela em \eqref{eq:VaRGPD}. Para a abordagem através de processo de Hawkes marcado, substituímos a estimação empírica não-condicional da probabilidade de acontecer um evento extremo, $\bar{F}(u)=N_u/N$ por uma estimação que acreditamos mais adequada, o processo de Hawkes na forma de sua função intensidade de base. Da mesma forma, o $ES_\alpha^{i+1}$ pode ser calculado através da equação \eqref{eq:ESGPD}.
+%
+%\begin{equation}
+%\label{eq:ESpp}
+%ES_\alpha^{i+1} = \frac{VaR_\alpha^{i+1}}{1-\xi}+\frac{\beta-\xi u}{1-\xi}
+%\end{equation}
+%
+%Voltando ao nosso exemplo \ref{exe:GS} e aplicando as equações \eqref{eq:VaRpp} e \eqref{eq:ESpp} para a série de perdas de \emph{Goldman Sachs}, obtemos o seguinte resultado demonstrado na figura \ref{fig:figevtGS2} abaixo.
+%
+%\begin{figure}[h]
+%	\centering
+%	\includegraphics[width=0.9\linewidth]{figs/figevtGS2}
+%	\caption[VaR e ES condicionais através de um processo pontual de auto-excitação]{VaR e ES condicionais de \emph{GS}. Linhas contínuas são as medidas condicionais, com ES sempre mais alto que o VaR. As medidas incondicionais são apresentadas para referência.}
+%	\label{fig:figevtGS2}
+%\end{figure}
+%
+%Conforme mostra a figura \ref{fig:figevtGS2}, em momentos de baixa volatilidade as medidas condicionais de risco podem cair abaixo de seus valores históricos (i.e. incondicionais) e portanto, esta abordagem pode liberar capital da instituição financeira de seus requerimentos mínimos. Por outro lado, em momentos de alta volatilidade as medidas condicionais de risco se elevam subitamente e, neste caso, a instituição deveria levantar capital rapidamente.
 
 \section*{References}
 
