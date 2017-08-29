@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2017)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: projeto_artigo.aux
+The style file: model5-names.bst
+Database file #1: library.bib
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+You've used 17 entries,
+            3390 wiz_defined-function locations,
+            828 strings with 8599 characters,
+and the built_in function-call counts, 10676 in all, are:
+= -- 860
+> -- 306
+< -- 17
++ -- 212
+- -- 87
+* -- 1143
+:= -- 1469
+add.period$ -- 74
+call.type$ -- 17
+change.case$ -- 116
+chr.to.int$ -- 26
+cite$ -- 17
+duplicate$ -- 822
+empty$ -- 856
+format.name$ -- 130
+if$ -- 2036
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 149
+newline$ -- 109
+num.names$ -- 69
+pop$ -- 293
+preamble$ -- 1
+purify$ -- 97
+quote$ -- 0
+skip$ -- 288
+stack$ -- 0
+substring$ -- 422
+swap$ -- 568
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 135
+warning$ -- 0
+while$ -- 75
+width$ -- 0
+write$ -- 280
