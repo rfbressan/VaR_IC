@@ -1,4 +1,4 @@
-\begin{thebibliography}{17}
+\begin{thebibliography}{20}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -12,6 +12,30 @@
 \providecommand{\bibinfo}[2]{#2}
 \ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
 %Type = Article
+\bibitem[{Acerbi \& Tasche(2002)}]{Acerbi2002}
+\bibinfo{author}{Acerbi, C.}, \& \bibinfo{author}{Tasche, D.}
+  (\bibinfo{year}{2002}).
+\newblock \bibinfo{title}{{On the coherence of expected shortfall}}.
+\newblock {\it \bibinfo{journal}{Journal of Banking \& Finance}\/},  {\it
+  \bibinfo{volume}{26}\/}, \bibinfo{pages}{1487--1503}.
+%Type = Article
+\bibitem[{Artzner et~al.(1997)Artzner, Delbaen, Eber \& Heath}]{Artzner1997}
+\bibinfo{author}{Artzner, P.}, \bibinfo{author}{Delbaen, F.},
+  \bibinfo{author}{Eber, J.-M.}, \& \bibinfo{author}{Heath, D.}
+  (\bibinfo{year}{1997}).
+\newblock \bibinfo{title}{{Thinking Coherently}}.
+\newblock {\it \bibinfo{journal}{RISK}\/},  {\it \bibinfo{volume}{10}\/},
+  \bibinfo{pages}{68--71}.
+%Type = Article
+\bibitem[{Artzner et~al.(1999)Artzner, Delbaen, Eber \& Heath}]{Artzner1999}
+\bibinfo{author}{Artzner, P.}, \bibinfo{author}{Delbaen, F.},
+  \bibinfo{author}{Eber, J.-M.}, \& \bibinfo{author}{Heath, D.}
+  (\bibinfo{year}{1999}).
+\newblock \bibinfo{title}{{Coherent Measures of Risk}}.
+\newblock {\it \bibinfo{journal}{Mathematical Finance}\/},  {\it
+  \bibinfo{volume}{9}\/}, \bibinfo{pages}{203--228}.
+  \DOIprefix\doi{10.1111/1467-9965.00068}.
+%Type = Article
 \bibitem[{Balkema \& de~Haan(1974)}]{Balkema1974}
 \bibinfo{author}{Balkema, A.~A.}, \& \bibinfo{author}{de~Haan, L.}
   (\bibinfo{year}{1974}).
@@ -19,6 +43,31 @@
 \newblock {\it \bibinfo{journal}{The Annals of Probability}\/},  {\it
   \bibinfo{volume}{2}\/}, \bibinfo{pages}{792--804}.
   \DOIprefix\doi{10.1214/aop/1176996548}.
+%Type = Misc
+\bibitem[{on~Banking~Supervision(2011)}]{BCBS2011}
+\bibinfo{author}{on~Banking~Supervision, B.~C.} (\bibinfo{year}{2011}).
+\newblock \bibinfo{title}{{Basel III: A global regulatory framework for more
+  resilient banks and banking systems}}.
+\newblock \URLprefix \url{http://www.bis.org/publ/bcbs189.pdf}.
+%Type = Misc
+\bibitem[{on~Banking~Supervision(2013{\natexlab{a}})}]{BCBS2013}
+\bibinfo{author}{on~Banking~Supervision, B.~C.}
+  (\bibinfo{year}{2013}{\natexlab{a}}).
+\newblock \bibinfo{title}{{Basel III: The liquidity coverage ratio and
+  liquidity risk monitoring tools}}.
+\newblock \URLprefix \url{http://www.bis.org/publ/bcbs238.pdf}.
+%Type = Misc
+\bibitem[{on~Banking~Supervision(2013{\natexlab{b}})}]{BCBS2013a}
+\bibinfo{author}{on~Banking~Supervision, B.~C.}
+  (\bibinfo{year}{2013}{\natexlab{b}}).
+\newblock \bibinfo{title}{{Fundamental review of the trading book: A revised
+  market risk framework}}.
+\newblock \URLprefix \url{http://www.bis.org/publ/bcbs265.pdf}.
+%Type = Misc
+\bibitem[{on~Banking~Supervision(2014)}]{BCBS2014}
+\bibinfo{author}{on~Banking~Supervision, B.~C.} (\bibinfo{year}{2014}).
+\newblock \bibinfo{title}{{Basel III: The net stable funding ratio}}.
+\newblock \URLprefix \url{http://www.bis.org/bcbs/publ/d295.pdf}.
 %Type = Article
 \bibitem[{Bollerslev(1986)}]{Bollerslev1986}
 \bibinfo{author}{Bollerslev, T.} (\bibinfo{year}{1986}).
@@ -27,48 +76,6 @@
 \newblock {\it \bibinfo{journal}{Journal of Econometrics}\/},  {\it
   \bibinfo{volume}{31}\/}, \bibinfo{pages}{307--327}.
   \DOIprefix\doi{10.1016/0304-4076(86)90063-1}.
-%Type = Article
-\bibitem[{Chavez-Demoulin et~al.(2005)Chavez-Demoulin, Davison \&
-  McNeil}]{ChavezDemoulin2005}
-\bibinfo{author}{Chavez-Demoulin, V.}, \bibinfo{author}{Davison, A.~C.}, \&
-  \bibinfo{author}{McNeil, A.~J.} (\bibinfo{year}{2005}).
-\newblock \bibinfo{title}{{Estimating value-at-risk: a point process
-  approach}}.
-\newblock {\it \bibinfo{journal}{Quantitative Finance}\/},  {\it
-  \bibinfo{volume}{5}\/}, \bibinfo{pages}{227--234}.
-  \DOIprefix\doi{10.1080/14697680500039613}.
-%Type = Book
-\bibitem[{Chiu et~al.(2013)Chiu, Stoyan, Kendall \& Mecke}]{Chiu2013}
-\bibinfo{editor}{Chiu, S.~N.}, \bibinfo{editor}{Stoyan, D.},
-  \bibinfo{editor}{Kendall, W.~S.}, \& \bibinfo{editor}{Mecke, J.} (Eds.)
-  (\bibinfo{year}{2013}).
-\newblock {\it \bibinfo{title}{{Stochastic Geometry and its Applications}}\/}.
-\newblock Wiley Series in Probability and Statistics.
-\newblock \bibinfo{address}{Chichester, UK}: \bibinfo{publisher}{John Wiley and
-  Sons, Ltd}.
-\newblock \URLprefix \url{http://doi.wiley.com/10.1002/9781118658222}.
-  \DOIprefix\doi{10.1002/9781118658222}.
-%Type = Book
-\bibitem[{Daley \& Vere-Jones(2003)}]{Daley2003}
-\bibinfo{author}{Daley, D.~J.}, \& \bibinfo{author}{Vere-Jones, D.}
-  (\bibinfo{year}{2003}).
-\newblock {\it \bibinfo{title}{{An Introduction to the Theory of Point
-  Processes. Volume I: Elementary Theory and Methods}}\/}.
-\newblock Probability and its Applications (\bibinfo{edition}{2nd} ed.).
-\newblock \bibinfo{address}{New York}: \bibinfo{publisher}{Springer-Verlag}.
-\newblock \URLprefix \url{http://link.springer.com/10.1007/b97277}.
-  \DOIprefix\doi{10.1007/b97277}.
-%Type = Book
-\bibitem[{Daley \& Vere-Jones(2008)}]{Daley2008}
-\bibinfo{author}{Daley, D.~J.}, \& \bibinfo{author}{Vere-Jones, D.}
-  (\bibinfo{year}{2008}).
-\newblock {\it \bibinfo{title}{{An Introduction to the Theory of Point
-  Processes. Volume II: General Theory and Structure}}\/}.
-\newblock Probability and Its Applications (\bibinfo{edition}{2nd} ed.).
-\newblock \bibinfo{address}{New York, NY}: \bibinfo{publisher}{Springer New
-  York}.
-\newblock \URLprefix \url{http://link.springer.com/10.1007/978-0-387-49835-5}.
-  \DOIprefix\doi{10.1007/978-0-387-49835-5}.
 %Type = Book
 \bibitem[{Embrechts et~al.(1997)Embrechts, Kl{\"{u}}ppelberg \&
   Mikosch}]{Embrechts1997}
@@ -118,15 +125,6 @@
 \newblock \URLprefix \url{http://link.springer.com/10.1007/978-1-4612-1860-9}.
   \DOIprefix\doi{10.1007/978-1-4612-1860-9}.
 %Type = Article
-\bibitem[{Harte(2010)}]{Harte2010}
-\bibinfo{author}{Harte, D.} (\bibinfo{year}{2010}).
-\newblock \bibinfo{title}{{PtProcess : An R Package for Modelling Marked Point
-  Processes Indexed by Time}}.
-\newblock {\it \bibinfo{journal}{Journal of Statistical Software}\/},  {\it
-  \bibinfo{volume}{35}\/}, \bibinfo{pages}{1--32}. \URLprefix
-  \url{http://www.jstatsoft.org/v35/i08/}.
-  \DOIprefix\doi{10.18637/jss.v035.i08}.
-%Type = Article
 \bibitem[{McNeil \& Frey(2000)}]{McNeil2000}
 \bibinfo{author}{McNeil, A.~J.}, \& \bibinfo{author}{Frey, R.}
   (\bibinfo{year}{2000}).
@@ -135,16 +133,14 @@
 \newblock {\it \bibinfo{journal}{Journal of Empirical Finance}\/},  {\it
   \bibinfo{volume}{7}\/}, \bibinfo{pages}{271--300}.
   \DOIprefix\doi{10.1016/s0927-5398(00)00012-8}.
-%Type = Article
-\bibitem[{Ogata(1988)}]{Ogata1988}
-\bibinfo{author}{Ogata, Y.} (\bibinfo{year}{1988}).
-\newblock \bibinfo{title}{{Statistical Models for Earthquake Occurrences and
-  Residual Analysis for Point Processes}}.
-\newblock {\it \bibinfo{journal}{Journal of the American Statistical
-  Association}\/},  {\it \bibinfo{volume}{83}\/}, \bibinfo{pages}{9--27}.
-  \URLprefix
-  \url{http://www.tandfonline.com/doi/abs/10.1080/01621459.1988.10478560}.
-  \DOIprefix\doi{10.1080/01621459.1988.10478560}.
+%Type = Book
+\bibitem[{McNeil et~al.(2015)McNeil, Frey \& Embrechts}]{McNeil2015}
+\bibinfo{author}{McNeil, A.~J.}, \bibinfo{author}{Frey, R.}, \&
+  \bibinfo{author}{Embrechts, P.} (\bibinfo{year}{2015}).
+\newblock {\it \bibinfo{title}{{Quantitative risk management: concepts,
+  techniques and tool}}\/}.
+\newblock (\bibinfo{edition}{Revised ed} ed.).
+\newblock \bibinfo{publisher}{Princeton University Press}.
 %Type = Article
 \bibitem[{Pickands(1975)}]{Pickands1975}
 \bibinfo{author}{Pickands, J.} (\bibinfo{year}{1975}).
@@ -153,6 +149,11 @@
 \newblock {\it \bibinfo{journal}{Annals of Statistics}\/},  {\it
   \bibinfo{volume}{3}\/}, \bibinfo{pages}{119--131}.
   \DOIprefix\doi{10.1214/aos/1176343003}.
+%Type = Techreport
+\bibitem[{RiskMetrics(1995)}]{RiskMetrics1995}
+\bibinfo{author}{RiskMetrics} (\bibinfo{year}{1995}).
+\newblock {\it \bibinfo{title}{{Technical Document - 3rd Edition}}\/}.
+\newblock \bibinfo{type}{Technical Report} J.P Morgan Guaranty Trust Company.
 %Type = Book
 \bibitem[{Tsay(2010)}]{Tsay2010}
 \bibinfo{author}{Tsay, R.~S.} (\bibinfo{year}{2010}).

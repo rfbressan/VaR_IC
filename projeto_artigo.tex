@@ -79,7 +79,7 @@
 
 \begin{frontmatter}
 
-\title{Modelagem semiparamétrica de retornos financeiros através da teoria do valor extremo\tnoteref{mytitlenote}}
+\title{Medida condicional de \emph{Expected Shortfall} nos mercados latinoamericanos através da teoria do valor extremo\tnoteref{mytitlenote}}
 \tnotetext[mytitlenote]{Fully documented templates are available in the elsarticle package on \href{http://www.ctan.org/tex-archive/macros/latex/contrib/elsarticle}{CTAN}.}
 
 %% Group authors per affiliation:
@@ -114,28 +114,57 @@ This template helps you to create a properly formatted \LaTeX\ manuscript.
 
 \section{Introdução}
 
+\paragraph{A medição do risco de mercado} ao qual os portfólios dos investidores está sujeito é objeto de devoção de esforços tanto por parte das instituições e investidores em geral como por parte dos reguladores. Instituições financeiras em todo o mundo, de acordo com suas regulações locais e com os princípios de Basileia (\emph{Basel Comittee on Banking Supervision} - BCBS do Banco de Compensações Internacionais - BIS\footnote{http://www.bis.org/bcbs/index.htm?m=3\%7C14}) para aquelas que o seguem (o Brasil é um desses países)  são obrigadas a reservar uma parcela de seu capital como provisionamento contra flutuações adversas do mercado em seus portfólios de investimento.
+
+Uma importante característica das séries de retornos financeiros é sua alta volatilidade, não constante e tampouco seguindo a distribuição Normal. Assim, eventos extremos, e neste caso estamos interessados em perdas de grande magnitude, acontecem com uma frequência alta demais para serem descartadas como apenas \emph{outliers}, e portanto passaram a atrair a atenção dos participantes do mercado, entre eles os investidores e também os reguladores. Estas observações induziram uma gama enorme de estudos, práticos e teóricos, voltados a explicar o comportamento dos retornos de séries financeiras e modelar de forma adequada as caudas da distribuição destes retornos. Não somente estes estudos são de grande relevância para o gerenciamento de risco nas instituições financeiras, como também são obrigatórios segundo o acordo de Basileia, uma vez que este requer o cálculo do Valor em Risco - VaR, para então a instituição poder projetar o seu nível requerido de capital. 
+
+De acordo com os princípios de Basileia III, \cite{BCBS2011, BCBS2013, BCBS2014}, as instituições financeiras supervisionadas pelos Bancos Centrais devem manter \emph{buffers} de capital contra riscos de mercado, crédito, liquidez, entre outros. Dentro dos riscos de mercado, as duas formas mais usuais de fazer a quantificação destes são os métodos de Valor em Risco - VaR e o \emph{Expected Shortfall} - ES. Este último relacionado ao primeiro, sendo definido como o valor esperado das perdas que excedem o valor VaR calculado para um determinado intervalo de confiança.
+\todo{Percentuais de VaR por Basileia}
+\todo{Existem penalidades regulatórias para as IF em que seu modelo VaR permite um número maior de perdas do que seria estimado pelo modelo. Verificar onde nos princípios de Basileia}
+
+VaR é um quantil $\alpha$ da distribuição de perdas de um ativo ou portfólio em um determinado período de tempo, ao passo que ES é o valor esperado das perdas que excedem VaR, para um mesmo intervalo de confiança $\alpha$ e período.
+
+O método VaR para cálculo de risco de mercado ao qual um portfólio está sujeito foi primeiramente introduzido através de \cite{RiskMetrics1995}, uma metodologia adotada pelo banco J. P. Morgan. Vem desde então sendo amplamente adotado pela indústria financeira e largamente estudado pela academia. Inúmeras variantes do modelo foram propostas e continuam sendo utilizadas com o passar dos anos. Para o cálculo do VaR é necessária uma suposição acerca da distribuição dos retornos, e por conseguinte do comportamento da cauda desta.
+
+As variações na metodologia original de estimação do VaR surgem principalmente em função de críticas a abordagem proposta, a qual inclui a suposição de retornos independentes e igualmente distribuídos (\emph{iid}), covariâncias constantes entre os ativos de um portfólio e a distribuição normal dos retornos.
+
+Uma das últimas fortes críticas a medida do VaR, e que deu origem a outra métrica conhecida como \emph{Expected Shotfall}, ou simplesmente ES, veio de dois artigos \cite{Artzner1997} e \cite{Artzner1999}. Primeiramente foram introduzidas quatro propriedades cunhadas através de axiomas, as quais medidas coerentes de risco deveriam possuir, sendo elas: 
+
+\begin{itemize}
+	\item invariância a translação;
+	\item sub-aditividade;
+	\item homogeneidade positiva, e;
+	\item monotonicidade.
+\end{itemize}
+
+VaR especificamente não possui a propriedade da sub-aditividade para alguns casos. Para contornar este fato, \cite{Acerbi2002} propõe o \emph{Expected Shortfall} e comprovam que este é uma medida coerente de risco. Além de ser coerente, o ES possui uma segunda vantagem com relação ao VaR, considerando que o ES nos informa uma medida de tendência central do tamanho das perdas que excedem o valor do quantil VaR. Ou seja, o VaR nos informa apenas que uma proporção $\alpha$ das perdas serão menor que a medida, mas nada nos informa se esta perda extraordinária de fato ocorrer. Mesmo sendo criticado e demonstradamente uma medida não coerente de risco, o VaR continua a ser amplamente utilizado, mesmo que agora em conjunto com o ES. 
+
+Mais recentemente o Comitê de Supervisão Bancária de Basileia tem se proposto a adotar o \emph{Expected Shortfall} como medida de risco de mercado. \cite{BCBS2013a}. O Comitê cita a grande importância da escolha da medida de risco e sua calibração, e portanto estas são relevantes para as decisões de política do Banco. Entre as dificuldades encontradas pelo VaR estão mais notadamente sua inabilidade em estimar o "risco de cauda" da distribuição de perdas, uma vez que VaR não leva em conta a distribuição das perdas acima do valor de corte.
+
+Desta forma, foi decidido que o ES seria a medida de risco favorita para a abordagem pelo banco chamada de modelos internos. Ou seja, os bancos supervisionados devem utilizar o ES para o cálculo do risco de mercado a que estão sujeitos em seus modelos internos. O comitê também se decidiu por um intervalo de confiança de 97,5\% para o ES, em contraposição a 99\% para o VaR. O comitê espera que esta abordagem para o cálculo da medida de risco de mercado trará benefícios se comparada a antiga abordagem pelo Var, entre elas um modelo com resultados mais estáveis e menor sensibilidade a observações extremas (\emph{outliers}).
+
 \paragraph{Teoria do valor extremo} EVT da sigla em inglês, é um ramo da estatística que lida diretamente com eventos raros, extremos. Seu objetivo é modelar eventos que se distanciam muito da mediana de uma distribuição. Justamente por esta característica, a EVT está sendo utilizada para modelar riscos que possuem distribuição com caudas longas, um dos fatos estilizados que apresentamos sobre retornos de ativos financeiros.
 
 Ao utilizarmos a EVT, e mais especificamente o método conhecido como \emph{peaks over treshold} – POT, estamos interessados em modelar apenas a parte da cauda da distribuição das perdas de um ativo financeiro maiores que um determinado valor de limiar \emph{u}. É da modelagem desta cauda, portanto, que faremos as estimativas de risco $VaR_\alpha$ e $ES_\alpha$.
 
 \section{O método \emph{peaks over treshold}}
 
-Consideremos uma amostra de uma variável aleatória cujas observações sejam independentes e igualmente distribuídas (\emph{iid rv}) $L_i,i\in \mathbb{N}$ que represente as perdas financeiras de um determinado ativo.
+Consideremos uma amostra de uma variável aleatória (v.a.) cujas observações sejam independentes e igualmente distribuídas (i.i.d.), $L_i,i\in \mathbb{N}$, que represente as perdas financeiras de um determinado ativo.
 
-A EVT está interessada em investigar o comportamento da distribuição dos máximos desta \emph{iid rv} dados por $M_n = \max (L_1, \ldots , L_n)$ para vários valores de $n$ e a medida que $n\rightarrow \infty$. A sequência $M_n$ é chamada de máximos em bloco e é possível demonstrar que a única distribuição para a qual $M_n$ converge com $n\rightarrow \infty$ é a distribuição de valores extremos generalizada (GEV, da sigla em inglês).
+A EVT está interessada em investigar o comportamento da distribuição dos máximos desta v.a. dados por $M_n = \max (L_1, \ldots , L_n)$ para vários valores de $n$ e a medida que $n\rightarrow \infty$. A sequência $M_n$ é chamada de máximos em bloco e é possível demonstrar que a única distribuição para a qual $M_n$ converge com $n\rightarrow \infty$ é a distribuição de valores extremos generalizada (GEV, da sigla em inglês).
 
-Para tanto, é necessário normalizarmos esta sequência de máximos de forma que sua distribuição seja convergente para uma distribuição $H(x)$ não-degenerada\footnote{Distribuição degenerada é aquela cuja densidade de probabilidade está totalmente concentrada em apenas um ponto de seu domínio.} . Seja $F(x)$ a distribuição original de uma variável aleatória \emph{iid}, é possível normalizar seus máximos em bloco através da relação $M_n^*=(M_n-d_n)/c_n$ de forma que:
+%Para tanto, é necessário normalizarmos esta sequência de máximos de forma que sua distribuição seja convergente para uma distribuição $H(x)$ não-degenerada. Seja $F(x)$ a distribuição original de uma variável aleatória \emph{iid}, é possível normalizar seus máximos em bloco através da relação $M_n^*=(M_n-d_n)/c_n$ de forma que:
+%
+%\begin{equation}
+%\label{eq:H}
+%\lim_{n \rightarrow \infty} P\left(\frac{M_n-d_n}{c_n} \leq x \right) 
+%= \lim_{n \rightarrow \infty} F^n(c_nx + d_n)
+%= H(x)
+%\end{equation}
 
-\begin{equation}
-\label{eq:H}
-\lim_{n \rightarrow \infty} P\left(\frac{M_n-d_n}{c_n} \leq x \right) 
-= \lim_{n \rightarrow \infty} F^n(c_nx + d_n)
-= H(x)
-\end{equation}
-
-Em outras palavras, para determinadas sequências $c_n$ e $d_n$ a serem escolhidas, existe uma distribuição de $H(x)$ não-degenerada a qual representa a distribuição dos máximos em bloco de $F(x)$.
-
-A potenciação de $F$ em $n$ deriva diretamente da suposição que a variável aleatória é iid, enquanto que a transformação de $x \rightarrow c_n x+d_n$ é a normalização dos máximos em bloco.
+%Em outras palavras, para determinadas sequências $c_n$ e $d_n$ a serem escolhidas, existe uma distribuição de $H(x)$ não-degenerada a qual representa a distribuição dos máximos em bloco de $F(x)$.
+%
+%A potenciação de $F$ em $n$ deriva diretamente da suposição que a variável aleatória é iid, enquanto que a transformação de $x \rightarrow c_n x+d_n$ é a normalização dos máximos em bloco.
 
 \begin{defi}[MDA] \label{defi:MDA}
 	Domínio de máxima atração, se a equação \eqref{eq:H} é válida para uma $H$ não-degenerada, então se diz que $F \in MDA(H)$, $F$ pertence ao domínio de máxima atração de $H$.
@@ -161,7 +190,7 @@ exp(-e^{-x}), & \xi = 0,\\
 
 O parâmetro $\xi$ é conhecido como o parâmetro de forma da distribuição e dependendo deste valor teremos diferentes tipos de distribuição (casos particulares da GEV). Quando $\xi=0$ a distribuição resultante é uma Gumbel, quando  $\xi>0$ uma Fréchet surge, e por fim quando $\xi<0$ temos uma Weibull.
 
-Para este trabalho não necessitamos calcular a qual $MDA$ pertencem nossas distribuições, bastando saber que basicamente todas as distribuições contínuas de utilidade prática estão contidas em $MDA(H_\xi)$ para algum valor de $\xi$. \todo{Fonte?}
+Para as aplicações financeiras não necessitamos calcular a qual $MDA$ pertencem nossas distribuições contínuas, bastando saber que basicamente todas as distribuições de utilidade prática estão contidas em $MDA(H_\xi)$ para algum valor de $\xi$ \cite[p. ~139]{McNeil2015}.
 
 \subsection{Excessos acima de um limiar}
 \label{sec:excess}
@@ -169,7 +198,7 @@ Para este trabalho não necessitamos calcular a qual $MDA$ pertencem nossas dist
 O método conhecido como POT, para calcular a função de distribuição dos valores que excedem um determinado limiar de um conjunto de dados vem sendo empregado no mundo financeiro para ajustar as caudas das distribuições de retornos, ou perdas, dos ativos. Este método é preferido a teoria clássica de valores extremos (e.g. máximos em bloco), pois, desperdiça uma quantidade menor de dados da série original. Qualquer valor que exceda o limiar pré-determinado é considerado na distribuição dos excessos. Esta distribuição dos valores da série que estão acima de um determinado limiar \emph{u} é definida como:
 
 \begin{defi}[Distribuição dos excessos] \label{defi:excess}
-	Seja \emph{X} uma variável aleatória com função de distribuição c.d.f \emph{F}. A distribuição dos excessos sobre um limiar \emph{u} tem a seguinte função de distribuição:
+	Seja \emph{X} uma variável aleatória com função de distribuição \emph{F}. A distribuição dos excessos sobre um limiar \emph{u} tem a seguinte função de distribuição:
 \end{defi}
 
 \begin{equation}
@@ -178,8 +207,7 @@ F_u(x)=P(X-u \leq x | X > u)=\frac{F(x+u)-F(u)}{1-F(u)}
 \end{equation}
 para $0 \leq x < x_F-u$, onde $x_F \leq \infty$ é o limite direito da distribuição \emph{F}.
 
-Ou seja, a função distribuição dos excessos sobre um limiar \emph{u} é a probabilidade condicional que um valor \emph{X} retirado dos dados subtraído de \emph{u} (o excesso) seja menor que um dado quantil \emph{x}, sabendo-se que \emph{X} é maior que \emph{u}. 
-Uma importante distribuição que surge na modelagem dos excessos sobre um limiar é a distribuição de pareto gereralizada – GPD, que segue.
+Uma importante distribuição que surge na modelagem dos excessos sobre um limiar é a distribuição gereralizada de pareto – GPD, que segue.
 
 \begin{defi}[GPD] \label{defi:GPD}
 	Distribuição de Pareto Generalizada é definida por sua função de distribuição:
@@ -195,16 +223,9 @@ G_{\xi,\beta(u)}(X) =
 \end{equation}
 onde $\beta > 0$, e $x\geq 0$ quando $\xi  \geq 0$ ou $0 \leq x \leq -\beta / \xi$ quando $\xi < 0$.
 
-Os parâmetros $\xi$ e $\beta$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. Na figura \ref{fig:figevt1} abaixo, são mostradas três parametrizações para a função de distribuição acumulada (c.d.f) e para a densidade de probabilidades (p.d.f) de GPD com parâmetro $\xi$ iguais a -0,5, 0 e 0,5 enquanto que o parâmetro de escala $\beta$ é mantido constante e igual a 1. Perceba como para $\xi <0$ a p.d.f tem um limite direito que é dado por $-\beta / \xi$ a partir do qual os valores de $g(x)$ são zero.
+Os parâmetros $\xi$ e $\beta$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. 
 
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.9\linewidth]{figs/figevt1}
-	\caption[Função de distribuição e densidade de probabilidades de uma GPD]{Três parametrizações para uma GPD. A linha sólida corresponde a $\xi=0,5$, a linha pontilhada a $\xi=-0,5$ e a linha tracejada a $\xi=0$.}
-	\label{fig:figevt1}
-\end{figure}
-
-A distribuição de Pareto generalizada tem papel fundamental na teoria de valor extremo em função do teorema de Pickands-Balkema-de Haan (\cite{Pickands1975} e \cite{Balkema1974}) conforme abaixo:
+A distribuição generalizada de Pareto tem papel fundamental na teoria de valor extremo em função do teorema de Pickands-Balkema-de Haan (\cite{Pickands1975} e \cite{Balkema1974}) conforme abaixo:
 
 \begin{teor}[Pickands-Balkema-de Haan]
 	\label{teor:pickands}
@@ -215,30 +236,11 @@ A distribuição de Pareto generalizada tem papel fundamental na teoria de valor
 	se e somente se $F\in MDA(H_\xi)$ para $\xi \in \mathbb{R}$.
 \end{teor}
 
-O que este teorema nos diz é que para distribuições as quais os máximos em bloco normalizados convergem para uma GEV (na forma da equação \eqref{eq:GEV}), então a distribuição dos excessos acima de um limiar destas mesmas distribuições convergem para uma GPD, dado um valor de limiar \emph{u} adequado.
+O que este teorema nos diz é que para distribuições as quais os máximos em bloco normalizados convergem para uma GEV (na forma da equação \eqref{eq:GEV}), então a distribuição dos excessos acima de um limiar destas mesmas distribuições convergem para uma GPD, dado um valor de limiar \emph{u} adequado. Como para fins práticos basicamente todas as distribuições contínuas de fato estão no $MDA(H_\xi)$ para algum valor de $\xi$, temos que a GPD é a distribuição a ser escolhida para modelar excessos acima de um limiar.
 
-\begin{supo} \label{supo:excessdist}
-	Seja \emph{F} a distribuição de perdas com limite direito $x_F$, assuma que para um valor limiar alto o suficiente \emph{u} nós temos que $F_u (x)=G_{\xi,\beta} (x)$, onde $F_u (x)$ denota a distribuição dos excessos de \emph{x} em relação ao valor de limiar \emph{u}, para $0 \leq x < x_F-u$, $\xi \in \mathbb{R}$ e $\beta > 0$.
-\end{supo}
-
-Esta é uma suposição, uma vez que a distribuição dos excessos não segue exatamente uma GPD, mas apenas tende a esta distribuição dado um limiar \emph{u} alto e uma amostra de dados grande o suficiente.
+Ao fazermos a suposição que a distribuição dos excessos \emph{é igual} a uma GPD, podemos então a partir dos dados de perdas estimar os parâmetros de forma e escala e portanto, modelar a cauda direita da nossa distribuição de perdas de forma parametrizada. Esta é uma suposição, uma vez que a distribuição dos excessos não segue exatamente uma GPD, mas apenas tende a esta distribuição dado um limiar \emph{u} alto e uma amostra de dados grande o suficiente.
 
 Dada a parametrização de uma GPD, é interessante sabermos o valor esperado desta distribuição, uma vez que esta medida de valor central nos fornece importante informação sobre a quantidade de risco que estamos buscando medir, assim como a informação de que a própria distribuição foi ajustada aos dados de forma satisfatória, como será demonstrado adiante.
-
-O valor esperado de uma variável aleatória não negativa pode ser computado através da integral de sua cauda, $P(X>x) = 1-P(X \leq x)$. A cauda da GPD é, para $\xi \neq 0$, $\left(1+\xi x / \beta(u) \right)^{-1/ \xi}$
-
-Bastando, portanto, integrar em relação a $x$ sobre o domínio deste, que é de $0$ a $\infty$.
-
-\begin{equation*}
-\displaystyle\int\limits_{0}^{\infty} \left(1+ \xi x /\beta(u) \right)^{-1/\xi} dx
-\end{equation*}
-
-Desta forma, o valor esperado de uma GPD $G_{\xi,\beta(u)} (X)$, ou seja, sua média, converge para valores de $\xi<1$ e é dado pela seguinte equação:
-
-\begin{equation}
-\label{eq:meanGPD}
-E\left[G_{\xi,\beta(u)} (X) \right]=\frac{\beta(u)}{1-\xi}
-\end{equation}
 
 \begin{defi}[função média dos excessos]
 	\label{defi:meanexcess}
@@ -260,9 +262,9 @@ e(u)=\frac{\beta+\xi u}{1-\xi}
 \end{equation}
 onde $0 \leq u < \infty$ se $0 \leq \xi <1$ e $0 \leq u \leq -\beta / \xi$ se $\xi < 0$. É possível observar que de fato a função média dos excessos em uma GPD é linear em \emph{u}. Esta é uma característica importante de uma GPD e que nos auxilia a escolher um valor adequado do limiar \emph{u} de tal forma que a Suposição \ref{supo:excessdist} faça sentido.
 
-Assim, quando estamos analisando uma determinada distribuição de perdas \emph{F} e desejamos ajustar a cauda desta distribuição, ou seja, as perdas acima de um dado valor limiar \emph{u} a uma GPD $G_{\xi, \beta}(x)$ precisamos primeiramente determinar um valor adequado de \emph{u} de modo que a Suposição \ref{supo:excessdist} de que $F_u(x)\rightarrow G_{\xi, \beta}(x)$ seja válida. Um método frequentemente utilizado é o gráfico da função média dos excessos com relação a \emph{u}. Analisando este gráfico, escolhemos o menor valor de \emph{u} para o qual a partir deste ponto a relação $e(u) \text{ vs } u$ torna-se linear.
-
-Desejamos o menor valor de \emph{u} para o qual a relação é linear pois, mesmo o método POT implica em grande perda de dados da série temporal, já que apenas os valores acima deste limiar são utilizados para fazer a estimação dos parâmetros $\xi$ e $\beta$ da GPD. Portanto, existe um \emph{trade-off} na escolha do valor limiar \emph{u}, escolhendo um valor muito baixo termos uma boa quantidade de dados para estimar os parâmetros da GPD, mas a própria distribuição resultante não será GPD, uma vez que não estaremos trabalhando na região onde a relação $e(u) \text{ vs } u$ é linear. Por outro lado, um valor limiar muito alto nos impõe o custo de trabalhar com poucos dados para fazer a estimação dos parâmetros da distribuição e por conseguinte, os erros padrões dessas estimativas serão elevados.
+%Assim, quando estamos analisando uma determinada distribuição de perdas \emph{F} e desejamos ajustar a cauda desta distribuição, ou seja, as perdas acima de um dado valor limiar \emph{u} a uma GPD $G_{\xi, \beta}(x)$ precisamos primeiramente determinar um valor adequado de \emph{u} de modo que a Suposição \ref{supo:excessdist} de que $F_u(x)\rightarrow G_{\xi, \beta}(x)$ seja válida. Um método frequentemente utilizado é o gráfico da função média dos excessos com relação a \emph{u}. Analisando este gráfico, escolhemos o menor valor de \emph{u} para o qual a partir deste ponto a relação $e(u) \text{ vs } u$ torna-se linear.
+%
+%Desejamos o menor valor de \emph{u} para o qual a relação é linear pois, mesmo o método POT implica em grande perda de dados da série temporal, já que apenas os valores acima deste limiar são utilizados para fazer a estimação dos parâmetros $\xi$ e $\beta$ da GPD. Portanto, existe um \emph{trade-off} na escolha do valor limiar \emph{u}, escolhendo um valor muito baixo termos uma boa quantidade de dados para estimar os parâmetros da GPD, mas a própria distribuição resultante não será GPD, uma vez que não estaremos trabalhando na região onde a relação $e(u) \text{ vs } u$ é linear. Por outro lado, um valor limiar muito alto nos impõe o custo de trabalhar com poucos dados para fazer a estimação dos parâmetros da distribuição e por conseguinte, os erros padrões dessas estimativas serão elevados.
 
 \begin{lema} \label{lema:ev}
 	Sob a Suposição \ref{supo:excessdist} segue que $F_v (x)=G_{\xi,\beta+\xi(v-u)} (x)$ para qualquer valor limiar $v \geq u$.
@@ -320,7 +322,7 @@ Portanto, ambas medidas de risco $VaR_\alpha$ e $ES_\alpha$, para distribuiçõe
 
 As estimativas de medidas de risco desenvolvidas nesta seção se qualificam como medidas incondicionais, no sentido que elas não dependem do estado atual das coisas, mas sim de todo o histórico de eventos de forma uniforme. Em outras palavras, $VaR_\alpha \text{ e } ES_\alpha$ derivados a partir das equações \eqref{eq:VaRGPD} e \eqref{eq:ESGPD} são medidas históricas de risco associado ao ativo em análise, entretanto, não levam em consideração se nos eventos mais recentes a volatilidade das perdas pode ser diferente do valor histórico.
 
-De fato, uma das características marcantes das perdas (ou retornos, como o leitor preferir) dos ativos financeiros é o chamado \emph{clustering} de volatilidade, onde grandes volatilidades (retornos positivos ou negativos) têm tendência a ficarem próximas ao longo da linha temporal. Em geral estas aglomerações de volatilidades surgem a partir da autocorrelação destas, ou seja, a volatilidade em um período \emph{t} é dependente das volatilidades verificadas em períodos anteriores. Um modelo bastante encontrado na literatura que busca modelar estas dependências é o modelo ARCH e suas variantes como GARCH\footnote{O modelo ARCH foi introduzido primeiramente por \cite{Engle1982} e sua generalização GARCH por \cite{Bollerslev1986}}.
+De fato, uma das características marcantes das perdas (ou retornos, como o leitor preferir) dos ativos financeiros é o chamado \emph{clustering} de volatilidade, onde grandes volatilidades (retornos positivos ou negativos) têm tendência a ficarem próximas ao longo da linha temporal. Em geral estas aglomerações de volatilidades surgem a partir da autocorrelação destas, ou seja, a volatilidade em um período \emph{t} é dependente das volatilidades verificadas em períodos anteriores. Um modelo bastante encontrado na literatura que busca modelar estas dependências é o modelo ARCH e suas variantes como GARCH, propostos por \cite{Engle1982} e \cite{Bollerslev1986} respectivamente.
 
 Assim, ao passo que as estimativas de risco desenvolvidas nesta seção são valiosas para prazos mais longos, ainda é necessário desenvolver um modelo que lide com o fato das autocorrelações de volatilidades e portanto, que nossa variável aleatória não é independente e igualmente distribuída ao longo do tempo. O modelo proposto por \cite{McNeil2000} pode ser utilizado para encontrar as medidas de risco $VaR_\alpha$ e $ES_\alpha$ condicionais que desejamos, ainda dentro da metodologia de \emph{peaks over treshold} - POT.
 
@@ -329,9 +331,9 @@ Assim, ao passo que as estimativas de risco desenvolvidas nesta seção são val
 
 Ativos financeiros possuem características de autocorrelação, senão em seus retornos propriamente ditos, ao menos em suas volatilidades ou variações absolutas. Ou seja, dada uma grande variação no momento \emph{t} é de se esperar novamente uma grande variação, não necessariamente na mesma direção daquela anterior, para o momento \emph{t+1} e posteriores. Desta forma, medidas de risco incondicionais, conforme aquelas derivadas na Seção \ref{sec:caudas} podem ser adequadas somente para horizontes temporais mais longos, pois implicitamente tomam em consideração os fatos mais recentes com o mesmo valor de predição que fatos mais longínquos.
 
-Também já foi bastante estudado e demonstrado no mesmo Capítulo \todo{Revisão} que modelos que levem em conta riscos condicionais ao incorporarem as autocorrelações nas volatilidades, levam a resultados de testes melhores. Assim, nesta subseção trabalharemos com o modelo proposto por \cite{McNeil2000} os quais fazem uma adequação dos retornos dos ativos a um modelo GARCH e posteriormente tratam os erros desta modelagem como \emph{iid} e portanto, a metodologia de POT e ajuste de uma GPD pode ser feito.
+Assim, nesta subseção trabalharemos com um modelo semelhante ao proposto por \cite{McNeil2000} os quais fazem uma adequação dos retornos dos ativos a um modelo AR-GARCH e posteriormente tratam os erros desta modelagem como \emph{iid} e portanto, a metodologia de POT pode ser aplicada.
 
-Primeiramente vamos estabelecer um modelo GARCH para as perdas do ativo subjacente. Se denotarmos $L_t$ como sendo a perda observada no período \emph{t}, $\mu_t$ e $\sigma_t$ são respectivamente a média e o desvio padrão condicionais e mensuráveis através do conjunto de informações disponíveis em \emph{t-1} e seja $Z_t$ inovações \emph{iid} com média zero e desvio padrão unitário, então temos que:
+Primeiramente iremos estabelecer um modelo ARMA-GARCH para as perdas do ativo subjacente. Se denotarmos $L_t$ como sendo a perda observada no período \emph{t}, $\mu_t$ e $\sigma_t$ são respectivamente a média e o desvio padrão condicionais e mensuráveis através do conjunto de informações disponíveis em \emph{t-1} e seja $Z_t$ inovações \emph{iid} com média zero e desvio padrão unitário, então temos que:
 
 \begin{equation}
 \label{eq:loss}
@@ -426,8 +428,6 @@ Toda esta metodologia pode ser aplicada período a período, mantendo uma memór
 
 \section{Conclusão}
 
-
-\section{Função de distribuição de valores extremos generalizada}\label{sec:GEV}
 
 %\section{Processos pontuais}
 %\label{sec:pp}
