@@ -333,10 +333,6 @@ Ativos financeiros possuem características de autocorrelação, senão em seus 
 
 Assim, nesta subseção trabalharemos com um modelo semelhante ao proposto por \cite{McNeil2000} os quais fazem uma adequação dos retornos dos ativos a um modelo AR-GARCH e posteriormente tratam os erros desta modelagem como \emph{iid} e portanto, a metodologia de POT pode ser aplicada.
 
-A tabela \ref{tab:descritivas} abaixo apresenta as principais estatísticas descritivas para as séries em análise.
-
-\input{artigo-tab-descritivas.tex}
-
 Primeiramente vamos estabelecer um modelo GARCH para as perdas do ativo subjacente. Se denotarmos $L_t$ como sendo a perda observada no período \emph{t}, $\mu_t$ e $\sigma_t$ são respectivamente a média e o desvio padrão condicionais e mensuráveis através do conjunto de informações disponíveis em \emph{t-1} e seja $Z_t$ inovações \emph{iid} com média zero e desvio padrão unitário, então temos que:
 
 \begin{equation}
@@ -429,6 +425,10 @@ Pode-se verificar através da figura \ref{fig:figevtAAPL2} que os ajustes feitos
 Possuímos todos os parâmetros de nosso modelo híbrido AR-GARCH-POT para então calcularmos os valores das medidas de risco condicional dadas pelas equações \eqref{eq:varcond} e \eqref{eq:escond}. Com o modelo AR-GARCH executado no período \emph{t} obtemos as estimativas de $\mu_{t+1}$ e de $\sigma_{t+1}$ e através do modelo POT obtemos os valores de $z_\alpha$ e $E[Z|Z>z_\alpha]$, no caso do nosso exemplo escolhemos $\alpha=0,99$.
 
 Toda esta metodologia pode ser aplicada período a período, mantendo uma memória fixa das últimas \emph{n} observações de perdas e que resultará em valores calculados para $VaR_\alpha^{t+1}$ e $ES_\alpha^{t+1}$, os quais poderão ser comparados com a realização futura de perda.
+
+A tabela \ref{tab:descritivas} abaixo apresenta as principais estatísticas descritivas para as séries em análise.
+
+\input{artigo-tab-descritivas.tex}
 
 \section{Conclusão}
 
