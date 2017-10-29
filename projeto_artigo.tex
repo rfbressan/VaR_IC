@@ -79,7 +79,7 @@
 
 \begin{frontmatter}
 
-\title{Medida condicional de \emph{Expected Shortfall} nos mercados latinoamericanos através da teoria do valor extremo\tnoteref{mytitlenote}}
+\title{Estimação condicional de medidas de risco através da teoria do valor extremo\tnoteref{mytitlenote}}
 \tnotetext[mytitlenote]{Fully documented templates are available in the elsarticle package on \href{http://www.ctan.org/tex-archive/macros/latex/contrib/elsarticle}{CTAN}.}
 
 %% Group authors per affiliation:
@@ -333,7 +333,11 @@ Ativos financeiros possuem características de autocorrelação, senão em seus 
 
 Assim, nesta subseção trabalharemos com um modelo semelhante ao proposto por \cite{McNeil2000} os quais fazem uma adequação dos retornos dos ativos a um modelo AR-GARCH e posteriormente tratam os erros desta modelagem como \emph{iid} e portanto, a metodologia de POT pode ser aplicada.
 
-Primeiramente iremos estabelecer um modelo ARMA-GARCH para as perdas do ativo subjacente. Se denotarmos $L_t$ como sendo a perda observada no período \emph{t}, $\mu_t$ e $\sigma_t$ são respectivamente a média e o desvio padrão condicionais e mensuráveis através do conjunto de informações disponíveis em \emph{t-1} e seja $Z_t$ inovações \emph{iid} com média zero e desvio padrão unitário, então temos que:
+A tabela \ref{tab:descritivas} abaixo apresenta as principais estatísticas descritivas para as séries em análise.
+
+\input{artigo-tab-descritivas.tex}
+
+Primeiramente vamos estabelecer um modelo GARCH para as perdas do ativo subjacente. Se denotarmos $L_t$ como sendo a perda observada no período \emph{t}, $\mu_t$ e $\sigma_t$ são respectivamente a média e o desvio padrão condicionais e mensuráveis através do conjunto de informações disponíveis em \emph{t-1} e seja $Z_t$ inovações \emph{iid} com média zero e desvio padrão unitário, então temos que:
 
 \begin{equation}
 \label{eq:loss}
