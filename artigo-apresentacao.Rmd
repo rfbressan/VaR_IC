@@ -1,0 +1,77 @@
+---
+title: "Medidas condicionais de risco com teoria do valor extremo"
+shorttitle: "Mercados Financeiros e de Capitais"
+author: "Rafael Felipe Bressan"
+date: "01 de novembro de 2017"
+bibliography: library.bib
+output: 
+  beamer_presentation:
+    theme: "Madrid"
+    colortheme: "udesc"
+    keep_tex: true
+    #toc: true
+    #slide_level: 2
+    #template: artigo-template.tex
+    includes: 
+      in_header: artigo-header.tex
+      before_body: artigo-bb.tex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Motivação
+
+## Introdução
+
+- De acordo com os princípios do acordo de Basileia III, as instituições financeiras supervisionadas pelos Bancos Centrais devem manter *buffers* de capital contra riscos de mercado, crédito, liquidez, entre outros.
+
+- Para riscos de mercado, as duas formas mais usuais de fazer a quantificação destes são os métodos de Valor em Risco - VaR e o *Expected Shortfall* - ES.
+
+- Uma estimação excessiva da medida de risco gerará um excesso de capital em reserva. Custo para a instituição.
+
+- Uma subestimação deste risco pode levar a IF a uma crise de liquidez e eventualmente a insolvência.
+
+## Valor em Risco
+
+- VaR é um quantil $\alpha$ da distribuição de perdas de um ativo ou portfólio em um determinado período de tempo.
+
+- O método VaR para cálculo de risco de mercado ao qual um portfólio está sujeito foi primeiramente introduzido pelo banco J. P. Morgan em 1995.
+
+- Método original assumia distribuição normal das perdas, correlação constante entre ativos e era calculada de forma incondicional.
+
+## Valor em Risco
+
+![VaR](artigo-var.jpg)
+
+
+# Fundamentação Teórica
+
+## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+# Modelo
+
+## Slide with R Output
+
+```{r cars, echo = TRUE}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r pressure}
+plot(pressure)
+```
+
+# Resultados
+
+# Referências
+
+
+
+

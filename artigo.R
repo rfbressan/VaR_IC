@@ -44,7 +44,8 @@ assets <- c("BVSP", "GSPC", "GSPTSE", "IPSA", "MERV", "MXX")
 lista <- lapply(assets, list.returns)
 names(lista) <- assets
 assets.tbl <- enframe(lista) %>% 
-  cbind(c("IBovespa", "S&P500", "S&P TSE", "IPSA", "Merval", "IPC"))
+  cbind(c("IBovespa", "S&P500", "S&P TSE", "IPSA", "Merval", "IPC"),
+        stringsAsFactors = FALSE)
 
 colnames(assets.tbl) <- c("indice", "ts", "id_name")
 # Remove a variavel lista que agora e desnecessaria
@@ -103,38 +104,51 @@ for(i in 1:dim(assets.tbl)[1]){
 }
 par(op)
 ###################################################################################
-## Lembrando, o modelo das perdas é ARMA(1,1) e a volatilidade é EGARCH(1,1)
-## L_t=mu_t+e_t      mu_t=mu+phi*mu_t-1+theta*e_t-1
-## e_t=sigma_t*z_t   sigma^2_t=alpha0+alpha1*e^2_t-1+beta*sigma^2t-1
-## O modelo retorno 5 parametros:
-## mu = valor do intercepto da equacao da media, nosso modelo=0 mas pode não ser
-## ar1 = phi do modelo
-## ma1 = theta do modelo
-## omega = alpha0 do modelo
-## alpha1 = alpha1 do modelo
-## beta1 = beta do modelo
+## Por testes de auto.arima os modelos ideais de cada serie variam bastante.
+## Na media existem mais compenentes MA que AR, portanto um modelo ARMA(1,2)
+## parece um bom compromisso entre parcimonia e ajuste.
+## Ja as distribuicoes de zt a normal e t-Student nao apresentam bom fit
+## A Johnson, GED, NIG, SkewStudent e a Ghyp sao melhores
+## Lembrando, o modelo das perdas é ARMA(1,2) e a volatilidade é eGARCH(1,1)
+## L_t=mu_t+e_t      mu_t=mu+ar1*mu_t-1+ma1*e_t-1+ma2*e_t-2+e_t
+## e_t=sigma_t*z_t   ln(sigma^2_t)=omega+alpha1*z_t-1+gamma1(|z_t-1|-E[|zt-1|])+beta1*ln(sigma^2_t-1)
 ###################################################################################
-
-# Lfit1 usa método de fGarch
 # Lfit2 usa método de rugarch
 # LEMBRAR: ts contem os retornos e não as perdas!
-Lfit1 <- garchFit(formula = ~arma(1,1)+garch(1,1), 
-                  data = losses[paste0("/", end),],
-                  include.mean = TRUE, 
-                  algorithm = "lbfgsb+nm")
+# Lfit1 <- garchFit(formula = ~arma(1,1)+garch(1,1), 
+#                   data = losses[paste0("/", end),],
+#                   include.mean = TRUE, 
+#                   algorithm = "lbfgsb+nm")
 
-ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,1)),
-                     variance.model = list(model = "eGARCH", garchOrder = c(1,1)))
-Lfit2 <- ugarchfit(ruspec, losses[paste0("/", end),], solver = "hybrid")
-show(Lfit2)
-op <- par(mfrow=c(2,3))
-plot(Lfit2, which = 1)
-plot(Lfit2, which = 4)
-plot(Lfit2, which = 5)
-plot(Lfit2, which = 9)
-plot(Lfit2, which = 10)
-plot(Lfit2, which = 11)
-par(op)
+ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,2)),
+                     variance.model = list(model = "eGARCH", garchOrder = c(1,1)),
+                     distribution.model = "sstd")
+garch.models <- assets.tbl[,1:3]
+garch.models <- garch.models %>% 
+  mutate(garch = map(ts, ~ugarchfit(ruspec, .x[paste0("/", end),], solver = "hybrid")))
+
+# Mostra um sumario para o Ibovespa
+show(garch.models$garch[[1]])
+# Terminamos ainda com efeito alavancagem a ser modelado para alguns casos
+# signbias mostra significancia do efeito negativo
+# Talvez um modelo GJR ou APARCH possa resolver. Nao resolveram, melhor eGARCH
+
+plot(-garch.models$ts[[1]][paste0("/", end),], col = "blue")
+lines(fitted(garch.models$garch[[1]]), col = "black")
+
+plot(garch.models$garch[[1]])
+# Gerar 6 figuras com estes 4 graficos ACF
+for(i in 1:dim(garch.models)[1]) {
+  jpeg(filename = paste0("artigo-acf-", garch.models$id_name[i], ".jpeg"),
+       width = 640, height = 640)
+  op <- par(mfrow=c(2,2))
+  plot(garch.models$garch[[i]], which = 4)
+  plot(garch.models$garch[[i]], which = 5)
+  plot(garch.models$garch[[i]], which = 10)
+  plot(garch.models$garch[[i]], which = 11)
+  par(op)
+  dev.off()
+}
 
 matcoef <- Lfit2@fit$matcoef
 dimnames(matcoef) <- list(c("$\\mu$", "$\\phi_1$", "$\\theta_1$", 

@@ -1,0 +1,48 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Template Beamer 
+% Based on MIT Beamer Template e Senac
+% Cores verde e vermelho tentam seguir o padrão visual da Udesc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\usepackage{graphicx,url}
+\usepackage[brazil]{babel}   
+\usepackage{textpos}
+
+\batchmode
+% \usepackage{pgfpages}
+% \pgfpagesuselayout{4 on 1}[letterpaper,landscape,border shrink=5mm]
+\usepackage{amsmath,amssymb,enumerate,epsfig,bbm,calc,color,ifthen,capt-of}
+
+%-------------------------Declara figura do Logo-----------------------------------------------------
+\pgfdeclareimage[height=0.8cm]{Marca_Udesc}{Marca_Udesc.pdf}
+%\logo{\pgfuseimage{Marca_Udesc}\vspace*{7.0cm}}
+
+%-------------------------Este código faz o menuzinho bacana na parte superior do slide------------
+\AtBeginSection[]
+{
+%  \begin{frame}<beamer>
+%    \frametitle{Sumário}
+%    \tableofcontents[currentsection]
+%  \end{frame}
+}
+
+\AtBeginSubsection{}
+
+\beamerdefaultoverlayspecification{<+->}
+% -----------------------------------------------------------------------------
+% -----Página de título sem o logo -----------------------------------
+%\renewcommand{\titlepage}{\setbeamertemplate{logo}{}\titlepage}
+%\setbeamertemplate{logo}{}\titlepage
+
+% ------------ Logo na parte superior direita --------------------------------
+\addtobeamertemplate{frametitle}{}{%
+\begin{textblock*}{100mm}(.85\textwidth,-0.9cm)
+\pgfuseimage{Marca_Udesc}
+\end{textblock*}}
+%
+%%---Gerador de Sumário---------------------------------------------------------
+%\section[]{}
+%\begin{frame}{Sumário}
+%  \tableofcontents
+%\end{frame}
+%---Fim do Sumário------------------------------------------------------------
