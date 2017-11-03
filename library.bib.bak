@@ -113,6 +113,54 @@
   Mendeley-tags            = {TCC}
 }
 
+@Misc{BCBS2014,
+  Title                    = {{Basel III: The net stable funding ratio}},
+
+  Author                   = {Basel Committee on Banking Supervision},
+  Year                     = {2014},
+
+  Institution              = {Bank for International Settlements},
+  Keywords                 = {TCC},
+  Mendeley-tags            = {TCC},
+  Url                      = {http://www.bis.org/bcbs/publ/d295.pdf}
+}
+
+@Misc{BCBS2013,
+  Title                    = {{Basel III: The liquidity coverage ratio and liquidity risk monitoring tools}},
+
+  Author                   = {Basel Committee on Banking Supervision},
+  Year                     = {2013},
+
+  Institution              = {Bank for International Settlements},
+  Keywords                 = {TCC},
+  Mendeley-tags            = {TCC},
+  Url                      = {http://www.bis.org/publ/bcbs238.pdf}
+}
+
+@Misc{BCBS2013a,
+  Title                    = {{Fundamental review of the trading book: A revised market risk framework}},
+
+  Author                   = {Basel Committee on Banking Supervision},
+  Month                    = {oct},
+  Year                     = {2013},
+
+  Institution              = {Bank for International Settlements},
+  Url                      = {http://www.bis.org/publ/bcbs265.pdf}
+}
+
+@Misc{BCBS2011,
+  Title                    = {{Basel III: A global regulatory framework for more resilient banks and banking systems}},
+
+  Author                   = {Basel Committee on Banking Supervision},
+  Year                     = {2011},
+
+  Edition                  = {revised ve},
+  Institution              = {Bank for International Settlements},
+  Keywords                 = {TCC},
+  Mendeley-tags            = {TCC},
+  Url                      = {http://www.bis.org/publ/bcbs189.pdf}
+}
+
 @Article{Bekaert2000,
   Title                    = {{Asymmetric Volatility and Risk in Equity Markets}},
   Author                   = {Bekaert, Geert and Wu, Guojun},
@@ -252,6 +300,22 @@
   ISSN                     = {03784266},
   Keywords                 = {TCC},
   Mendeley-tags            = {TCC}
+}
+
+@Book{Chiu2013,
+  Title                    = {{Stochastic Geometry and its Applications}},
+  Author                   = {Chiu, Sung Nok and Stoyan, Dietrich and Kendall, Wilfrid S and Mecke, Joseph},
+  Editor                   = {Chiu, Sung Nok and Stoyan, Dietrich and Kendall, Wilfrid S and Mecke, Joseph},
+  Publisher                = {John Wiley and Sons, Ltd},
+  Year                     = {2013},
+
+  Address                  = {Chichester, UK},
+  Month                    = {aug},
+  Series                   = {Wiley Series in Probability and Statistics},
+
+  Doi                      = {10.1002/9781118658222},
+  ISBN                     = {9781118658222},
+  Url                      = {http://doi.wiley.com/10.1002/9781118658222}
 }
 
 @Book{Coles2001,
@@ -729,53 +793,6 @@
   Url                      = {http://www.tandfonline.com/doi/abs/10.1080/01621459.1988.10478560}
 }
 
-@Misc{BCBS2014,
-  Title                    = {{Basel III: The net stable funding ratio}},
-
-  Author                   = {{on Banking Supervision}, Basel Committee},
-  Year                     = {2014},
-
-  Institution              = {Bank for International Settlements},
-  Keywords                 = {TCC},
-  Mendeley-tags            = {TCC},
-  Url                      = {http://www.bis.org/bcbs/publ/d295.pdf}
-}
-
-@Misc{BCBS2013,
-  Title                    = {{Basel III: The liquidity coverage ratio and liquidity risk monitoring tools}},
-
-  Author                   = {{on Banking Supervision}, Basel Committee},
-  Year                     = {2013},
-
-  Institution              = {Bank for International Settlements},
-  Keywords                 = {TCC},
-  Mendeley-tags            = {TCC},
-  Url                      = {http://www.bis.org/publ/bcbs238.pdf}
-}
-
-@Misc{BCBS2013a,
-  Title                    = {{Fundamental review of the trading book: A revised market risk framework}},
-
-  Author                   = {{on Banking Supervision}, Basel Committee},
-  Month                    = {oct},
-  Year                     = {2013},
-
-  Url                      = {http://www.bis.org/publ/bcbs265.pdf}
-}
-
-@Misc{BCBS2011,
-  Title                    = {{Basel III: A global regulatory framework for more resilient banks and banking systems}},
-
-  Author                   = {{on Banking Supervision}, Basel Committee},
-  Year                     = {2011},
-
-  Edition                  = {revised ve},
-  Institution              = {Bank for International Settlements},
-  Keywords                 = {TCC},
-  Mendeley-tags            = {TCC},
-  Url                      = {http://www.bis.org/publ/bcbs189.pdf}
-}
-
 @Article{Pagan1996,
   Title                    = {{The econometrics of financial markets}},
   Author                   = {Pagan, Adrian},
@@ -925,21 +942,6 @@
 
   Keywords                 = {livro-texto},
   Mendeley-tags            = {livro-texto}
-}
-
-@Book{Chiu2013,
-  Title                    = {{Stochastic Geometry and its Applications}},
-  Editor                   = {Chiu, Sung Nok and Stoyan, Dietrich and Kendall, Wilfrid S and Mecke, Joseph},
-  Publisher                = {John Wiley and Sons, Ltd},
-  Year                     = {2013},
-
-  Address                  = {Chichester, UK},
-  Month                    = {aug},
-  Series                   = {Wiley Series in Probability and Statistics},
-
-  Doi                      = {10.1002/9781118658222},
-  ISBN                     = {9781118658222},
-  Url                      = {http://doi.wiley.com/10.1002/9781118658222}
 }
 
 @comment{jabref-meta: databaseType:bibtex;}

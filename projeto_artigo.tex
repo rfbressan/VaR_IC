@@ -369,9 +369,9 @@ Nosso modelo completo para as medidas de risco $VaR_\alpha$ e $ES_\alpha$ condic
 
 \begin{align}
 L_t=&\mu_t+\epsilon_t \\
-\mu_t=&\mu+\phi_1 \mu_{t-1} \label{eq:mut} \\
+\mu_t=&\mu+ \phi_1 L_{t-1}+ \theta_1\epsilon_{t-1}+ \theta_2\epsilon_{t-2} \label{eq:mut} \\
 \epsilon_t=&\sigma_t Z_t\\
-\sigma_t^2=&\omega+\alpha_1\epsilon_{t-1}^2+\beta_1 \sigma_{t-1}^2 \label{eq:sigma2} \\
+\ln(\sigma_t^2)=&\omega+ \alpha_1 Z_{t-1}+ \gamma_1(|Z_{t-1}|-E|Z_{t-1}|)+ \beta_1 \ln(\sigma_{t-1}^2) \label{eq:sigma2} \\
 Z_t\sim &\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
 \end{align}
 com as equações \eqref{eq:varcond} e \eqref{eq:escond} nos fornecendo os valores das medidas $VaR_\alpha$ e $ES_\alpha$ respectivamente, quando utilizadas em conjunto com aquelas dadas por \eqref{eq:VaRGPD} e \eqref{eq:ESGPD}.
