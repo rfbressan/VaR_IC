@@ -8,17 +8,17 @@
 \usepackage{ifxetex,ifluatex}
 \usepackage{fixltx2e} % provides \textsubscript
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
 \else % if luatex or xelatex
-\ifxetex
-\usepackage{mathspec}
-\else
-\usepackage{fontspec}
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
 \fi
-\defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
-\fi
-\usetheme{Madrid}
+\usetheme[]{Madrid}
 \usecolortheme{udesc}
 % use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -28,6 +28,12 @@
 \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
 \newif\ifbibliography
+\hypersetup{
+            pdftitle={Medidas condicionais de risco com teoria do valor extremo},
+            pdfauthor={Rafael Felipe Bressan},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
 \usepackage{graphicx,grffile}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
@@ -43,29 +49,29 @@
 \raggedbottom
 
 \AtBeginPart{
-\let\insertpartnumber\relax
-\let\partname\relax
-\frame{\partpage}
+  \let\insertpartnumber\relax
+  \let\partname\relax
+  \frame{\partpage}
 }
 \AtBeginSection{
-\ifbibliography
-\else
-\let\insertsectionnumber\relax
-\let\sectionname\relax
-\frame{\sectionpage}
-\fi
+  \ifbibliography
+  \else
+    \let\insertsectionnumber\relax
+    \let\sectionname\relax
+    \frame{\sectionpage}
+  \fi
 }
 \AtBeginSubsection{
-\let\insertsubsectionnumber\relax
-\let\subsectionname\relax
-\frame{\subsectionpage}
+  \let\insertsubsectionnumber\relax
+  \let\subsectionname\relax
+  \frame{\subsectionpage}
 }
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt plus 2pt minus 1pt}
 \setlength{\emergencystretch}{3em}  % prevent overfull lines
 \providecommand{\tightlist}{%
-\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{0}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Template Beamer 
@@ -110,6 +116,7 @@
 \pgfuseimage{Marca_Udesc}
 \end{textblock*}}
 %
+
 %%---Gerador de Sumário---------------------------------------------------------
 %\section[]{}
 %\begin{frame}{Sumário}
@@ -133,40 +140,6 @@
   \tableofcontents
 \end{frame}
 %---Fim do Sumário------------------------------------------------------------
-
-\begin{frame}[fragile]
-
-\begin{verbatim}
-## Loading required package: parallel
-\end{verbatim}
-
-\begin{verbatim}
-## 
-## Attaching package: 'rugarch'
-\end{verbatim}
-
-\begin{verbatim}
-## The following object is masked from 'package:stats':
-## 
-##     sigma
-\end{verbatim}
-
-\begin{verbatim}
-## Loading required package: zoo
-\end{verbatim}
-
-\begin{verbatim}
-## 
-## Attaching package: 'zoo'
-\end{verbatim}
-
-\begin{verbatim}
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-\end{verbatim}
-
-\end{frame}
 
 \section{Introdução}\label{introducao}
 
@@ -296,6 +269,35 @@ Séries temporais de retornos possuem as seguintes características:
 \end{frame}
 
 \begin{frame}{Teoria do valor extremo}
+
+\begin{itemize}
+\tightlist
+\item
+  O método peaks-over-treshold modela a distribuição dos excessos acima
+  de um determinado limiar.
+\end{itemize}
+
+Definição {[}Distribuição dos excessos{]}: Seja \emph{X} uma variável
+aleatória com função de distribuição \(F \in MDA(H_\xi)\). A
+distribuição dos excessos sobre um limiar \emph{u} tem a função de
+Distribuição Generalizada de Pareto - GPD:
+
+\begin{equation*}
+  G_{\xi,\beta(u)}(X) = 
+  \begin{cases}
+    1- \left(1+ \frac{\xi x}{\beta(u)} \right)^{-\frac{1}{\xi}}, & \xi \neq 0,\\
+    1-exp\left(-\frac{x}{\beta(u)}\right), & \xi = 0,\\
+  \end{cases}
+\end{equation*}
+
+Os parâmetros \(\xi\) e \(\beta\) são conhecidos respectivamente como
+parâmetros de forma e escala da distribuição.
+
+\end{frame}
+
+\begin{frame}{Teoria do valor extremo}
+
+\includegraphics{artigo-apresentacao_files/figure-beamer/pot-1.pdf}
 
 \end{frame}
 

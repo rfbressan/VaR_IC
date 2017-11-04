@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 
-```{r inicio}
+```{r inicio, include=FALSE}
 library(ggplot2)
 library(rugarch)
 library(xts)
@@ -128,6 +128,38 @@ par(op)
 
 
 ## Teoria do valor extremo
+
+- O método peaks-over-treshold modela a distribuição dos excessos acima de um determinado limiar.
+
+Definição [Distribuição dos excessos]:
+	Seja *X* uma variável aleatória com função de distribuição $F \in MDA(H_\xi)$. A distribuição dos excessos sobre um limiar *u* tem a função de Distribuição Generalizada de Pareto - GPD:
+
+\begin{equation*}
+  G_{\xi,\beta(u)}(X) = 
+  \begin{cases}
+    1- \left(1+ \frac{\xi x}{\beta(u)} \right)^{-\frac{1}{\xi}}, & \xi \neq 0,\\
+    1-exp\left(-\frac{x}{\beta(u)}\right), & \xi = 0,\\
+  \end{cases}
+\end{equation*}
+Os parâmetros $\xi$ e $\beta$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. 
+
+## Teoria do valor extremo
+
+```{r pot, fig.cap="Método POT para estimar caudas de distribuições."}
+x <- seq(-3, 3, by = 0.05)
+y <- dnorm(x)
+df <- data.frame(x, y)
+p <- ggplot(df, aes(x, y)) + 
+  geom_area(data = subset(df, x <= -1), fill = "lightgreen") +
+  geom_area(data = subset(df, x < -1.5), fill = "tomato") +
+  geom_area(data = subset(df, x >= -1), fill = "lightblue") +
+  #geom_area(data = subset(df, x > 1.96), fill = "green") +
+  geom_line()+
+  labs(title = "Retornos", x = "", y = "")
+
+p+annotate("text", x = c(-1.5, -2, -1, 0), y = c(-0.02, 0.02, -0.02, 0.15), 
+           label = c("VaR[alpha]", "~1-alpha", "u", "Empírica"), parse = TRUE, size = 6)
+```
 
 # Modelo
 
