@@ -2,7 +2,7 @@
 title: "Medidas condicionais de risco com teoria do valor extremo"
 shorttitle: "Mercados Financeiros e de Capitais"
 author: "Rafael Felipe Bressan"
-date: "01 de novembro de 2017"
+date: "`r format(Sys.Date(), '%d-%m-%Y')`"
 bibliography: library.bib
 output: 
   beamer_presentation:
@@ -131,7 +131,7 @@ par(op)
 
 - O método peaks-over-treshold modela a distribuição dos excessos acima de um determinado limiar.
 
-Definição [Distribuição dos excessos]:
+**Definição** [Distribuição dos excessos]:
 	Seja *X* uma variável aleatória com função de distribuição $F \in MDA(H_\xi)$. A distribuição dos excessos sobre um limiar *u* tem a função de Distribuição Generalizada de Pareto - GPD:
 
 \begin{equation*}
@@ -168,13 +168,23 @@ p+annotate("text", x = c(-1.5, -2, -1, 0), y = c(-0.02, 0.02, -0.02, 0.15),
 - Seguiremos os passos propostos por @McNeil2000.
 - Nosso modelo completo para as medidas de risco $VaR_\alpha$ e $ES_\alpha$ condicionais dada a distribuição de perdas $L_t$ de um ativo será, portanto:
 
-\begin{align}
+\begin{align*}
 L_t=&\mu_t+\epsilon_t \\
-\mu_t=&\mu+ \phi_1 L_{t-1}+ \theta_1\epsilon_{t-1}+ \theta_2\epsilon_{t-2} \label{eq:mut} \\
+\mu_t=&\mu+ \phi_1 L_{t-1}+ \theta_1\epsilon_{t-1}+ \theta_2\epsilon_{t-2} \\
 \epsilon_t=&\sigma_t Z_t\\
-\ln(\sigma_t^2)=&\omega+ \alpha_1 Z_{t-1}+ \gamma_1(|Z_{t-1}|-E|Z_{t-1}|)+ \beta_1 \ln(\sigma_{t-1}^2) \label{eq:sigma2} \\
+\ln(\sigma_t^2)=&\omega+ \alpha_1 Z_{t-1}+ \gamma_1(|Z_{t-1}|-E|Z_{t-1}|)+ \beta_1 \ln(\sigma_{t-1}^2) \\
 Z_t\sim &\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
-\end{align}
+\end{align*}
+
+## VaR e ES parametrizados
+
+- Nossas medidas de risco neste modelo condicional serão:
+
+\begin{align*}
+VaR_\alpha^t=&\mu_{t+1}+\sigma_{t+1}z_\alpha, \\
+ES_\alpha^t=&\mu_{t+1}+\sigma_{t+1}E[Z | Z>z_\alpha]
+\end{align*}
+onde $z_\alpha$ é o quantil $\alpha$ das inovações *Z*.
 
 # Resultados
 

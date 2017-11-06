@@ -776,6 +776,18 @@
   Mendeley-tags            = {livro-texto}
 }
 
+@Article{Nelson1991,
+  Title                    = {Conditional heteroskedasticity in asset returns: A new approach},
+  Author                   = {Nelson, Daniel B},
+  Journal                  = {Econometrica: Journal of the Econometric Society},
+  Year                     = {1991},
+  Pages                    = {347--370},
+
+  Owner                    = {rafael},
+  Publisher                = {JSTOR},
+  Timestamp                = {2017.11.03}
+}
+
 @Article{Ogata1988,
   Title                    = {{Statistical Models for Earthquake Occurrences and Residual Analysis for Point Processes}},
   Author                   = {Ogata, Yosihiko},

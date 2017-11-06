@@ -13,8 +13,9 @@
 # GSPTSE - SP/TSX Canada
 # Dados entre 31/08/2005 a 31/08/2017
 
-library(fGarch)
-library(fExtremes)
+#library(fGarch)
+#library(fExtremes)
+library(fBasics)
 library(QRM)
 library(rugarch)
 library(timeSeries)
@@ -32,8 +33,6 @@ backstart <- as.Date("2016-09-01")
 
 list.returns <- function(asset) {
   tb <- read.csv(paste0("artigo-", asset, ".csv"), stringsAsFactors = FALSE)
-  #tb <- tb[-which(tb$Adj.Close == "null"),] # remove linhas com "null"
-  #tb[,2:7] <- lapply(tb[,2:7], as.numeric)
   prices <- as.xts(read.zoo(tb, format = "%Y-%m-%d", FUN = as.Date))
   return(100*na.omit(Return.calculate(prices$Adj.Close, method = "log")))
   
@@ -79,14 +78,14 @@ row.names(df.descritivas) <- c("Média", "Mediana", "Máximo", "Mínimo", "Desvp
                                "N.obs")
 # Cria o xtable
 tab1 <- xtable(df.descritivas, caption = "Estatísticas descritivas dos retornos 
-               (amostra completa de 31/08/2005 a 30/08/2017.",
+               (amostra completa de 31/08/2005 a 30/08/2017).",
                digits = 5,
                label = "tab:descritivas",
                auto = TRUE)
 print.xtable(tab1, 
              file = "artigo-tab-descritivas.tex",
              caption.placement = "top",
-             table.placement = "ht")
+             table.placement = "H")
 # Graficos ----------------------------------------------------------------
 list.plot <- lapply(seq_along(assets.tbl$indice), 
                     function(x) {autoplot(assets.tbl$ts[[x]])+
@@ -122,7 +121,7 @@ par(op)
 
 ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,2)),
                      variance.model = list(model = "eGARCH", garchOrder = c(1,1)),
-                     distribution.model = "sstd")
+                     distribution.model = "norm")
 garch.models <- assets.tbl[,1:3]
 garch.models <- garch.models %>% 
   mutate(garch = map(ts, ~ugarchfit(ruspec, .x[paste0("/", end),], solver = "hybrid")))
@@ -133,14 +132,14 @@ show(garch.models$garch[[1]])
 # signbias mostra significancia do efeito negativo
 # Talvez um modelo GJR ou APARCH possa resolver. Nao resolveram, melhor eGARCH
 
-plot(-garch.models$ts[[1]][paste0("/", end),], col = "blue")
-lines(fitted(garch.models$garch[[1]]), col = "black")
-
-plot(garch.models$garch[[1]])
+# plot(garch.models$ts[[1]][paste0("/", end),], col = "blue")
+# lines(fitted(garch.models$garch[[1]]), col = "black")
+# 
+# plot(garch.models$garch[[1]])
 # Gerar 6 figuras com estes 4 graficos ACF
 for(i in 1:dim(garch.models)[1]) {
   jpeg(filename = paste0("artigo-acf-", garch.models$id_name[i], ".jpeg"),
-       width = 640, height = 640)
+       width = 800, height = 800)
   op <- par(mfrow=c(2,2))
   plot(garch.models$garch[[i]], which = 4)
   plot(garch.models$garch[[i]], which = 5)
@@ -150,14 +149,37 @@ for(i in 1:dim(garch.models)[1]) {
   dev.off()
 }
 
-matcoef <- Lfit2@fit$matcoef
-dimnames(matcoef) <- list(c("$\\mu$", "$\\phi_1$", "$\\theta_1$", 
-                            "$\\omega$", "$\\alpha_1$", "$\\beta_1$", "$\\gamma_1$"),
-                          c("Estimativa", "Erro Padr\\~ao", "Valor t", "Pr(>|t|)"))
+# Cria tabela com os parametros estimados e seus p-valores
+vec_coef <- function(model) {
+  vec(t(model@fit$robust.matcoef[, c(1,4)]))
+}
 
-print.xtable(xtable(matcoef, caption = "Par\\^ametros estimados para o modelo ARMA-GARCH.",
-                    label = "tab:artigoarma", digits = 4),
-             file = "tabartigoarma.tex", sanitize.text.function = function(x) {x})
+mat <- do.call(cbind,
+                 lapply(garch.models$garch, vec_coef))
+param <- c("$\\mu$", "",
+           "$\\phi_1$", "",
+           "$\\theta_1$", "",
+           "$\\theta_2$", "",
+           "$\\omega$", "",
+           "$\\alpha_1$", "",
+           "$\\beta_1$", "",
+           "$\\gamma_1$", "")
+garchcoef <- data.frame(par = param, mat)
+
+colnames(garchcoef) <- c("Parâmetros", garch.models$id_name)
+# Xtable
+tab2 <- xtable(garchcoef, caption = "Par\\^ametros estimados do modelo eGARCH. Valores p apresentados 
+               de acordo com erros padrão robustos. (amostra de trabalho entre 31/08/2005 a 31/08/2016).",
+               digits = 5,
+               label = "tab:garchcoef",
+               auto = TRUE)
+print.xtable(tab2, 
+             file = "artigo-tab-garchcoef.tex",
+             caption.placement = "top",
+             table.placement = "H",
+             sanitize.colnames.function = NULL,
+             sanitize.text.function = function(x) {x},
+             include.rownames = FALSE)
 
 #########################################################################################
 ## Modelo EVT para os residuos padronizados

@@ -63,6 +63,7 @@
 \usepackage{url} 						% Para formatar URLs (endereços da Web)
 \usepackage{todonotes}  		% Lista de afazeres To-dos
 \usepackage{enumitem}					% Fazer enumerações por letras ou números nos itens
+\usepackage{float}
 
 % Configura o ambiente de teoremas, definições etc.
 
@@ -343,7 +344,7 @@ L_t=\mu_t+\sigma_t Z_t
 Seja $F_L(l)$ a distribuição marginal de $L_t$, então $F_{L_{t+1} | \mathcal{G}_t}(l)$ é a distribuição preditiva da perda para o próximo período, onde $\mathcal{G}_t$ é o conjunto de informações disponíveis no período \emph{t}, incluindo-o. Portanto, para o cálculo das medidas condicionais de risco estamos interessados em um quantil $\alpha$ na cauda de $F_{L_{t+1} | \mathcal{G}_t}(l)$. Este quantil $\alpha$, que será o nosso $VaR_\alpha$, é o ínfimo \emph{l} tal que o valor da distribuição preditiva seja maior ou igual a $\alpha$. Ao passo que o valor condicional do \emph{ES} será o valor esperado das perdas previstas que sejam maiores que VaR para o mesmo intervalo de confiança. Ou seja:
 
 \begin{align}
-VaR_\alpha^t=&\inf\{l \in \mathbb{R}: F_{L_{t+1} | \mathcal{G}_t}(l) \geq \alpha\}, \\
+VaR_\alpha^t=&\inf\{l \in \mathbb{R}: F_{L_{t+1}} | \mathcal{G}_t(l) \geq \alpha\}, \\
 ES_\alpha^t=&E[L_{t+1} | L_{t+1} > VaR_\alpha^t]
 \end{align}
 
@@ -355,13 +356,13 @@ ES_\alpha^t=&\mu_{t+1}+\sigma_{t+1}E[Z | Z>z_\alpha] \label{eq:escond}
 \end{align}
 onde $z_\alpha$ é o quantil $\alpha$ das inovações \emph{Z}.
 
-Agora nos falta escolher um processo que modele nossa série temporal dada em \eqref{eq:loss}, ou seja, precisamos especificar o comportamento de $\mu_t$ e $\sigma_t$. Por suposição do modelo, especificamos que o comportamento destas variáveis é dependente de acontecimentos passados, contidos no conjunto de informações  $\mathcal{G}_{t-1}$ . Dentre os diversos modelos já propostos para estimar médias e volatilidades condicionais, está o simples porém efetivo modelo GARCH(1,1) para a volatilidade condicional e o modelo AR(1) para a média condicional. Uma extensão destes modelos básicos para outros mais complexos pode ser facilmente obtida e é vasta na literatura, como exemplo modelos GARCH-M, \emph{Treshold} GARCH, EGARCH, etc. e modelos do tipo ARMA, ARIMA, entre outros encontrados em \cite{Tsay2010}. \todo{Implementar com modelo EGARCH}
+Agora nos falta escolher um processo que modele nossa série temporal dada em \eqref{eq:loss}, ou seja, precisamos especificar o comportamento de $\mu_t$ e $\sigma_t$. Por suposição do modelo, especificamos que o comportamento destas variáveis é dependente de acontecimentos passados, contidos no conjunto de informações  $\mathcal{G}_{t-1}$ . Dentre os diversos modelos já propostos para estimar médias e volatilidades condicionais, está o simples porém efetivo modelo eGARCH(1,1) para a volatilidade condicional e o modelo ARMA(1,2) para a média condicional. Uma extensão destes modelos básicos para outros mais complexos pode ser facilmente obtida e é vasta na literatura, como exemplo modelos GARCH-M, \emph{Treshold} GARCH, EGARCH, etc. e modelos do tipo ARIMA, entre outros encontrados em \cite{Tsay2010}. \todo{Implementar com modelo EGARCH}
 
 Neste trabalho, visando aplicar a teoria do valor extremo para o cálculo das medidas condicionais de risco, não faremos maiores assunções acerca da distribuição das inovações, como por exemplo assumir uma determinada distribuição (e.g. Normal ou t de Student), mas está implícito que esta pertence ao \emph{MDA} de uma GEV e portanto a distribuição de seus excessos sobre um limiar segue aproximadamente uma GPD.
 
 Dadas estas considerações, o modelo adotado segue um formato em dois estágios para ser implementado, como segue.
 \begin{itemize}
-	\item Ajustar um modelo AR-GARCH para os dados de perdas, sem fazer suposições sobre a distribuição de \emph{Z}, porém, utilizando um método de pseudo máxima verossimilhança (PML). Deste modelo tiramos as estimativas de $\mu_{t+1}$ e $\sigma_{t+1}$ e portanto, calculamos as inovações implícitas resultantes através da equação \eqref{eq:loss}.
+	\item Ajustar um modelo eGARCH para os dados de perdas, sem fazer suposições sobre a distribuição de \emph{Z}, porém, utilizando um método de pseudo máxima verossimilhança (PML). Deste modelo tiramos as estimativas de $\mu_{t+1}$ e $\sigma_{t+1}$ e portanto, calculamos as inovações implícitas resultantes através da equação \eqref{eq:loss}.
 	\item Consideramos estas inovações calculadas como sendo as realizações da variável aleatória \emph{Z}, a qual por suposição pode ter sua cauda ajustada a uma GPD utilizando o método descrito na seção \ref{sec:caudas}. Encontraremos por fim o valor de $z_\alpha$ e $E[Z|Z>z_\alpha]$, com os quais finalizamos os cálculos de nossas medidas condicionais de risco dadas em \eqref{eq:varcond} e \eqref{eq:escond}.
 \end{itemize}
 
@@ -430,19 +431,64 @@ A tabela \ref{tab:descritivas} abaixo apresenta as principais estatísticas desc
 
 \input{artigo-tab-descritivas.tex}
 
-\begin{figure}[h]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\linewidth]{artigo-retornos}
 	\caption{Retornos dos índices do estudo. Período completo entre 31/08/2005 a 30/08/2017.}
 	\label{fig:artigo-retornos}
 \end{figure}
 
-\begin{figure}[hp]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\linewidth]{artigo-qqplots}
 	\caption{Análise de normalidade dos retornos através de gráficos quantil-quantil.}
 	\label{fig:artigo-qqplots}
 \end{figure}
+
+% Figuras com os gráficos ACF antes e depois da filtragem eGARCH
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\linewidth]{artigo-acf-IBovespa}
+	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. Ibovespa 31/08/2005 a 31/08/2016.}
+	\label{fig:artigo-acf-ibovespa}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\linewidth]{artigo-acf-IPC}
+	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. IPC 31/08/2005 a 31/08/2016.}
+	\label{fig:artigo-acf-ipc}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\linewidth]{artigo-acf-IPSA}
+	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. IPSA 31/08/2005 a 31/08/2016.}
+	\label{fig:artigo-acf-ipsa}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\linewidth]{artigo-acf-Merval}
+	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. Merval 31/08/2005 a 31/08/2016.}
+	\label{fig:artigo-acf-merval}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\linewidth]{artigo-acf-SP500}
+	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. S\&P500 31/08/2005 a 31/08/2016.}
+	\label{fig:artigo-acf-sp500}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\linewidth]{artigo-acf-SP-TSE}
+	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. S\&P TSE 31/08/2005 a 31/08/2016.}
+	\label{fig:artigo-acf-sptse}
+\end{figure}
+
+\input{artigo-tab-garchcoef}
 
 \section{Conclusão}
 
