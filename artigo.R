@@ -14,7 +14,7 @@
 # Dados entre 31/08/2005 a 31/08/2017
 
 #library(fGarch)
-#library(fExtremes)
+library(fExtremes)
 library(fBasics)
 library(QRM)
 library(rugarch)
@@ -23,9 +23,11 @@ library(xts)
 library(PerformanceAnalytics)
 library(xtable)
 library(tidyverse)
+library(broom)
 library(purrr)
 library(gridExtra)
 library(ggplot2)
+library(CADFtest) # Teste Dickey-Fuller
 
 start <- as.Date("2005-08-31")
 end <- as.Date("2016-08-31")
@@ -93,6 +95,18 @@ list.plot <- lapply(seq_along(assets.tbl$indice),
 
 grid.arrange(grobs = list.plot)
 
+## Teste de estacionariedade das series de retornos
+# Teste Dickey-Fuller encontrado no pacote CADFtest
+# Delta_y = mu + theta*t + delta*y_t-1
+adf <- lapply(assets.tbl$ts, CADFtest)
+names(adf) <- assets.tbl$indice
+adf <- enframe(adf)
+adf <- adf %>%
+  mutate(teste = map(value, ~tidy(.x)))
+adf$value <- NULL
+adf <- unnest(adf)
+adf
+
 # Teste para graficos QQ normal
 op <- par(mfrow = c(3,2))
 for(i in 1:dim(assets.tbl)[1]){
@@ -103,43 +117,37 @@ for(i in 1:dim(assets.tbl)[1]){
 }
 par(op)
 ###################################################################################
-## Por testes de auto.arima os modelos ideais de cada serie variam bastante.
-## Na media existem mais compenentes MA que AR, portanto um modelo ARMA(1,2)
-## parece um bom compromisso entre parcimonia e ajuste.
 ## Ja as distribuicoes de zt a normal e t-Student nao apresentam bom fit
 ## A Johnson, GED, NIG, SkewStudent e a Ghyp sao melhores
-## Lembrando, o modelo das perdas é ARMA(1,2) e a volatilidade é eGARCH(1,1)
-## L_t=mu_t+e_t      mu_t=mu+ar1*mu_t-1+ma1*e_t-1+ma2*e_t-2+e_t
+## Lembrando, o modelo das perdas é AR(1) e a volatilidade é eGARCH(2,1)
+## L_t=mu_t+e_t      mu_t=mu+ar1*mu_t-1+e_t
 ## e_t=sigma_t*z_t   ln(sigma^2_t)=omega+alpha1*z_t-1+gamma1(|z_t-1|-E[|zt-1|])+beta1*ln(sigma^2_t-1)
 ###################################################################################
-# Lfit2 usa método de rugarch
 # LEMBRAR: ts contem os retornos e não as perdas!
-# Lfit1 <- garchFit(formula = ~arma(1,1)+garch(1,1), 
-#                   data = losses[paste0("/", end),],
-#                   include.mean = TRUE, 
-#                   algorithm = "lbfgsb+nm")
 
-ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,2)),
-                     variance.model = list(model = "eGARCH", garchOrder = c(1,1)),
-                     distribution.model = "norm")
-garch.models <- assets.tbl[,1:3]
-garch.models <- garch.models %>% 
-  mutate(garch = map(ts, ~ugarchfit(ruspec, .x[paste0("/", end),], solver = "hybrid")))
+ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
+                     variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
+                     distribution.model = "sstd")
+## Modelando as PERDAS!! parametro eh loss para a funcao ugarchfit
+garch.models <- assets.tbl[,1:3] %>% 
+  mutate(loss = map(ts, ~-.x),
+         garch = map(loss, ~ugarchfit(ruspec, .x[paste0("/", end),], solver = "hybrid"))) %>% 
+  select(-ts)
 
-# Mostra um sumario para o Ibovespa
+# Mostra a convergencia para cada modelo
+lapply(garch.models$garch, convergence)
+
+# Sumarios dos modelos GARCH
 show(garch.models$garch[[1]])
+
 # Terminamos ainda com efeito alavancagem a ser modelado para alguns casos
 # signbias mostra significancia do efeito negativo
-# Talvez um modelo GJR ou APARCH possa resolver. Nao resolveram, melhor eGARCH
+# Talvez um modelo GJR ou APARCH possa resolver. Nao resolveram, melhor eGARCH(2,1)
 
-# plot(garch.models$ts[[1]][paste0("/", end),], col = "blue")
-# lines(fitted(garch.models$garch[[1]]), col = "black")
-# 
-# plot(garch.models$garch[[1]])
 # Gerar 6 figuras com estes 4 graficos ACF
 for(i in 1:dim(garch.models)[1]) {
   jpeg(filename = paste0("artigo-acf-", garch.models$id_name[i], ".jpeg"),
-       width = 800, height = 800)
+       width = 800, height = 800, quality = 100)
   op <- par(mfrow=c(2,2))
   plot(garch.models$garch[[i]], which = 4)
   plot(garch.models$garch[[i]], which = 5)
@@ -148,7 +156,8 @@ for(i in 1:dim(garch.models)[1]) {
   par(op)
   dev.off()
 }
-
+file.rename(c("artigo-acf-S&P500.jpeg", "artigo-acf-S&P TSE.jpeg"), 
+            c("artigo-acf-SP500.jpeg", "artigo-acf-SP-TSE.jpeg"))
 # Cria tabela com os parametros estimados e seus p-valores
 vec_coef <- function(model) {
   vec(t(model@fit$robust.matcoef[, c(1,4)]))
@@ -158,12 +167,14 @@ mat <- do.call(cbind,
                  lapply(garch.models$garch, vec_coef))
 param <- c("$\\mu$", "",
            "$\\phi_1$", "",
-           "$\\theta_1$", "",
-           "$\\theta_2$", "",
            "$\\omega$", "",
            "$\\alpha_1$", "",
+           "$\\alpha_2$", "",
            "$\\beta_1$", "",
-           "$\\gamma_1$", "")
+           "$\\gamma_1$", "",
+           "$\\gamma_2$", "",
+           "$\\zeta$", "",
+           "$\\nu$", "")
 garchcoef <- data.frame(par = param, mat)
 
 colnames(garchcoef) <- c("Parâmetros", garch.models$id_name)
