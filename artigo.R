@@ -1,9 +1,7 @@
-###############################################################################
 ## Artigo a ser proposto na disciplina MEFCA. Baseado no método de McNeil2000
 ## Filtar os retornos diários de vários índices primeiramente por um modelo 
 ## ARMA-GARCH para em seguida ajustar uma distribuição GPD aos resíduos.
 ## Com esta modelagem é possível estimar os valores de VaR e ES
-###############################################################################
 # Indices de bolsas utilizados
 # BVSP - Bovespa Brasil
 # MERV - Merval Argentina
@@ -12,6 +10,8 @@
 # GSPC - SP500 EUA
 # GSPTSE - SP/TSX Canada
 # Dados entre 31/08/2005 a 31/08/2017
+
+# Inicio ------------------------------------------------------------------
 
 #library(fGarch)
 library(fExtremes)
@@ -37,7 +37,6 @@ list.returns <- function(asset) {
   tb <- read.csv(paste0("artigo-", asset, ".csv"), stringsAsFactors = FALSE)
   prices <- as.xts(read.zoo(tb, format = "%Y-%m-%d", FUN = as.Date))
   return(100*na.omit(Return.calculate(prices$Adj.Close, method = "log")))
-  
 }
 # Gera um tible com uma coluna com o codigo do ativo, a serie de retornos - ts e
 # o nome do indice - id_name
@@ -49,10 +48,13 @@ assets.tbl <- enframe(lista) %>%
         stringsAsFactors = FALSE)
 
 colnames(assets.tbl) <- c("indice", "ts", "id_name")
+# Qual o menor numero de dias entre inicio do periodo de backtesting ate o final da serie?
+outsample = enframe(map_dbl(lista, ~ndays(.x[paste0(backstart, "/")])))
+names(outsample) <- c("indice", "out")
 # Remove a variavel lista que agora e desnecessaria
 rm(lista)
 
-# Estatisticas descritivas ------------------------------------------------
+# Estatisticas descritivas retornos-----------------------------------------
 assets.tbl <- assets.tbl %>% 
   mutate(media = map_dbl(ts, ~ mean(.x)),
          mediana = map_dbl(ts, ~median(.x)),
@@ -88,7 +90,7 @@ print.xtable(tab1,
              file = "artigo-tab-descritivas.tex",
              caption.placement = "top",
              table.placement = "H")
-# Graficos ----------------------------------------------------------------
+# Graficos retornos------------------------------------------------------
 list.plot <- lapply(seq_along(assets.tbl$indice), 
                     function(x) {autoplot(assets.tbl$ts[[x]])+
                         labs(x = "", y = "", title = paste(assets.tbl$id_name[[x]], "retornos"))}) 
@@ -116,23 +118,30 @@ for(i in 1:dim(assets.tbl)[1]){
              ylab = "Amostra")
 }
 par(op)
-###################################################################################
+
+
+# Modelo eGARCH -----------------------------------------------------------
 ## Ja as distribuicoes de zt a normal e t-Student nao apresentam bom fit
 ## A Johnson, GED, NIG, SkewStudent e a Ghyp sao melhores
 ## Lembrando, o modelo das perdas é AR(1) e a volatilidade é eGARCH(2,1)
 ## L_t=mu_t+e_t      mu_t=mu+ar1*mu_t-1+e_t
 ## e_t=sigma_t*z_t   ln(sigma^2_t)=omega+alpha1*z_t-1+gamma1(|z_t-1|-E[|zt-1|])+beta1*ln(sigma^2_t-1)
-###################################################################################
-# LEMBRAR: ts contem os retornos e não as perdas!
+## LEMBRAR: ts contem os retornos e não as perdas!
 
 ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
                      variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
                      distribution.model = "sstd")
+
 ## Modelando as PERDAS!! parametro eh loss para a funcao ugarchfit
+# Deixamos um numero outsample para fazer o backtesting. Diferente para cada ativo
 garch.models <- assets.tbl[,1:3] %>% 
+  inner_join(outsample, by = "indice") %>% 
   mutate(loss = map(ts, ~-.x),
-         garch = map(loss, ~ugarchfit(ruspec, .x[paste0("/", end),], solver = "hybrid"))) %>% 
-  select(-ts)
+         garch = map2(loss, out, ~ugarchfit(ruspec, 
+                                            .x,
+                                            out.sample = .y,
+                                            solver = "hybrid")),
+         ts = NULL)
 
 # Mostra a convergencia para cada modelo
 lapply(garch.models$garch, convergence)
@@ -192,26 +201,52 @@ print.xtable(tab2,
              sanitize.text.function = function(x) {x},
              include.rownames = FALSE)
 
-#########################################################################################
-## Modelo EVT para os residuos padronizados
+# Modelo EVT para os residuos padronizados --------------------------------
+
 ## Os residuos podem ser retirados atraves do metodo residuals com a opcao "standardize=T"
-##
+## a coluna rq ira guardar os valores de zq (quantile) e sq (shortfall)
+evt.models <- garch.models %>% 
+  mutate(resid_z = map(garch, ~coredata(residuals(.x, standardize = TRUE))),
+         Nu = map(resid_z, ~sum(.x > quantile(.x, 0.95))),
+         gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, 0.95))),
+         u = map_dbl(gpdfit, ~.x@parameter$u),
+         xi = map_dbl(gpdfit, ~.x@fit$par.ests[1]),
+         beta = map_dbl(gpdfit, ~.x@fit$par.ests[2]),
+         xi_se = map_dbl(gpdfit, ~.x@fit$par.ses[1]),
+         beta_se = map_dbl(gpdfit, ~.x@fit$par.ses[2]),
+         rq = map(gpdfit, ~gpdRiskMeasures(.x, prob = c(0.975, 0.99))),
+         loss = NULL,
+         garch = NULL)
+## Teste com o pacote evir
+testez <- coredata(residuals(garch.models$garch[[1]], standardize = TRUE))
+teste_evir <- gpd(testez, threshold = quantile(testez, 0.95)) # Mesmos valores do fExtremes
+meplot(-testez)
+shape(testez, models = 10, start = 90, end = 150)
+## Teste com o pacote evd
+teste_evd <- fpot(testez, quantile(testez, 0.95))
+fitted.values(teste_evd)
+std.errors(teste_evd)  # Iguais ao fExtremes e evir
+mrlplot(-testez)
 
-zt <- as.timeSeries(residuals(Lfit2, standardize = TRUE))
-
-mrlPlot(zt) # Mean Residual Life para escolher treshold u
-# u por volta de 1.5% parece ser um valor adequado
-# como o quantil 95% eh 1.62% vamos manter o quantil que eh o padrao
-# da funcao gpdFit
-
-# Contagem do numero de excessos apenas para verificar se eh um numero
-# razoavelmente alto
-sum(zt>quantile(zt, 0.95)) # 97, OK
-
-evtfit <- gpdFit(zt, u = quantile(zt, 0.95))
+## Gráficos para analisar a qualidade do gpdFit
 op <- par(mfrow=c(2,2))
-plot(evtfit, which='all')
+plot(evt.models$gpdfit[[1]], which='all')
 par(op)
+
+# Reconstruindo o VaR e o ES condicionais ---------------------------------
+
+## VaR: xq_t = mu_t+1 + sigma_t+1*zq
+## ES: Sq_t = mu_t+1 + sigma_t+1*sq
+
+# Teste para in sample VaR
+zq <- evt.models$rq[[2]]$quantile[1]
+xq <- fitted(garch.models$garch[[2]])+sigma(garch.models$garch[[2]])*zq
+xql <- xq[-length(xq)]
+linsample <- garch.models$loss[[2]][paste0("/", end)][-1]
+plot(linsample)
+lines(xql, col = "red")
+varex <- sum(coredata(linsample) > coredata(xql))
+varex/length(xql)*100
 
 # E por fim calcula as medidas de risco para os residuos zt
 risks <- gpdRiskMeasures(evtfit, prob = 0.99) # Medidas sem intervalo de conf.
