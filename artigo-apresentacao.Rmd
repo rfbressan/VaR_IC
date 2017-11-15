@@ -169,10 +169,9 @@ p+annotate("text", x = c(-1.5, -2, -1, 0), y = c(-0.02, 0.02, -0.02, 0.15),
 - Nosso modelo completo para as medidas de risco $VaR_\alpha$ e $ES_\alpha$ condicionais dada a distribuição de perdas $L_t$ de um ativo será, portanto:
 
 \begin{align*}
-L_t=&\mu_t+\epsilon_t \\
-\mu_t=&\mu+ \phi_1 L_{t-1}+ \theta_1\epsilon_{t-1}+ \theta_2\epsilon_{t-2} \\
+L_t=&\mu+ \phi_1 L_{t-1}+ \epsilon_t \\
 \epsilon_t=&\sigma_t Z_t\\
-\ln(\sigma_t^2)=&\omega+ \alpha_1 Z_{t-1}+ \gamma_1(|Z_{t-1}|-E|Z_{t-1}|)+ \beta_1 \ln(\sigma_{t-1}^2) \\
+\ln(\sigma_t^2)=&\omega+ \sum_{i=1}^{2}(\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|))+ \beta_1 \ln(\sigma_{t-1}^2) \\
 Z_t\sim &\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
 \end{align*}
 
@@ -187,6 +186,24 @@ ES_\alpha^t=&\mu_{t+1}+\sigma_{t+1}E[Z | Z>z_\alpha]
 onde $z_\alpha$ é o quantil $\alpha$ das inovações *Z*.
 
 # Resultados
+
+## VaR condicional estimado
+
+\begincols
+
+  \begincol{.65\textwidth}
+  
+  ![VaR condicional para o S\&P500.](artigo-apresentacao-var.jpeg)
+  
+  \endcol
+
+  \begincol{.31\textwidth}
+  
+  \input{artigo-apresentacao-tabela.tex}
+  
+  \endcol
+  
+\endcols
 
 ## Referências
 

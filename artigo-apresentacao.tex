@@ -110,6 +110,12 @@
 \pgfuseimage{Marca_Udesc}
 \end{textblock*}}
 %
+% - Para criar duas colunas em algum slide da apresentacao 
+% - a partir do Rmarkdown
+\def\begincols{\begin{columns}}
+\def\begincol{\begin{column}}
+\def\endcol{\end{column}}
+\def\endcols{\end{columns}}
 
 %%---Gerador de Sumário---------------------------------------------------------
 %\section[]{}
@@ -120,7 +126,7 @@
 
 \title{Medidas condicionais de risco com teoria do valor extremo}
 \author{Rafael Felipe Bressan}
-\date{05-11-2017}
+\date{15-11-2017}
 
 \begin{document}
 \frame{\titlepage}
@@ -310,10 +316,9 @@ parâmetros de forma e escala da distribuição.
 \end{itemize}
 
 \begin{align*}
-L_t=&\mu_t+\epsilon_t \\
-\mu_t=&\mu+ \phi_1 L_{t-1}+ \theta_1\epsilon_{t-1}+ \theta_2\epsilon_{t-2} \\
+L_t=&\mu+ \phi_1 L_{t-1}+ \epsilon_t \\
 \epsilon_t=&\sigma_t Z_t\\
-\ln(\sigma_t^2)=&\omega+ \alpha_1 Z_{t-1}+ \gamma_1(|Z_{t-1}|-E|Z_{t-1}|)+ \beta_1 \ln(\sigma_{t-1}^2) \\
+\ln(\sigma_t^2)=&\omega+ \sum_{i=1}^{2}[\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|)]+ \beta_1 \ln(\sigma_{t-1}^2) \\
 Z_t\sim &\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
 \end{align*}
 
@@ -337,6 +342,26 @@ onde \(z_\alpha\) é o quantil \(\alpha\) das inovações \emph{Z}.
 \end{frame}
 
 \section{Resultados}\label{resultados}
+
+\begin{frame}{VaR condicional estimado}
+
+\begincols
+
+\begincol{.65\textwidth}
+
+\includegraphics{artigo-apresentacao-var.jpeg}
+
+\endcol
+
+\begincol{.31\textwidth}
+
+\input{artigo-apresentacao-tabela.tex}
+
+\endcol
+
+\endcols
+
+\end{frame}
 
 \begin{frame}{Referências}
 
