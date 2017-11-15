@@ -207,14 +207,19 @@ print.xtable(tab2,
 ## a coluna rq ira guardar os valores de zq (quantile) e sq (shortfall)
 evt.models <- garch.models %>% 
   mutate(resid_z = map(garch, ~coredata(residuals(.x, standardize = TRUE))),
-         Nu = map(resid_z, ~sum(.x > quantile(.x, 0.95))),
+         mut = map(garch, ~coredata(fitted(.x))),
+         sigmat = map(garch, ~coredata(sigma(.x))),
+         Nu = map_int(resid_z, ~sum(.x > quantile(.x, 0.95))),
          gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, 0.95))),
          u = map_dbl(gpdfit, ~.x@parameter$u),
          xi = map_dbl(gpdfit, ~.x@fit$par.ests[1]),
          beta = map_dbl(gpdfit, ~.x@fit$par.ests[2]),
          xi_se = map_dbl(gpdfit, ~.x@fit$par.ses[1]),
          beta_se = map_dbl(gpdfit, ~.x@fit$par.ses[2]),
-         rq = map(gpdfit, ~gpdRiskMeasures(.x, prob = c(0.975, 0.99))),
+         zq975= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.975)$quantile),
+         zq990= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.990)$quantile),
+         sq975= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.975)$shortfall),
+         sq990= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.990)$shortfall),
          loss = NULL,
          garch = NULL)
 ## Teste com o pacote evir
@@ -237,16 +242,38 @@ par(op)
 
 ## VaR: xq_t = mu_t+1 + sigma_t+1*zq
 ## ES: Sq_t = mu_t+1 + sigma_t+1*sq
+riskmeasures <- evt.models %>% 
+  transmute(indice = indice,
+            id_name = id_name,
+            VaR975 = pmap(., ~(..5+..6*..14)),
+            VaR990 = pmap(., ~(..5+..6*..15)),
+            ES975 = pmap(., ~(..5+..6*..16)),
+            ES990 = pmap(., ~(..5+..6*..17)))
 
 # Teste para in sample VaR
 zq <- evt.models$rq[[2]]$quantile[1]
 xq <- fitted(garch.models$garch[[2]])+sigma(garch.models$garch[[2]])*zq
-xql <- xq[-length(xq)]
-linsample <- garch.models$loss[[2]][paste0("/", end)][-1]
-plot(linsample)
+xql <- riskmeasures$VaR975[[2]][-length(riskmeasures$VaR975[[2]])]
+linsample <- coredata(garch.models$loss[[2]][paste0("/", end)])[-1]
+# VaR para uma normal incondicional
+varnorm <- qnorm(0.975, 
+                 mean(coredata(garch.models$loss[[2]][paste0("/", end)])),
+                 sd(coredata(garch.models$loss[[2]][paste0("/", end)])))
+plot(linsample, type = "l", main = "Perdas S&P500 - VaR 97,5%", xlab = "Dias", ylab = "Perdas %")
 lines(xql, col = "red")
-varex <- sum(coredata(linsample) > coredata(xql))
+segments(1, varnorm, x1 = length(coredata(garch.models$loss[[2]][paste0("/", end)])), col = "darkgreen")
+legend("topright", legend = c("EVT", "Normal"), fill = c("red", "darkgreen"))
+varex <- sum(linsample > xql)
 varex/length(xql)*100
+varexnorm <- sum(linsample > varnorm)
+varexnorm/length(xql)*100
+dfex <- data.frame(modelo = c("EVT", "Normal"),
+                   nex = c(varex, varexnorm),
+                   propex = c(varex/length(xql)*100, varexnorm/length(xql)*100))
+colnames(dfex) <- c("Modelo", "Violações", "Proporção")
+stargazer(dfex, out = "artigo-apresentacao-tabela.tex", 
+          summary = FALSE, rownames = FALSE, font.size = "tiny",
+          style = "aer")
 
 # E por fim calcula as medidas de risco para os residuos zt
 risks <- gpdRiskMeasures(evtfit, prob = 0.99) # Medidas sem intervalo de conf.
