@@ -1,0 +1,217 @@
+---
+title: "Medidas condicionais de risco com teoria do valor extremo"
+shorttitle: "Mercados Financeiros e de Capitais"
+author: "Rafael Felipe Bressan"
+date: "`r format(Sys.Date(), '%d-%m-%Y')`"
+bibliography: library.bib
+output: 
+  ioslides_presentation:
+    incremental: false
+    df_print: tibble
+    fig_width: 5
+    fig_height: 5
+    fig_caption: false
+    slide_level: 2
+    mathjax: local
+    self_contained: false
+    logo: Marca_Udesc.jpeg
+    css: custom.css
+#    includes: 
+#      in_header: artigo-header.tex
+#      before_body: artigo-bb.tex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r inicio, include=FALSE}
+library(ggplot2)
+library(rugarch)
+library(xts)
+library(plotly)
+library(tibble)
+```
+# Introdução
+
+## Motivação 
+
+- De acordo com os princípios do acordo de Basileia III, as instituições financeiras supervisionadas pelos Bancos Centrais devem manter *buffers* de capital contra riscos de mercado, crédito, liquidez, entre outros.
+- Para riscos de mercado, as duas formas mais usuais de fazer a quantificação destes são os métodos de Valor em Risco - VaR e o *Expected Shortfall* - ES.
+- Uma estimação excessiva da medida de risco gerará um excesso de capital em reserva. Custo para a instituição.
+- Uma subestimação deste risco pode levar a IF a uma crise de liquidez e eventualmente a insolvência.
+
+## Valor em Risco
+
+- VaR é um quantil $\alpha$ da distribuição de perdas de um ativo ou portfólio em um determinado período de tempo.
+- O método VaR para cálculo de risco de mercado ao qual um portfólio está sujeito foi primeiramente introduzido pelo banco J. P. Morgan em 1995.
+- Método original assumia distribuição normal das perdas, correlação constante entre ativos e era calculada de forma incondicional.
+
+## Valor em Risco
+
+<div class="centered">
+```{r var, fig.cap = "VaR é um quantil da distribuição de perdas."}
+x <- seq(-3, 3, by = 0.05)
+y <- dnorm(x)
+df <- data.frame(x, y)
+p <- ggplot(df, aes(x, y)) + 
+  geom_area(data = subset(df, x < -1), fill = "tomato") +
+  #geom_area(data = subset(df, x < -1.96), fill = "red") +
+  #geom_area(data = subset(df, x > 1), fill = "lightgreen") +
+  #geom_area(data = subset(df, x > 1.96), fill = "green") +
+  geom_line()+
+  labs(title = "Retornos", x = "", y = "")
+
+p+annotate("text", x = c(-1, -1.5), y = c(-0.02, 0.05), label = c("VaR[alpha]", "~1-alpha"), parse = TRUE, size = 6)
+```
+</div>
+
+## *Expected Shortfall*
+
+- ES é o valor esperado das perdas que forem iguais ou maiores que o VaR.
+- É calculado como uma média condicional.
+- Medida coerente de risco.  @Acerbi2001.
+
+$$
+\begin{align*}
+VaR_\alpha^t=&\inf\{F_{L_{t+1}} | \mathcal{G}_t(\mathcal{L}) \geq \alpha\}, \\
+ES_\alpha^t=&E[L_{t+1} | L_{t+1} > VaR_\alpha^t]
+\end{align*}
+$$
+
+## *Expected Shortfall*
+
+```{r ES, fig.cap = "ES é o valor esperado das perdas, dado que a perda exceda o VaR."}
+p+annotate("text", x = c(-2, -2), y = c(-0.02, 0), label = c("ES[alpha]", "."), parse = TRUE, size = 6)
+```
+
+# Fundamentação Teórica
+
+## Fatos estilizados
+
+Séries temporais de retornos possuem as seguintes características:
+
+- Ausência de autocorrelação. Componente AR é fraco.
+
+- Grande autocorrelação nos retornos absolutos ou retornos ao quadrado.
+
+- Agrupamento (*Clusters*) de volatilidade.
+
+- Persistência nas autocorrelações dos retornos ao quadrado.
+
+- Distribuição incondicional com caudas longas (leptocúrticas).
+
+- Distribuição condicional com algum grau de leptocurtose.
+
+- Assimetria entre ganhos e perdas.
+
+## Fatos estilizados
+
+```{r sp500ret, fig.cap = "Retornos do S&P500 de 29/01/2002 até 30/01/2009."}
+data("sp500ret")
+sp500.xts <- as.xts(subset(sp500ret, subset = rownames(sp500ret) >= "2002-01-29"))
+d <- density(sp500.xts)
+op <- par(mfrow = c(1,2))
+plot(sp500.xts, main = "S&P500 retornos", grid.ticks.on = "years")
+plot(d, lwd = 1, ylab = "", xlab = "", main = "S&P500 versus Normal")
+lines(d$x, dnorm(d$x, mean = mean(sp500.xts), sd = sd(sp500.xts)), col = "blue", lwd = 1)
+par(op)
+```
+
+## Modelos GARCH
+
+- Modelos GARCH, @Bollerslev1986 lidam com a heteroscedasticidade condicional encontrada nas séries financeiras.
+
+- Propriedades desejáveis: leptocurtose e autocorrelação na variância
+
+- O modelo GARCH exponencial ou eGARCH de @Nelson1991 lida também com o efeito alavancagem.
+
+$$
+\begin{align*}
+	L_t=&\mu+ \sum_{i=1}^r\phi_i L_{t-i}+ \sum\limits_{j=1}^{s}\theta_j\epsilon_{t-j} +\epsilon_t \\
+	\ln(\sigma_t^2)=&\omega+ \sum\limits_{i=1}^{p}(\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|))+ \sum\limits_{j=1}^{q}\beta_j \ln(\sigma_{t-j}^2) \\
+	\epsilon_t=&\sigma_t Z_t
+\end{align*}
+$$
+
+## Teoria do valor extremo
+
+- O método peaks-over-treshold modela a distribuição dos excessos acima de um determinado limiar.
+
+**Definição** [Distribuição dos excessos]:
+	Seja *X* uma variável aleatória com função de distribuição $F \in MDA(H_\xi)$. A distribuição dos excessos sobre um limiar *u* tem a função de Distribuição Generalizada de Pareto - GPD:
+
+$$
+\begin{equation*}
+  G_{\xi,\beta(u)}(X) = 
+  \begin{cases}
+    1- \left(1+ \frac{\xi x}{\beta(u)} \right)^{-\frac{1}{\xi}}, & \xi \neq 0,\\
+    1-exp\left(-\frac{x}{\beta(u)}\right), & \xi = 0,\\
+  \end{cases}
+\end{equation*}
+$$
+
+Os parâmetros $\xi$ e $\beta$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. 
+
+## Teoria do valor extremo
+
+```{r pot, fig.cap="Método POT para estimar caudas de distribuições."}
+x <- seq(-3, 3, by = 0.05)
+y <- dnorm(x)
+df <- data.frame(x, y)
+p <- ggplot(df, aes(x, y)) + 
+  geom_area(data = subset(df, x <= -1), fill = "lightgreen") +
+  geom_area(data = subset(df, x < -1.5), fill = "tomato") +
+  geom_area(data = subset(df, x >= -1), fill = "lightblue") +
+  #geom_area(data = subset(df, x > 1.96), fill = "green") +
+  geom_line()+
+  labs(title = "Retornos", x = "", y = "")
+
+p+annotate("text", x = c(-1.5, -2, -1, 0), y = c(-0.02, 0.02, -0.02, 0.15), 
+           label = c("VaR[alpha]", "~1-alpha", "u", "Empírica"), parse = TRUE, size = 6)
+```
+
+# Modelo
+
+## Modelo eGARCH-EVT
+
+- Seguiremos os passos propostos por @McNeil2000.
+- Nosso modelo completo para as medidas de risco $VaR_\alpha$ e $ES_\alpha$ condicionais dada a distribuição de perdas $L_t$ de um ativo será, portanto:
+
+$$
+\begin{align*}
+L_t=&\mu+ \phi_1 L_{t-1}+ \epsilon_t \\
+\epsilon_t=&\sigma_t Z_t\\
+\ln(\sigma_t^2)=&\omega+ \sum_{i=1}^{2}(\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|))+ \beta_1 \ln(\sigma_{t-1}^2) \\
+Z_t\sim &\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
+\end{align*}
+$$
+
+## VaR e ES parametrizados
+
+- Nossas medidas de risco neste modelo condicional serão:
+
+$$
+\begin{align*}
+VaR_\alpha^t=&\mu_{t+1}+\sigma_{t+1}z_\alpha, \\
+ES_\alpha^t=&\mu_{t+1}+\sigma_{t+1}E[Z | Z>z_\alpha]
+\end{align*}
+$$
+
+onde $z_\alpha$ é o quantil $\alpha$ das inovações *Z*.
+
+# Resultados
+
+## VaR condicional estimado 
+
+![VaR condicional para o S\&P500.](artigo-apresentacao-var.jpeg =600x480)
+
+## VaR condicional estimado
+
+Modelo    Violações   Proporção
+-------  ----------  ----------
+EVT              69    2.492775
+Normal           84    3.034682
+
+## Referências {.smaller}

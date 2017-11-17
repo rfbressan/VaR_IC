@@ -126,7 +126,7 @@
 
 \title{Medidas condicionais de risco com teoria do valor extremo}
 \author{Rafael Felipe Bressan}
-\date{15-11-2017}
+\date{16-11-2017}
 
 \begin{document}
 \frame{\titlepage}
@@ -184,12 +184,6 @@
 
 \end{frame}
 
-\begin{frame}{Valor em Risco}
-
-\includegraphics{artigo-apresentacao_files/figure-beamer/var-1.pdf}
-
-\end{frame}
-
 \begin{frame}{\emph{Expected Shortfall}}
 
 \begin{itemize}
@@ -210,9 +204,9 @@ ES_\alpha^t=&E[L_{t+1} | L_{t+1} > VaR_\alpha^t]
 
 \end{frame}
 
-\begin{frame}{\emph{Expected Shortfall}}
+\begin{frame}{VaR e ES}
 
-\includegraphics{artigo-apresentacao_files/figure-beamer/ES-1.pdf}
+\includegraphics{artigo-apresentacao_files/figure-beamer/var-1.pdf}
 
 \end{frame}
 
@@ -318,7 +312,7 @@ parâmetros de forma e escala da distribuição.
 \begin{align*}
 L_t=&\mu+ \phi_1 L_{t-1}+ \epsilon_t \\
 \epsilon_t=&\sigma_t Z_t\\
-\ln(\sigma_t^2)=&\omega+ \sum_{i=1}^{2}[\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|)]+ \beta_1 \ln(\sigma_{t-1}^2) \\
+\ln(\sigma_t^2)=&\omega+ \sum_{i=1}^{2}(\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|))+ \beta_1 \ln(\sigma_{t-1}^2) \\
 Z_t\sim &\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
 \end{align*}
 

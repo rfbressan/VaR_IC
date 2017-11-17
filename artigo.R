@@ -274,6 +274,7 @@ colnames(dfex) <- c("Modelo", "Violações", "Proporção")
 stargazer(dfex, out = "artigo-apresentacao-tabela.tex", 
           summary = FALSE, rownames = FALSE, font.size = "tiny",
           style = "aer")
+knitr::kable(dfex, format = "pandoc")
 
 # E por fim calcula as medidas de risco para os residuos zt
 risks <- gpdRiskMeasures(evtfit, prob = 0.99) # Medidas sem intervalo de conf.

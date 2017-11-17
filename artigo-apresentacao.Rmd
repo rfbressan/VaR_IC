@@ -45,23 +45,6 @@ library(xts)
 - O método VaR para cálculo de risco de mercado ao qual um portfólio está sujeito foi primeiramente introduzido pelo banco J. P. Morgan em 1995.
 - Método original assumia distribuição normal das perdas, correlação constante entre ativos e era calculada de forma incondicional.
 
-## Valor em Risco
-
-```{r var, fig.cap = "VaR é um quantil da distribuição de perdas."}
-x <- seq(-3, 3, by = 0.05)
-y <- dnorm(x)
-df <- data.frame(x, y)
-p <- ggplot(df, aes(x, y)) + 
-  geom_area(data = subset(df, x < -1), fill = "tomato") +
-  #geom_area(data = subset(df, x < -1.96), fill = "red") +
-  #geom_area(data = subset(df, x > 1), fill = "lightgreen") +
-  #geom_area(data = subset(df, x > 1.96), fill = "green") +
-  geom_line()+
-  labs(title = "Retornos", x = "", y = "")
-
-p+annotate("text", x = c(-1, -1.5), y = c(-0.02, 0.05), label = c("VaR[alpha]", "~1-alpha"), parse = TRUE, size = 6)
-```
-
 ## *Expected Shortfall*
 
 - ES é o valor esperado das perdas que forem iguais ou maiores que o VaR.
@@ -73,10 +56,24 @@ VaR_\alpha^t=&\inf\{F_{L_{t+1}} | \mathcal{G}_t(\mathcal{L}) \geq \alpha\}, \\
 ES_\alpha^t=&E[L_{t+1} | L_{t+1} > VaR_\alpha^t]
 \end{align*}
 
-## *Expected Shortfall*
+## VaR e ES
 
-```{r ES, fig.cap = "ES é o valor esperado das perdas, dado que a perda exceda o VaR."}
-p+annotate("text", x = c(-2, -2), y = c(-0.02, 0), label = c("ES[alpha]", "."), parse = TRUE, size = 6)
+```{r var}
+# fig.cap = "VaR é um quantil da distribuição de perdas."
+# fig.cap = "ES é o valor esperado das perdas, dado que a perda exceda o VaR."
+x <- seq(-3, 3, by = 0.05)
+y <- dnorm(x)
+df <- data.frame(x, y)
+p <- ggplot(df, aes(x, y)) + 
+  geom_area(data = subset(df, x > 1.2), fill = "tomato") +
+  #geom_area(data = subset(df, x < -1.96), fill = "red") +
+  #geom_area(data = subset(df, x > 1), fill = "lightgreen") +
+  #geom_area(data = subset(df, x > 1.96), fill = "green") +
+  geom_line()+
+  labs(title = "Perdas", x = "", y = "")
+
+p+annotate("text", x = c(1.2, 1.5, 2), y = c(-0.02, 0.05, -0.02), 
+           label = c("VaR[alpha]", "alpha", "ES[alpha]"), parse = TRUE, size = 6)
 ```
 
 # Fundamentação Teórica
@@ -126,7 +123,6 @@ par(op)
 	\epsilon_t=&\sigma_t Z_t
 \end{align*}
 
-
 ## Teoria do valor extremo
 
 - O método peaks-over-treshold modela a distribuição dos excessos acima de um determinado limiar.
@@ -150,15 +146,15 @@ x <- seq(-3, 3, by = 0.05)
 y <- dnorm(x)
 df <- data.frame(x, y)
 p <- ggplot(df, aes(x, y)) + 
-  geom_area(data = subset(df, x <= -1), fill = "lightgreen") +
-  geom_area(data = subset(df, x < -1.5), fill = "tomato") +
-  geom_area(data = subset(df, x >= -1), fill = "lightblue") +
+  geom_area(data = subset(df, x >= 1), fill = "lightgreen") +
+  geom_area(data = subset(df, x > 1.5), fill = "tomato") +
+  geom_area(data = subset(df, x <= 1), fill = "lightblue") +
   #geom_area(data = subset(df, x > 1.96), fill = "green") +
   geom_line()+
-  labs(title = "Retornos", x = "", y = "")
+  labs(title = "Perdas", x = "", y = "")
 
-p+annotate("text", x = c(-1.5, -2, -1, 0), y = c(-0.02, 0.02, -0.02, 0.15), 
-           label = c("VaR[alpha]", "~1-alpha", "u", "Empírica"), parse = TRUE, size = 6)
+p+annotate("text", x = c(1.5, 2, 1, 0), y = c(-0.02, 0.02, -0.02, 0.15), 
+           label = c("VaR[alpha]", "alpha", "u", "Empírica"), parse = TRUE, size = 6)
 ```
 
 # Modelo
