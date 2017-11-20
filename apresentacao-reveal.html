@@ -452,9 +452,12 @@ document.getElementsByTagName('head')[0].appendChild(style);
 <section>
     <h1 class="title">Medidas condicionais de risco com teoria do valor extremo</h1>
     <h2 class="author">Rafael Felipe Bressan</h2>
-    <h3 class="date">16-11-2017</h3>
+    <h3 class="date">20-11-2017</h3>
 </section>
 
+<section id="section" class="slide level2" data-background="risk1.jpg">
+<h1></h1>
+</section>
 <section><section id="introducao" class="titleslide slide level1"><h1>Introdução</h1></section><section id="motivacao" class="slide level2">
 <h1>Motivação</h1>
 <ul>
@@ -506,13 +509,13 @@ ES é o valor esperado das perdas, dado que a perda exceda o VaR.
 <h1>Fatos estilizados</h1>
 <p>Séries temporais de retornos possuem as seguintes características:</p>
 <ul>
-<li><p>Ausência de autocorrelação. Componente AR é fraco.</p></li>
-<li><p>Grande autocorrelação nos retornos absolutos ou retornos ao quadrado.</p></li>
-<li><p>Agrupamento (<em>Clusters</em>) de volatilidade.</p></li>
-<li><p>Persistência nas autocorrelações dos retornos ao quadrado.</p></li>
-<li><p>Distribuição incondicional com caudas longas (leptocúrticas).</p></li>
-<li><p>Distribuição condicional com algum grau de leptocurtose.</p></li>
-<li><p>Assimetria entre ganhos e perdas.</p></li>
+<li>Ausência de autocorrelação. Componente AR é fraco.</li>
+<li>Grande autocorrelação nos retornos absolutos ou retornos ao quadrado.</li>
+<li>Agrupamento (<em>Clusters</em>) de volatilidade.</li>
+<li>Persistência nas autocorrelações dos retornos ao quadrado.</li>
+<li>Distribuição incondicional com caudas longas (leptocúrticas).</li>
+<li>Distribuição condicional com algum grau de leptocurtose.</li>
+<li>Assimetria entre ganhos e perdas.</li>
 </ul>
 </section><section id="fatos-estilizados-1" class="slide level2">
 <h1>Fatos estilizados</h1>
@@ -526,9 +529,9 @@ Retornos do S&amp;P500 de 29/01/2002 até 30/01/2009.
 </section><section id="modelos-garch" class="slide level2">
 <h1>Modelos GARCH</h1>
 <ul>
-<li><p>Modelos GARCH, <span class="citation" data-cites="Bollerslev1986">Bollerslev (1986)</span> lidam com a heteroscedasticidade condicional encontrada nas séries financeiras.</p></li>
-<li><p>Propriedades desejáveis: leptocurtose e autocorrelação na variância</p></li>
-<li><p>O modelo GARCH exponencial ou eGARCH de <span class="citation" data-cites="Nelson1991">Nelson (1991)</span> lida também com o efeito alavancagem.</p></li>
+<li>Modelos GARCH, <span class="citation" data-cites="Bollerslev1986">Bollerslev (1986)</span> lidam com a heteroscedasticidade condicional encontrada nas séries financeiras.</li>
+<li>Propriedades desejáveis: leptocurtose e autocorrelação na variância</li>
+<li>O modelo GARCH exponencial ou eGARCH de <span class="citation" data-cites="Nelson1991">Nelson (1991)</span> lida também com o efeito alavancagem.</li>
 </ul>
 <p><span class="math display">\[
 \begin{align*}
@@ -541,8 +544,8 @@ Retornos do S&amp;P500 de 29/01/2002 até 30/01/2009.
 <h1>Teoria do valor extremo</h1>
 <ul>
 <li>O método peaks-over-treshold modela a distribuição dos excessos acima de um determinado limiar.</li>
+<li><strong>Definição</strong> [Distribuição dos excessos]: Seja <em>X</em> uma variável aleatória com função de distribuição <span class="math inline">\(F \in MDA(H_\xi)\)</span>. A distribuição dos excessos sobre um limiar <em>u</em> tem a função de Distribuição Generalizada de Pareto - GPD:</li>
 </ul>
-<p><strong>Definição</strong> [Distribuição dos excessos]: Seja <em>X</em> uma variável aleatória com função de distribuição <span class="math inline">\(F \in MDA(H_\xi)\)</span>. A distribuição dos excessos sobre um limiar <em>u</em> tem a função de Distribuição Generalizada de Pareto - GPD:</p>
 <p><span class="math display">\[
 \begin{equation*}
   G_{\xi,\beta(u)}(X) = 
@@ -551,8 +554,7 @@ Retornos do S&amp;P500 de 29/01/2002 até 30/01/2009.
     1-exp\left(-\frac{x}{\beta(u)}\right), &amp; \xi = 0,\\
   \end{cases}
 \end{equation*}
-\]</span></p>
-<p>Os parâmetros <span class="math inline">\(\xi\)</span> e <span class="math inline">\(\beta\)</span> são conhecidos respectivamente como parâmetros de forma e escala da distribuição.</p>
+\]</span> - Os parâmetros <span class="math inline">\(\xi\)</span> e <span class="math inline">\(\beta\)</span> são conhecidos respectivamente como parâmetros de forma e escala da distribuição.</p>
 </section><section id="teoria-do-valor-extremo-1" class="slide level2">
 <h1>Teoria do valor extremo</h1>
 <div class="figure">

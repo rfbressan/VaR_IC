@@ -34,6 +34,8 @@ library(xts)
 library(plotly)
 library(tibble)
 ```
+## {data-background="risk1.jpg"}
+
 # Introdução
 
 ## Motivação 
@@ -94,17 +96,11 @@ p+annotate("text", x = c(-2, -2), y = c(-0.02, 0), label = c("ES[alpha]", "."), 
 Séries temporais de retornos possuem as seguintes características:
 
 - Ausência de autocorrelação. Componente AR é fraco.
-
 - Grande autocorrelação nos retornos absolutos ou retornos ao quadrado.
-
 - Agrupamento (*Clusters*) de volatilidade.
-
 - Persistência nas autocorrelações dos retornos ao quadrado.
-
 - Distribuição incondicional com caudas longas (leptocúrticas).
-
 - Distribuição condicional com algum grau de leptocurtose.
-
 - Assimetria entre ganhos e perdas.
 
 ## Fatos estilizados 
@@ -124,9 +120,7 @@ par(op)
 ## Modelos GARCH
 
 - Modelos GARCH, @Bollerslev1986 lidam com a heteroscedasticidade condicional encontrada nas séries financeiras.
-
 - Propriedades desejáveis: leptocurtose e autocorrelação na variância
-
 - O modelo GARCH exponencial ou eGARCH de @Nelson1991 lida também com o efeito alavancagem.
 
 $$
@@ -140,9 +134,7 @@ $$
 ## Teoria do valor extremo
 
 - O método peaks-over-treshold modela a distribuição dos excessos acima de um determinado limiar.
-
-**Definição** [Distribuição dos excessos]:
-	Seja *X* uma variável aleatória com função de distribuição $F \in MDA(H_\xi)$. A distribuição dos excessos sobre um limiar *u* tem a função de Distribuição Generalizada de Pareto - GPD:
+- **Definição** [Distribuição dos excessos]: Seja *X* uma variável aleatória com função de distribuição $F \in MDA(H_\xi)$. A distribuição dos excessos sobre um limiar *u* tem a função de Distribuição Generalizada de Pareto - GPD:
 
 $$
 \begin{equation*}
@@ -153,8 +145,7 @@ $$
   \end{cases}
 \end{equation*}
 $$
-
-Os parâmetros $\xi$ e $\beta$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. 
+- Os parâmetros $\xi$ e $\beta$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. 
 
 ## Teoria do valor extremo
 
