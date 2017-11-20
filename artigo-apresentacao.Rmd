@@ -30,6 +30,7 @@ library(ggplot2)
 library(rugarch)
 library(xts)
 ```
+
 # Introdução
 
 ## Motivação 
