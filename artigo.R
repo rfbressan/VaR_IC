@@ -30,8 +30,8 @@ library(ggplot2)
 library(CADFtest) # Teste Dickey-Fuller
 
 start <- as.Date("2005-08-31")
-end <- as.Date("2016-08-31")
-backstart <- as.Date("2016-09-01")
+end <- as.Date("2015-08-31")
+backstart <- as.Date("2015-09-01")
 
 list.returns <- function(asset) {
   tb <- read.csv(paste0("artigo-", asset, ".csv"), stringsAsFactors = FALSE)
@@ -49,7 +49,7 @@ assets.tbl <- enframe(lista) %>%
 
 colnames(assets.tbl) <- c("indice", "ts", "id_name")
 # Qual o menor numero de dias entre inicio do periodo de backtesting ate o final da serie?
-outsample = enframe(map_dbl(lista, ~ndays(.x[paste0(backstart, "/")])))
+outsample <-  enframe(map_dbl(lista, ~ndays(.x[paste0(backstart, "/")])))
 names(outsample) <- c("indice", "out")
 # Remove a variavel lista que agora e desnecessaria
 rm(lista)
@@ -137,31 +137,51 @@ ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
 garch.models <- assets.tbl[,1:3] %>% 
   inner_join(outsample, by = "indice") %>% 
   mutate(loss = map(ts, ~-.x),
-         garch = map2(loss, out, ~ugarchfit(ruspec, 
+         garch_fit = map2(loss, out, ~ugarchfit(ruspec, 
                                             .x,
                                             out.sample = .y,
                                             solver = "hybrid")),
          ts = NULL)
 
 # Mostra a convergencia para cada modelo
-lapply(garch.models$garch, convergence)
+lapply(garch.models$garch_fit, convergence)
 
 # Sumarios dos modelos GARCH
-show(garch.models$garch[[1]])
+show(garch.models$garch_fit[[1]])
+
+## Para obter os valores de mu_t, sigma_t e z_t fora da amostra
+## se utiliza o metodo ugarchfilter com os parametros fixados nos 
+## valores estimados pelo ugarchfit
+garch.filtered <- garch.models %>% 
+  mutate(n_old = map_int(garch_fit, ~.x@model$modeldata$T),
+         f_params = map(garch_fit, ~as.list(coef(.x))),
+         out_spec = map(f_params, ~ugarchspec(mean.model = list(armaOrder = c(1,0)),
+                                              variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
+                                              distribution.model = "sstd",
+                                              fixed.pars = .x))) %>% 
+  mutate(garch_filter = pmap(., ~ugarchfilter(..8,
+                                              ..4,
+                                              n.old = ..6)))
+
+# Teste para verificar os residuos padronizados sao os mesmos inicialmente
+head(rugarch::residuals(garch.filtered$garch_fit[[2]], standardize = TRUE))
+head(rugarch::residuals(garch.filtered$garch_filter[[2]], standardize = TRUE))
+# Agora garch.filtered contem tudo sobre os modelos Garch, nao precisamos mais de garch.models
+rm(garch.models)
 
 # Terminamos ainda com efeito alavancagem a ser modelado para alguns casos
 # signbias mostra significancia do efeito negativo
 # Talvez um modelo GJR ou APARCH possa resolver. Nao resolveram, melhor eGARCH(2,1)
 
 # Gerar 6 figuras com estes 4 graficos ACF
-for(i in 1:dim(garch.models)[1]) {
-  jpeg(filename = paste0("artigo-acf-", garch.models$id_name[i], ".jpeg"),
+for(i in 1:dim(garch.filtered)[1]) {
+  jpeg(filename = paste0("artigo-acf-", garch.filtered$id_name[i], ".jpeg"),
        width = 800, height = 800, quality = 100)
   op <- par(mfrow=c(2,2))
-  plot(garch.models$garch[[i]], which = 4)
-  plot(garch.models$garch[[i]], which = 5)
-  plot(garch.models$garch[[i]], which = 10)
-  plot(garch.models$garch[[i]], which = 11)
+  plot(garch.filtered$garch_fit[[i]], which = 4)
+  plot(garch.filtered$garch_fit[[i]], which = 5)
+  plot(garch.filtered$garch_fit[[i]], which = 10)
+  plot(garch.filtered$garch_fit[[i]], which = 11)
   par(op)
   dev.off()
 }
@@ -173,7 +193,7 @@ vec_coef <- function(model) {
 }
 
 mat <- do.call(cbind,
-                 lapply(garch.models$garch, vec_coef))
+                 lapply(garch.filtered$garch_fit, vec_coef))
 param <- c("$\\mu$", "",
            "$\\phi_1$", "",
            "$\\omega$", "",
@@ -186,7 +206,7 @@ param <- c("$\\mu$", "",
            "$\\nu$", "")
 garchcoef <- data.frame(par = param, mat)
 
-colnames(garchcoef) <- c("Parâmetros", garch.models$id_name)
+colnames(garchcoef) <- c("Parâmetros", garch.filtered$id_name)
 # Xtable
 tab2 <- xtable(garchcoef, caption = "Par\\^ametros estimados do modelo eGARCH. Valores p apresentados 
                de acordo com erros padrão robustos. (amostra de trabalho entre 31/08/2005 a 31/08/2016).",
@@ -204,34 +224,37 @@ print.xtable(tab2,
 # Modelo EVT para os residuos padronizados --------------------------------
 
 ## Os residuos podem ser retirados atraves do metodo residuals com a opcao "standardize=T"
-## a coluna rq ira guardar os valores de zq (quantile) e sq (shortfall)
-evt.models <- garch.models %>% 
-  mutate(resid_z = map(garch, ~coredata(residuals(.x, standardize = TRUE))),
-         mut = map(garch, ~coredata(fitted(.x))),
-         sigmat = map(garch, ~coredata(sigma(.x))),
-         Nu = map_int(resid_z, ~sum(.x > quantile(.x, 0.95))),
-         gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, 0.95))),
-         u = map_dbl(gpdfit, ~.x@parameter$u),
-         xi = map_dbl(gpdfit, ~.x@fit$par.ests[1]),
-         beta = map_dbl(gpdfit, ~.x@fit$par.ests[2]),
-         xi_se = map_dbl(gpdfit, ~.x@fit$par.ses[1]),
-         beta_se = map_dbl(gpdfit, ~.x@fit$par.ses[2]),
-         zq975= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.975)$quantile),
-         zq990= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.990)$quantile),
-         sq975= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.975)$shortfall),
-         sq990= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.990)$shortfall),
-         loss = NULL,
-         garch = NULL)
-## Teste com o pacote evir
-testez <- coredata(residuals(garch.models$garch[[1]], standardize = TRUE))
-teste_evir <- gpd(testez, threshold = quantile(testez, 0.95)) # Mesmos valores do fExtremes
-meplot(-testez)
-shape(testez, models = 10, start = 90, end = 150)
-## Teste com o pacote evd
-teste_evd <- fpot(testez, quantile(testez, 0.95))
-fitted.values(teste_evd)
-std.errors(teste_evd)  # Iguais ao fExtremes e evir
-mrlplot(-testez)
+## os valores zq (quantile) e sq (shortfall)
+evt.models <- garch.filtered %>% 
+  transmute(indice = indice,
+            id_name = id_name,
+            loss = loss,
+            out = out,
+            n_old = n_old,
+            resid_z = map(garch_filter, ~coredata(residuals(.x, standardize = TRUE))),
+            mut = map(garch_filter, ~coredata(fitted(.x))),
+            sigmat = map(garch_filter, ~coredata(sigma(.x))),
+            Nu = map_int(resid_z, ~sum(.x > quantile(.x, 0.95))),
+            gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, 0.95))),
+            u = map_dbl(gpdfit, ~.x@parameter$u),
+            xi = map_dbl(gpdfit, ~.x@fit$par.ests[1]),
+            beta = map_dbl(gpdfit, ~.x@fit$par.ests[2]),
+            xi_se = map_dbl(gpdfit, ~.x@fit$par.ses[1]),
+            beta_se = map_dbl(gpdfit, ~.x@fit$par.ses[2]),
+            zq975= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.975)$quantile),
+            zq990= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.990)$quantile),
+            sq975= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.975)$shortfall),
+            sq990= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.990)$shortfall))
+# ## Teste com o pacote evir
+# testez <- coredata(residuals(garch.models$garch_fit[[1]], standardize = TRUE))
+# teste_evir <- gpd(testez, threshold = quantile(testez, 0.95)) # Mesmos valores do fExtremes
+# meplot(-testez)
+# shape(testez, models = 10, start = 90, end = 150)
+# ## Teste com o pacote evd
+# teste_evd <- fpot(testez, quantile(testez, 0.95))
+# fitted.values(teste_evd)
+# std.errors(teste_evd)  # Iguais ao fExtremes e evir
+# mrlplot(-testez)
 
 ## Gráficos para analisar a qualidade do gpdFit
 op <- par(mfrow=c(2,2))
@@ -245,36 +268,57 @@ par(op)
 riskmeasures <- evt.models %>% 
   transmute(indice = indice,
             id_name = id_name,
-            VaR975 = pmap(., ~(..5+..6*..14)),
-            VaR990 = pmap(., ~(..5+..6*..15)),
-            ES975 = pmap(., ~(..5+..6*..16)),
-            ES990 = pmap(., ~(..5+..6*..17)))
+            loss = loss,
+            out = out,
+            n_old = n_old,
+            VaR975 = pmap(., ~(..7+..8*..16)), ## VaR = mu_t+1 + sigma_t+1*zq
+            VaR990 = pmap(., ~(..7+..8*..17)),
+            ES975 = pmap(., ~(..7+..8*..18)),  ## ES = mu_t+1 + sigma_t+1*sq
+            ES990 = pmap(., ~(..7+..8*..19))) %>% 
+  mutate(out_VaR975 = pmap(., ~..6[c((..5+1):(..5+..4-1))]), #out_VaR = VaR[(n_old+1):(n_old+out-1)]
+         out_VaR990 = pmap(., ~..7[c((..5+1):(..5+..4-1))]),
+         out_ES975 = pmap(., ~..8[c((..5+1):(..5+..4-1))]),  #out_ES = ES[(n_old+1):(n_old+out-1)]
+         out_ES990 = pmap(., ~..9[c((..5+1):(..5+..4-1))]),
+         out_loss = map2(loss, n_old, ~coredata(.x[-c(1:(.y+1))])[, 1, drop = TRUE])) #out_los = loss[-c(1:n_old+1)]
+# Plotando os valores fora da amostra
+plot_risks <- function(loss, VaR, ES, id_name) {
+  tindex <- 1:length(loss)
+  df <- data.frame(x = tindex, loss = loss, VaR = VaR, ES = ES)
+  plot <- ggplot(df, aes(x = x))+
+    geom_line(aes(y = loss), color = "black")+
+    geom_line(aes(y = VaR), color = "red")+
+    geom_line(aes(y = ES), color = "darkgreen")+
+    labs(x = "", y = "", title = id_name)
+  return(plot)
+}
+VaR_plots <- riskmeasures %>% 
+  transmute(VaR975_plot = pmap(., ~plot_risks(..14, ..10, ..12, ..2)),
+            VaR990_plot = pmap(., ~plot_risks(..14, ..11, ..13, ..2)))
 
-# Teste para in sample VaR
-zq <- evt.models$rq[[2]]$quantile[1]
-xq <- fitted(garch.models$garch[[2]])+sigma(garch.models$garch[[2]])*zq
-xql <- riskmeasures$VaR975[[2]][-length(riskmeasures$VaR975[[2]])]
-linsample <- coredata(garch.models$loss[[2]][paste0("/", end)])[-1]
-# VaR para uma normal incondicional
-varnorm <- qnorm(0.975, 
-                 mean(coredata(garch.models$loss[[2]][paste0("/", end)])),
-                 sd(coredata(garch.models$loss[[2]][paste0("/", end)])))
-plot(linsample, type = "l", main = "Perdas S&P500 - VaR 97,5%", xlab = "Dias", ylab = "Perdas %")
-lines(xql, col = "red")
-segments(1, varnorm, x1 = length(coredata(garch.models$loss[[2]][paste0("/", end)])), col = "darkgreen")
-legend("topright", legend = c("EVT", "Normal"), fill = c("red", "darkgreen"))
-varex <- sum(linsample > xql)
-varex/length(xql)*100
-varexnorm <- sum(linsample > varnorm)
-varexnorm/length(xql)*100
+grid.arrange(grobs = VaR_plots$VaR975_plot)
+grid.arrange(grobs = VaR_plots$VaR990_plot)
+
+# Teste APENAS PARA FORA DA AMOSTRA 
+## Com os valores de n_old, out e as perdas, calcular a quantidade de violacoes do VaR 
+## e colocar em um tibble para cada ativo
+#VaR para uma normal incondicional
+out_loss <- riskmeasures$out_loss[[1]]
+varnorm <- qnorm(0.990,
+                 mean(coredata(garch.filtered$loss[[1]][paste0("/", end)])),
+                 sd(coredata(garch.filtered$loss[[1]][paste0("/", end)])))
+varex <- sum(out_loss > riskmeasures$out_VaR990[[1]])
+varex/length(out_loss)*100
+varexnorm <- sum(out_loss > varnorm)
+varexnorm/length(out_loss)*100
 dfex <- data.frame(modelo = c("EVT", "Normal"),
                    nex = c(varex, varexnorm),
-                   propex = c(varex/length(xql)*100, varexnorm/length(xql)*100))
+                   propex = c(varex/length(out_loss)*100, varexnorm/length(out_loss)*100))
 colnames(dfex) <- c("Modelo", "Violações", "Proporção")
-stargazer(dfex, out = "artigo-apresentacao-tabela.tex", 
-          summary = FALSE, rownames = FALSE, font.size = "tiny",
-          style = "aer")
+# stargazer(dfex, out = "artigo-apresentacao-tabela.tex", 
+#           summary = FALSE, rownames = FALSE, font.size = "tiny",
+#           style = "aer")
 knitr::kable(dfex, format = "pandoc")
+
 
 # E por fim calcula as medidas de risco para os residuos zt
 risks <- gpdRiskMeasures(evtfit, prob = 0.99) # Medidas sem intervalo de conf.
