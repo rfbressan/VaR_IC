@@ -15,8 +15,9 @@
 
 #library(fGarch)
 library(fExtremes)
+library(spd) # Semi-parametric fit. Implementa o ajuste gpd
 library(fBasics)
-library(QRM)
+#library(QRM)
 library(rugarch)
 library(timeSeries)
 library(xts)
@@ -27,11 +28,13 @@ library(broom)
 library(purrr)
 library(gridExtra)
 library(ggplot2)
-library(CADFtest) # Teste Dickey-Fuller
+#library(CADFtest) # Teste Dickey-Fuller
+source("artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
+
 
 start <- as.Date("2005-08-31")
-end <- as.Date("2015-08-31")
-backstart <- as.Date("2015-09-01")
+end <- as.Date("2013-08-31")
+backstart <- as.Date("2013-09-01")
 
 list.returns <- function(asset) {
   tb <- read.csv(paste0("artigo-", asset, ".csv"), stringsAsFactors = FALSE)
@@ -318,6 +321,22 @@ colnames(dfex) <- c("Modelo", "Violações", "Proporção")
 #           summary = FALSE, rownames = FALSE, font.size = "tiny",
 #           style = "aer")
 knitr::kable(dfex, format = "pandoc")
+
+
+# Backtesting com refit ----------------------------------------------
+
+# Primeiro um teste apenas para o Ibovespa
+rollspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
+                     variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
+                     distribution.model = "sstd")
+ibov.xts <- -assets.tbl$ts[[1]]
+window.size <- ndays(ibov.xts[paste0(start, "/", end)])
+n.roll <- ndays(ibov.xts[paste0(backstart, "/")])
+# Ajusta os dados fora da amostra
+# Retorna um xts com os parametros da GPD e as medidas de risco
+# CUIDADO!! uma rodada desta com 1000 observacoes fora da amostra
+# pode levar mais de 6 HORAS (estimado 22 segundos para cada rolagem)
+ibov_os.xts <- roll_fit(ibov.xts, rollspec, n.roll, window.size)
 
 
 # E por fim calcula as medidas de risco para os residuos zt
