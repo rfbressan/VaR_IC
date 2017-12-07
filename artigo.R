@@ -12,14 +12,17 @@
 # Dados entre 31/08/2005 a 31/08/2017
 
 # Inicio ------------------------------------------------------------------
+list.of.packages <- c("fExtremes", "rugarch", "xts", "PerformanceAnalytics", "xtable", "tidyverse", 
+                      "broom", "purrr", "gridExtra", "ggplot2")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
 
 #library(fGarch)
 library(fExtremes)
-library(spd) # Semi-parametric fit. Implementa o ajuste gpd
-library(fBasics)
+#library(fBasics)
 #library(QRM)
 library(rugarch)
-library(timeSeries)
+#library(timeSeries)
 library(xts)
 library(PerformanceAnalytics)
 library(xtable)
@@ -324,19 +327,40 @@ knitr::kable(dfex, format = "pandoc")
 
 
 # Backtesting com refit ----------------------------------------------
-
 # Primeiro um teste apenas para o Ibovespa
-rollspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
-                     variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
-                     distribution.model = "sstd")
 ibov.xts <- -assets.tbl$ts[[1]]
-window.size <- ndays(ibov.xts[paste0(start, "/", end)])
+window.size <- ndays(ibov.xts[paste0("/", end)])
 n.roll <- ndays(ibov.xts[paste0(backstart, "/")])
-# Ajusta os dados fora da amostra
+ibov_os <- (window.size+1):(window.size+n.roll)
+realized <- ibov.xts[ibov_os] # Perdas realizadas durante o periodo fora da amostra
+
+###### Modelo EVT condicional #########################################
+rollspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
+                       variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
+                       distribution.model = "sstd")
+# Ajusta os dados fora da amostra para o modelo EVT condicional
 # Retorna um xts com os parametros da GPD e as medidas de risco
 # CUIDADO!! uma rodada desta com 1000 observacoes fora da amostra
 # pode levar mais de 6 HORAS (estimado 22 segundos para cada rolagem)
-ibov_os.xts <- roll_fit(ibov.xts, rollspec, n.roll, window.size)
+ibov_os.xts <- roll_fit_cevt(ibov.xts, rollspec, n.roll, window.size)
+object.size(ibov_os.xts) # Retorna o tamanho em bytes, nao eh grande
+# Salva os dados obtidos para tratamento posterior
+saveRDS(ibov_os.xts, file = "ibov_os.xts.rds")
+ibov_os.xts <- readRDS("ibov_os.xts.rds")
+# Limpa a memoria para nao acumular muitos dados
+#rm(list = "ibov_os.xts")
+
+###### Modelo Normal incondicional #########################################
+# Ajusta os dados para um modelo Normal incondicional
+ibov_os_norm.xts <- roll_fit_unorm(ibov.xts, n.roll, window.size)
+###### Modelo t-Student incondicional ######################################
+# Ajusta os dados para um modelo t-Student incondicional
+ibov_os_t.xts <- roll_fit_ut(ibov.xts, n.roll, window.size)
+###### Modelo EVT incondicional #########################################
+# Ajusta os dados para um modelo EVT incondicional
+
+
+
 
 
 # E por fim calcula as medidas de risco para os residuos zt

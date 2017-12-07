@@ -6,7 +6,8 @@ if(!all(c("rugarch", "fExtremes", "xts") %in% loadedNamespaces())){
   library(xts)
 } # Carrega os pacotes necessarios se faltantes
 
-roll_fit <- function(data, spec, n.roll, window.size) {
+# roll_fit_cevt -----------------------------------------------------------
+roll_fit_cevt <- function(data, spec, n.roll, window.size) {
   # Deve-se fazer o fit
   # Extrair residuos padronizados
   # Aplicar o gpfFit
@@ -24,33 +25,47 @@ roll_fit <- function(data, spec, n.roll, window.size) {
                 envir = environment())
   
   tmp.list <- parLapply(cl = cluster, 1:n.roll, fun = function(i){
-    garch.fit <- ugarchfit(spec, 
-                           data[(NT-(n.roll-i)-(window.size-1)):(NT-(n.roll-i))], 
-                           solver = "hybrid")
-    # Retirar os residuos padronizados, e o ultimo mu_t e sigma_t
-    resid_z <- coredata(residuals(garch.fit, standardize = TRUE))
-    mu_t <- last(fitted(garch.fit))
-    sigma_t <- last(sigma(garch.fit))
-    # Ajustar uma gpd aos dados de residuos padronizados
-    gpd.fit <- gpdFit(resid_z, u = quantile(resid_z, 0.95))
-    xi = gpd.fit@fit$par.ests[1]
-    beta = gpd.fit@fit$par.ests[2]
-    xi_se = gpd.fit@fit$par.ses[1]
-    beta_se = gpd.fit@fit$par.ses[2]
-    # Obter as medias de risco do residuo padronizado
-    zq975 <- gpdRiskMeasures(gpd.fit, prob = 0.975)$quantile
-    zq990 <- gpdRiskMeasures(gpd.fit, prob = 0.990)$quantile
-    sq975 <- gpdRiskMeasures(gpd.fit, prob = 0.975)$shortfall
-    sq990 <- gpdRiskMeasures(gpd.fit, prob = 0.990)$shortfall
-    # Agora escalar e deslocar as medidas de risco de acordo com o modelo garch
-    # Zq = mu_t+sigma_t*zq
-    # Sq = mu_t+sigma_t*sq
-    Zq975 <- mu_t+sigma_t*zq975
-    Zq990 <- mu_t+sigma_t*zq990
-    Sq975 <- mu_t+sigma_t*sq975
-    Sq990 <- mu_t+sigma_t*sq990
-    
-    return(cbind(xi, beta, xi_se, beta_se, Zq975, Zq990, Sq975, Sq990))
+    garch.fit <- try(ugarchfit(spec, 
+                           data[i:(window.size+i)], 
+                           solver = "hybrid"))
+    # 3 cases: General Error, Failure to Converge, Failure to invert Hessian (bad solution)
+    if(inherits(garch.fit, 'try-error') || convergence(garch.fit)!=0 || is.null(garch.fit@fit$cvar)){
+      lapply_ans <- t(cbind(rep(NA, 10)))
+      # Se algum erro, envia como resposta NA, mas nao interrompe a estimacao
+      # Depois no xts retornado pela funcao roll_fit, preencher os NA com os dados 
+      # da estimacao anterior com na.locf
+    } else{
+      # Salvar o coeficiente beta1 apenas para mostrar a evolucao deste ao longo
+      # do período
+      beta1 <- coef(garch.fit)["beta1"]
+      # Retirar os residuos padronizados, e o ultimo mu_t e sigma_t
+      resid_z <- coredata(residuals(garch.fit, standardize = TRUE))
+      mu_t <- last(fitted(garch.fit))
+      sigma_t <- last(sigma(garch.fit))
+      # Ajustar uma gpd aos dados de residuos padronizados
+      gpd.fit <- gpdFit(resid_z, u = quantile(resid_z, 0.95))
+      xi = gpd.fit@fit$par.ests[1]
+      beta = gpd.fit@fit$par.ests[2]
+      xi_se = gpd.fit@fit$par.ses[1]
+      beta_se = gpd.fit@fit$par.ses[2]
+      # Obter as medias de risco do residuo padronizado
+      zq975 <- gpdRiskMeasures(gpd.fit, prob = 0.975)$quantile
+      zq990 <- gpdRiskMeasures(gpd.fit, prob = 0.990)$quantile
+      sq975 <- gpdRiskMeasures(gpd.fit, prob = 0.975)$shortfall
+      sq990 <- gpdRiskMeasures(gpd.fit, prob = 0.990)$shortfall
+      # Agora escalar e deslocar as medidas de risco de acordo com o modelo garch
+      # Zq = mu_t+sigma_t*zq
+      # Sq = mu_t+sigma_t*sq
+      Zq975 <- mu_t+sigma_t*zq975
+      Zq990 <- mu_t+sigma_t*zq990
+      Sq975 <- mu_t+sigma_t*sq975
+      Sq990 <- mu_t+sigma_t*sq990
+      
+      # Verbose mode
+      #cat("Estimacao numero:", i, "as", as.character(Sys.time()))
+      lapply_ans <- cbind(beta1, xi, beta, xi_se, beta_se, Zq975, Zq990, Sq975, Sq990)
+    } # fim do else
+    return(lapply_ans)
   }) # fim do parLapply
   stopCluster(cluster)
   toc <- Sys.time()
@@ -60,11 +75,76 @@ roll_fit <- function(data, spec, n.roll, window.size) {
   # os parametros e medidas de risco estimados para cada um dos dias fora da amostra
   # Junta-se tudo em um xts indexado pelos dias fora da amostra
   ans <- xts(do.call(rbind, tmp.list),
-             order.by = index(data[(NT-(n.roll-1)): NT]))
-  colnames(ans) <- c("xi", "beta", "xi_se", "beta_se", "Zq975", "Zq990", "Sq975", "Sq990")
+             order.by = index(data[(window.size+1):(window.size+n.roll)]))
+  colnames(ans) <- c("beta1", "xi", "beta", "xi_se", "beta_se", "Zq975", "Zq990", "Sq975", "Sq990")
+  # Preenche os NA com a ultima observacao conhecida
+  ans <- na.locf(ans)
   return(ans)
   # Os valores retornados das medidas de risco devem ser comparadas
   # com os valores realizados NO DIA SEGUINTE a data onde foram calculadas
-} # fim da roll_fit
+} # fim da roll_fit_cevt
+
+
+# roll_fit_unorm ----------------------------------------------------------
+# Ajusta os dados para um modelo Normal incondicional
+roll_fit_unorm <- function(data, n.roll, window.size) {
+  tmp.list <- lapply(1:n.roll, function(i){
+    xts <- data[i:(window.size+i)]
+    mean <- mean(xts)
+    sd <- sd(xts)
+    Zq975 <- qnorm(0.975, mean, sd)
+    Zq990 <- qnorm(0.990, mean, sd)
+    Sq975 <- integrate(function(x){
+      x * dnorm(x, mean = mean, sd = sd)},
+      Zq975,
+      Inf)$value / (1-0.975)
+    Sq990 <- integrate(function(x){
+      x * dnorm(x, mean = mean, sd = sd)},
+      Zq990,
+      Inf)$value / (1-0.990)
+    return(cbind(mean, sd, Zq975, Zq990, Sq975, Sq990))
+  }) # Fim do lapply
+  ans <- xts(do.call(rbind, tmp.list),
+             order.by = index(data[(window.size+1):(window.size+n.roll)]))
+  colnames(ans) <- c("mu", "sigma", "Zq975", "Zq990", "Sq975", "Sq990")
+  # Preenche os NA com a ultima observacao conhecida
+  ans <- na.locf(ans)
+  return(ans)
+}
+
+# roll_fit_ut ----------------------------------------------------------
+# Ajusta os dados para um modelo t-Student incondicional
+roll_fit_ut <- function(data, n.roll, window.size) {
+  tmp.list <- lapply(1:n.roll, function(i){
+    xts <- data[i:(window.size+i)]
+    t_fit <- fitdist(distribution = "std", xts)
+    t_mu <- t_fit$pars["mu"]
+    t_sigma <- t_fit$pars["sigma"]
+    t_shape <- t_fit$pars["shape"]
+    Zq975 <- qdist(distribution = "std", p = 0.975,
+                   mu = t_mu,
+                   sigma = t_sigma,
+                   shape = t_shape)
+    Zq990 <- qdist(distribution = "std", p = 0.990,
+                   mu = t_mu,
+                   sigma = t_sigma,
+                   shape = t_shape)
+    Sq975 <- integrate(function(x){
+      x * ddist(distribution = "std", x, mu = t_mu, sigma = t_sigma, shape = t_shape)},
+      Zq975,
+      Inf)$value / (1-0.975)
+    Sq990 <- integrate(function(x){
+      x * ddist(distribution = "std", x, mu = t_mu, sigma = t_sigma, shape = t_shape)},
+      Zq990,
+      Inf)$value / (1-0.990)
+    return(cbind(t_mu, t_sigma, t_shape, Zq975, Zq990, Sq975, Sq990))
+  }) # Fim do lapply
+  ans <- xts(do.call(rbind, tmp.list),
+             order.by = index(data[(window.size+1):(window.size+n.roll)]))
+  colnames(ans) <- c("mu", "sigma", "shape", "Zq975", "Zq990", "Sq975", "Sq990")
+  # Preenche os NA com a ultima observacao conhecida
+  ans <- na.locf(ans)
+  return(ans)
+}
 
 
