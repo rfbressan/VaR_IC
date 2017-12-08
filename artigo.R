@@ -13,7 +13,7 @@
 
 # Inicio ------------------------------------------------------------------
 list.of.packages <- c("fExtremes", "rugarch", "xts", "PerformanceAnalytics", "xtable", "tidyverse", 
-                      "broom", "purrr", "gridExtra", "ggplot2")
+                      "broom", "purrr", "gridExtra", "ggplot2", "WeightedPortTest")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -31,6 +31,7 @@ library(broom)
 library(purrr)
 library(gridExtra)
 library(ggplot2)
+library(WeightedPortTest)
 #library(CADFtest) # Teste Dickey-Fuller
 source("artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
 
@@ -61,31 +62,28 @@ names(outsample) <- c("indice", "out")
 rm(lista)
 
 # Estatisticas descritivas retornos-----------------------------------------
-assets.tbl <- assets.tbl %>% 
-  mutate(media = map_dbl(ts, ~ mean(.x)),
-         mediana = map_dbl(ts, ~median(.x)),
-         maximo = map_dbl(ts, ~max(.x)),
-         minimo = map_dbl(ts, ~min(.x)),
-         desvp = map_dbl(ts, ~sd(.x)),
-         assim = map_dbl(ts, ~skewness(.x)),
-         curtose = map_dbl(ts, ~kurtosis(.x)),
-         jarquebera = map(ts, ~jarqueberaTest(as.timeSeries(.x))),
-         ljungbox = map(ts, ~Box.test(.x, lag = 10, type = "Ljung-Box")),
-         ljungbox2 = map(ts, ~Box.test(.x^2, lag = 10, type = "Ljung-Box"))) %>% 
-  mutate(jbstat = map_dbl(jarquebera, ~as.numeric(.x@test$statistic)),
-         jbpvalue = map_dbl(jarquebera, ~as.numeric(.x@test$p.value)),
-         lbstat = map_dbl(ljungbox, ~as.numeric(.x$statistic)),
-         lbpvalue = map_dbl(ljungbox, ~as.numeric(.x$p.value)),
-         lb2stat = map_dbl(ljungbox2, ~as.numeric(.x$statistic)),
-         lb2pvalue = map_dbl(ljungbox2, ~as.numeric(.x$p.value)),
-         nobs = map_int(ts, ~as.integer(length(.x))))
+df.descritivas <- assets.tbl %>% 
+  transmute(media = map_dbl(ts, ~ mean(.x)),
+            mediana = map_dbl(ts, ~median(.x)),
+            maximo = map_dbl(ts, ~max(.x)),
+            minimo = map_dbl(ts, ~min(.x)),
+            desvp = map_dbl(ts, ~sd(.x)),
+            assim = map_dbl(ts, ~skewness(.x)),
+            curtose = map_dbl(ts, ~kurtosis(.x)),
+            jbstat = map_dbl(ts, ~jarqueberaTest(as.timeSeries(.x))@test$statistic),
+            jbpvalue = map_dbl(ts, ~jarqueberaTest(as.timeSeries(.x))@test$p.value),
+            q10stat = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box")$statistic),
+            q10pvalue = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box")$p.value),
+            q2_10stat = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box", sqrd.res = TRUE)$statistic),
+            q2_10pvalue = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box", sqrd.res = TRUE)$p.value),
+            nobs = map_int(ts, ~as.integer(length(.x)))) %>% 
+  t() %>% 
+  as.data.frame()
+param <- c("Média", "Mediana", "Máximo", "Mínimo", "Desvp", "Assimetria", "Curtose",
+                               "Jarque-Bera", "", "Q(10)", "", "$Q^2(10)$", "", "N.obs")
+df.descritivas <- cbind(param, df.descritivas)
+colnames(df.descritivas) <- c("Descritivas", assets.tbl$id_name)
 
-# Transpor esta tabela para apresentacao
-df.descritivas <- data.frame(t(assets.tbl[,-c(1, 2, 3, 11, 12, 13)]))
-colnames(df.descritivas) <- assets.tbl$id_name
-row.names(df.descritivas) <- c("Média", "Mediana", "Máximo", "Mínimo", "Desvp", "Assimetria", "Curtose",
-                               "Jarque-Bera", "p-valor", "Q(10)", "p-valo", "Q^2(10)", "p-val",
-                               "N.obs")
 # Cria o xtable
 tab1 <- xtable(df.descritivas, caption = "Estatísticas descritivas dos retornos 
                (amostra completa de 31/08/2005 a 30/08/2017).",
@@ -95,7 +93,11 @@ tab1 <- xtable(df.descritivas, caption = "Estatísticas descritivas dos retornos
 print.xtable(tab1, 
              file = "artigo-tab-descritivas.tex",
              caption.placement = "top",
-             table.placement = "H")
+             table.placement = "H",
+             sanitize.colnames.function = NULL,
+             sanitize.text.function = function(x) {x},
+             include.rownames = FALSE)
+
 # Graficos retornos------------------------------------------------------
 list.plot <- lapply(seq_along(assets.tbl$indice), 
                     function(x) {autoplot(assets.tbl$ts[[x]])+
@@ -126,7 +128,7 @@ for(i in 1:dim(assets.tbl)[1]){
 par(op)
 
 
-# Modelo eGARCH -----------------------------------------------------------
+# Modelo eGARCH in Sample-----------------------------------------------------------
 ## Ja as distribuicoes de zt a normal e t-Student nao apresentam bom fit
 ## A Johnson, GED, NIG, SkewStudent e a Ghyp sao melhores
 ## Lembrando, o modelo das perdas é AR(1) e a volatilidade é eGARCH(2,1)
@@ -140,6 +142,9 @@ ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
 
 ## Modelando as PERDAS!! parametro eh loss para a funcao ugarchfit
 # Deixamos um numero outsample para fazer o backtesting. Diferente para cada ativo
+# garch.models vai conter o modelo eGARCH dentro da amostra. Apresentar os 
+# parametros e seus erros padrao robustos
+# Depois apresentar novamente estatisticas como JB, Q e Q^2 para os erros padronizados
 garch.models <- assets.tbl[,1:3] %>% 
   inner_join(outsample, by = "indice") %>% 
   mutate(loss = map(ts, ~-.x),
@@ -155,6 +160,49 @@ lapply(garch.models$garch_fit, convergence)
 # Sumarios dos modelos GARCH
 show(garch.models$garch_fit[[1]])
 
+## Construindo a tabela com os parametros estimados do eGARCH in sample
+garch.models.par <- garch.models %>% 
+  transmute(mu = map(.$garch_fit, ~.x@fit$robust.matcoef["mu", c(1, 4)]), # Estimativa e P-valor
+            ar1 = map(.$garch_fit, ~.x@fit$robust.matcoef["ar1", c(1, 4)]),
+            omega = map(.$garch_fit, ~.x@fit$robust.matcoef["omega", c(1, 4)]),
+            alpha1 = map(.$garch_fit, ~.x@fit$robust.matcoef["alpha1", c(1, 4)]),
+            alpha2 = map(.$garch_fit, ~.x@fit$robust.matcoef["alpha2", c(1, 4)]),
+            beta1 = map(.$garch_fit, ~.x@fit$robust.matcoef["beta1", c(1, 4)]),
+            gamma1 = map(.$garch_fit, ~.x@fit$robust.matcoef["gamma1", c(1, 4)]),
+            gamma2 = map(.$garch_fit, ~.x@fit$robust.matcoef["gamma2", c(1, 4)]),
+            skew = map(.$garch_fit, ~.x@fit$robust.matcoef["skew", c(1, 4)]),
+            shape = map(.$garch_fit, ~.x@fit$robust.matcoef["shape", c(1, 4)])) %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  unnest() 
+  colnames(garch.models.par) <- garch.models$id_name
+  param <- c("$\\mu$", "",
+             "$\\phi_1$", "",
+             "$\\omega$", "",
+             "$\\alpha_1$", "",
+             "$\\alpha_2$", "",
+             "$\\beta_1$", "",
+             "$\\gamma_1$", "",
+             "$\\gamma_2$", "",
+             "$\\zeta$", "",
+             "$\\nu$", "")
+  garchcoef <- cbind(par = param, garch.models.par)
+  colnames(garchcoef)[1] <- "Parâmetros"
+  rm(garch.models.par) # Nao utilizado mais
+  # Xtable
+  tab2 <- xtable(garchcoef, caption = "Par\\^ametros estimados do modelo eGARCH. Valores p apresentados 
+               de acordo com erros padrão robustos. (amostra de trabalho entre 31/08/2005 a 31/08/2013).",
+                 digits = 5,
+                 label = "tab:garchcoef",
+                 auto = TRUE)
+  print.xtable(tab2, 
+               file = "artigo-tab-garchcoef.tex",
+               caption.placement = "top",
+               table.placement = "H",
+               sanitize.colnames.function = NULL,
+               sanitize.text.function = function(x) {x},
+               include.rownames = FALSE)
+##################### NAO USADO ###################################
 ## Para obter os valores de mu_t, sigma_t e z_t fora da amostra
 ## se utiliza o metodo ugarchfilter com os parametros fixados nos 
 ## valores estimados pelo ugarchfit
@@ -173,54 +221,58 @@ garch.filtered <- garch.models %>%
 head(rugarch::residuals(garch.filtered$garch_fit[[2]], standardize = TRUE))
 head(rugarch::residuals(garch.filtered$garch_filter[[2]], standardize = TRUE))
 # Agora garch.filtered contem tudo sobre os modelos Garch, nao precisamos mais de garch.models
-rm(garch.models)
+##########################################################################################
 
 # Terminamos ainda com efeito alavancagem a ser modelado para alguns casos
 # signbias mostra significancia do efeito negativo
 # Talvez um modelo GJR ou APARCH possa resolver. Nao resolveram, melhor eGARCH(2,1)
 
 # Gerar 6 figuras com estes 4 graficos ACF
-for(i in 1:dim(garch.filtered)[1]) {
-  jpeg(filename = paste0("artigo-acf-", garch.filtered$id_name[i], ".jpeg"),
+for(i in 1:dim(garch.models)[1]) {
+  jpeg(filename = paste0("artigo-acf-", garch.models$id_name[i], ".jpeg"),
        width = 800, height = 800, quality = 100)
   op <- par(mfrow=c(2,2))
-  plot(garch.filtered$garch_fit[[i]], which = 4)
-  plot(garch.filtered$garch_fit[[i]], which = 5)
-  plot(garch.filtered$garch_fit[[i]], which = 10)
-  plot(garch.filtered$garch_fit[[i]], which = 11)
+  plot(garch.models$garch_fit[[i]], which = 4)
+  plot(garch.models$garch_fit[[i]], which = 5)
+  plot(garch.models$garch_fit[[i]], which = 10)
+  plot(garch.models$garch_fit[[i]], which = 11)
   par(op)
   dev.off()
 }
 file.rename(c("artigo-acf-S&P500.jpeg", "artigo-acf-S&P TSE.jpeg"), 
             c("artigo-acf-SP500.jpeg", "artigo-acf-SP-TSE.jpeg"))
-# Cria tabela com os parametros estimados e seus p-valores
-vec_coef <- function(model) {
-  vec(t(model@fit$robust.matcoef[, c(1,4)]))
-}
-
-mat <- do.call(cbind,
-                 lapply(garch.filtered$garch_fit, vec_coef))
-param <- c("$\\mu$", "",
-           "$\\phi_1$", "",
-           "$\\omega$", "",
-           "$\\alpha_1$", "",
-           "$\\alpha_2$", "",
-           "$\\beta_1$", "",
-           "$\\gamma_1$", "",
-           "$\\gamma_2$", "",
-           "$\\zeta$", "",
-           "$\\nu$", "")
-garchcoef <- data.frame(par = param, mat)
-
-colnames(garchcoef) <- c("Parâmetros", garch.filtered$id_name)
+## Estatisticas modelo eGARCH
+# JB, Q e Q^2 para os residuos padronizados
+garch.models.stats <- garch.models %>%
+  transmute(resid_z = map(.$garch_fit, ~residuals(.x, standardize = TRUE)),
+            jbstat = map_dbl(resid_z, ~jarqueberaTest(as.timeSeries(.x))@test$statistic),
+            jbpvalue = map_dbl(resid_z, ~jarqueberaTest(as.timeSeries(.x))@test$p.value),
+            q10stat = map_dbl(resid_z, ~Weighted.Box.test(.x, lag = 10, 
+                                                      type = "Ljung-Box")$statistic),
+            q10pvalue = map_dbl(resid_z, ~Weighted.Box.test(.x, lag = 10, 
+                                                          type = "Ljung-Box")$p.value),
+            q2_10stat = map_dbl(resid_z, ~Weighted.Box.test(.x, lag = 10, 
+                                                            type = "Ljung-Box", 
+                                                            sqrd.res = TRUE)$statistic),
+            q2_10pvalue = map_dbl(resid_z, ~Weighted.Box.test(.x, lag = 10, 
+                                                            type = "Ljung-Box", 
+                                                            sqrd.res = TRUE)$p.value)) %>% 
+  mutate(resid_z = NULL) %>% 
+  t() %>% 
+  as.data.frame()
+param <- c("Jarque-Bera", "",
+           "Q(10)", "",
+           "$Q^2(10)$", "")
+garch.models.stats <- cbind(param, garch.models.stats)
+colnames(garch.models.stats) <- c("Estatística", garch.models$id_name)
 # Xtable
-tab2 <- xtable(garchcoef, caption = "Par\\^ametros estimados do modelo eGARCH. Valores p apresentados 
-               de acordo com erros padrão robustos. (amostra de trabalho entre 31/08/2005 a 31/08/2016).",
+tab3 <- xtable(garch.models.stats, caption = "Estatísticas de diagnóstico para o modelo eGARCH. 
+               (amostra de trabalho entre 31/08/2005 a 31/08/2013).",
                digits = 5,
-               label = "tab:garchcoef",
+               label = "tab:garchstats",
                auto = TRUE)
-print.xtable(tab2, 
-             file = "artigo-tab-garchcoef.tex",
+print.xtable(tab3, 
+             file = "artigo-tab-garchstats.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
@@ -231,7 +283,7 @@ print.xtable(tab2,
 
 ## Os residuos podem ser retirados atraves do metodo residuals com a opcao "standardize=T"
 ## os valores zq (quantile) e sq (shortfall)
-evt.models <- garch.filtered %>% 
+evt.models <- garch.models %>% 
   transmute(indice = indice,
             id_name = id_name,
             loss = loss,
@@ -331,7 +383,9 @@ knitr::kable(dfex, format = "pandoc")
 ibov.xts <- -assets.tbl$ts[[1]]
 window.size <- ndays(ibov.xts[paste0("/", end)])
 n.roll <- ndays(ibov.xts[paste0(backstart, "/")])
-ibov_os <- (window.size+1):(window.size+n.roll)
+# Periodo fora da amostra + 1, para fazer as comparacoes entre
+# VaRt e realizado t+1
+ibov_os <- (window.size+2):(window.size+n.roll) 
 realized <- ibov.xts[ibov_os] # Perdas realizadas durante o periodo fora da amostra
 
 ###### Modelo EVT condicional #########################################
@@ -342,7 +396,7 @@ rollspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
 # Retorna um xts com os parametros da GPD e as medidas de risco
 # CUIDADO!! uma rodada desta com 1000 observacoes fora da amostra
 # pode levar mais de 6 HORAS (estimado 22 segundos para cada rolagem)
-ibov_os.xts <- roll_fit_cevt(ibov.xts, rollspec, n.roll, window.size)
+ibov_os_cevt.xts <- roll_fit_cevt(ibov.xts, rollspec, n.roll, window.size)
 object.size(ibov_os.xts) # Retorna o tamanho em bytes, nao eh grande
 # Salva os dados obtidos para tratamento posterior
 saveRDS(ibov_os.xts, file = "ibov_os.xts.rds")
@@ -358,7 +412,7 @@ ibov_os_norm.xts <- roll_fit_unorm(ibov.xts, n.roll, window.size)
 ibov_os_t.xts <- roll_fit_ut(ibov.xts, n.roll, window.size)
 ###### Modelo EVT incondicional #########################################
 # Ajusta os dados para um modelo EVT incondicional
-
+ibov_os_uevt.xts <- roll_fit_uevt(ibov.xts, rollspec, n.roll, window.size)
 
 
 
