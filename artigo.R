@@ -35,7 +35,8 @@ library(WeightedPortTest)
 #library(CADFtest) # Teste Dickey-Fuller
 source("artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
 
-
+# AUMENTAR O TAMANHO DA AMOSTRA!!!
+# INICIAR OS DADOS EM 2003
 start <- as.Date("2005-08-31")
 end <- as.Date("2013-08-31")
 backstart <- as.Date("2013-09-01")
@@ -55,10 +56,10 @@ assets.tbl <- enframe(lista) %>%
         stringsAsFactors = FALSE)
 
 colnames(assets.tbl) <- c("indice", "ts", "id_name")
-# Qual o menor numero de dias entre inicio do periodo de backtesting ate o final da serie?
-outsample <-  enframe(map_dbl(lista, ~ndays(.x[paste0(backstart, "/")])))
-names(outsample) <- c("indice", "out")
-# Remove a variavel lista que agora e desnecessaria
+# Qual o tamanho da janela in sample?
+insample <-  enframe(map_dbl(lista, ~ndays(.x[paste0("/", end)])))
+names(insample) <- c("indice", "insample")
+# Remove a variavel lista e assets que agora sao desnecessarios
 rm(lista)
 
 # Estatisticas descritivas retornos-----------------------------------------
@@ -136,22 +137,27 @@ par(op)
 ## e_t=sigma_t*z_t   ln(sigma^2_t)=omega+alpha1*z_t-1+gamma1(|z_t-1|-E[|zt-1|])+beta1*ln(sigma^2_t-1)
 ## LEMBRAR: ts contem os retornos e não as perdas!
 
+# Uma especificacao para cada ativo
 ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
                      variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
                      distribution.model = "sstd")
-
+garch.specs <- replicate(length(assets), ruspec)
+names(garch.specs) <- assets
+garch.specs <- enframe(garch.specs)
+colnames(garch.specs) <- c("indice", "spec")
 ## Modelando as PERDAS!! parametro eh loss para a funcao ugarchfit
 # Deixamos um numero outsample para fazer o backtesting. Diferente para cada ativo
 # garch.models vai conter o modelo eGARCH dentro da amostra. Apresentar os 
 # parametros e seus erros padrao robustos
 # Depois apresentar novamente estatisticas como JB, Q e Q^2 para os erros padronizados
 garch.models <- assets.tbl[,1:3] %>% 
-  inner_join(outsample, by = "indice") %>% 
+  inner_join(insample, by = "indice") %>% 
+  inner_join(garch.specs, by = "indice") %>% 
   mutate(loss = map(ts, ~-.x),
-         garch_fit = map2(loss, out, ~ugarchfit(ruspec, 
-                                            .x,
-                                            out.sample = .y,
-                                            solver = "hybrid")),
+         loss_in = map2(ts, insample, ~-.x[1:.y]),
+         garch_fit = map2(spec, loss_in, ~ugarchfit(.x, 
+                                                    .y,
+                                                    solver = "hybrid")),
          ts = NULL)
 
 # Mostra a convergencia para cada modelo
@@ -241,7 +247,7 @@ for(i in 1:dim(garch.models)[1]) {
 }
 file.rename(c("artigo-acf-S&P500.jpeg", "artigo-acf-S&P TSE.jpeg"), 
             c("artigo-acf-SP500.jpeg", "artigo-acf-SP-TSE.jpeg"))
-## Estatisticas modelo eGARCH
+## Estatisticas modelo eGARCH in sample
 # JB, Q e Q^2 para os residuos padronizados
 garch.models.stats <- garch.models %>%
   transmute(resid_z = map(.$garch_fit, ~residuals(.x, standardize = TRUE)),
@@ -279,21 +285,20 @@ print.xtable(tab3,
              sanitize.text.function = function(x) {x},
              include.rownames = FALSE)
 
-# Modelo EVT para os residuos padronizados --------------------------------
+# Modelo EVT para os residuos padronizados in Sample --------------------------------
 
 ## Os residuos podem ser retirados atraves do metodo residuals com a opcao "standardize=T"
 ## os valores zq (quantile) e sq (shortfall)
 evt.models <- garch.models %>% 
   transmute(indice = indice,
             id_name = id_name,
-            loss = loss,
-            out = out,
-            n_old = n_old,
-            resid_z = map(garch_filter, ~coredata(residuals(.x, standardize = TRUE))),
-            mut = map(garch_filter, ~coredata(fitted(.x))),
-            sigmat = map(garch_filter, ~coredata(sigma(.x))),
-            Nu = map_int(resid_z, ~sum(.x > quantile(.x, 0.95))),
-            gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, 0.95))),
+            loss_in = loss_in,
+            insample = insample,
+            resid_z = map(garch_fit, ~coredata(residuals(.x, standardize = TRUE))),
+            mut = map(garch_fit, ~coredata(fitted(.x))),
+            sigmat = map(garch_fit, ~coredata(sigma(.x))),
+            Nu = map_int(resid_z, ~sum(.x > quantile(.x, 0.90))),
+            gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, 0.90))),
             u = map_dbl(gpdfit, ~.x@parameter$u),
             xi = map_dbl(gpdfit, ~.x@fit$par.ests[1]),
             beta = map_dbl(gpdfit, ~.x@fit$par.ests[2]),
@@ -313,31 +318,59 @@ evt.models <- garch.models %>%
 # fitted.values(teste_evd)
 # std.errors(teste_evd)  # Iguais ao fExtremes e evir
 # mrlplot(-testez)
+evtcoef <- evt.models %>% 
+  transmute(insample = insample,
+            u = u,
+            Nu = Nu,
+            xi = xi,
+            xi_se = xi_se,
+            beta = beta,
+            beta_se = beta_se,
+            zq975 = zq975,
+            zq990 = zq990) %>% 
+  t() %>% 
+  as.data.frame()
+param <- c("Obs. dentro amostra", "Limiar", "Número de excessos", "Parâmetro forma GPD", "Erro padrão",
+           "Parâmetro escala GPD", "Erro padrão", "Quantil 97.5\\%", "Quantil 99.0\\%")
+evtcoef <- cbind(param, evtcoef)
+colnames(evtcoef) <- c("", evt.models$id_name)
+# Xtable
+tab4 <- xtable(evtcoef, caption = "Parâmetros estimados para o modelo EVT dos resíduos padronizados. 
+               (amostra de trabalho entre 31/08/2005 a 31/08/2013).",
+               digits = 5,
+               label = "tab:evtcoef",
+               auto = TRUE)
+print.xtable(tab4, 
+             file = "artigo-tab-evtcoef.tex",
+             caption.placement = "top",
+             table.placement = "H",
+             sanitize.colnames.function = NULL,
+             sanitize.text.function = function(x) {x},
+             include.rownames = FALSE)
 
 ## Gráficos para analisar a qualidade do gpdFit
 op <- par(mfrow=c(2,2))
 plot(evt.models$gpdfit[[1]], which='all')
 par(op)
 
-# Reconstruindo o VaR e o ES condicionais ---------------------------------
+# Reconstruindo o VaR e o ES condicionais in Sample ---------------------------------
 
 ## VaR: xq_t = mu_t+1 + sigma_t+1*zq
 ## ES: Sq_t = mu_t+1 + sigma_t+1*sq
-riskmeasures <- evt.models %>% 
-  transmute(indice = indice,
-            id_name = id_name,
-            loss = loss,
-            out = out,
-            n_old = n_old,
-            VaR975 = pmap(., ~(..7+..8*..16)), ## VaR = mu_t+1 + sigma_t+1*zq
-            VaR990 = pmap(., ~(..7+..8*..17)),
-            ES975 = pmap(., ~(..7+..8*..18)),  ## ES = mu_t+1 + sigma_t+1*sq
-            ES990 = pmap(., ~(..7+..8*..19))) %>% 
-  mutate(out_VaR975 = pmap(., ~..6[c((..5+1):(..5+..4-1))]), #out_VaR = VaR[(n_old+1):(n_old+out-1)]
-         out_VaR990 = pmap(., ~..7[c((..5+1):(..5+..4-1))]),
-         out_ES975 = pmap(., ~..8[c((..5+1):(..5+..4-1))]),  #out_ES = ES[(n_old+1):(n_old+out-1)]
-         out_ES990 = pmap(., ~..9[c((..5+1):(..5+..4-1))]),
-         out_loss = map2(loss, n_old, ~coredata(.x[-c(1:(.y+1))])[, 1, drop = TRUE])) #out_los = loss[-c(1:n_old+1)]
+# riskmeasures <- evt.models %>% 
+#   transmute(indice = indice,
+#             id_name = id_name,
+#             loss_in = loss_in,
+#             VaR975 = pmap(., ~(..6+..7*..15)), ## VaR = mu_t+1 + sigma_t+1*zq
+#             VaR990 = pmap(., ~(..6+..7*..16)),
+#             ES975 = pmap(., ~(..6+..7*..17)),  ## ES = mu_t+1 + sigma_t+1*sq
+#             ES990 = pmap(., ~(..6+..7*..18))) 
+# %>% 
+#   mutate(out_VaR975 = pmap(., ~..6[c((..5+1):(..5+..4-1))]), #out_VaR = VaR[(n_old+1):(n_old+out-1)]
+#          out_VaR990 = pmap(., ~..7[c((..5+1):(..5+..4-1))]),
+#          out_ES975 = pmap(., ~..8[c((..5+1):(..5+..4-1))]),  #out_ES = ES[(n_old+1):(n_old+out-1)]
+#          out_ES990 = pmap(., ~..9[c((..5+1):(..5+..4-1))]),
+#          out_loss = map2(loss, n_old, ~coredata(.x[-c(1:(.y+1))])[, 1, drop = TRUE])) #out_los = loss[-c(1:n_old+1)]
 # Plotando os valores fora da amostra
 plot_risks <- function(loss, VaR, ES, id_name) {
   tindex <- 1:length(loss)
