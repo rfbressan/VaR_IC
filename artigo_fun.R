@@ -6,6 +6,8 @@ if(!all(c("rugarch", "fExtremes", "xts") %in% loadedNamespaces())){
   library(xts)
 } # Carrega os pacotes necessarios se faltantes
 
+cores <- detectCores() # Quantos cores estao rodando
+
 # roll_fit_cevt -----------------------------------------------------------
 roll_fit_cevt <- function(data, spec, n.roll, window.size) {
   # Deve-se fazer o fit
@@ -17,22 +19,22 @@ roll_fit_cevt <- function(data, spec, n.roll, window.size) {
   # data deve ser o xts com as perdas de todo o periodo
   tic <- Sys.time()
   NT <- length(data) # Tamanho total da amostra de dados
-  cluster <- makePSOCKcluster(4)
-  clusterEvalQ(cl = cluster, library(rugarch))
-  clusterEvalQ(cl = cluster, library(fExtremes))
-  clusterEvalQ(cl = cluster, library(xts))
-  clusterExport(cluster, c("data", "spec", "n.roll", "window.size", "NT"),
-                envir = environment())
-  
-  tmp.list <- parLapply(cl = cluster, 1:n.roll, fun = function(i){
-    garch.fit <- try(ugarchfit(spec, 
-                           data[i:(window.size+i)], 
+  # cluster <- makePSOCKcluster(4)
+  # clusterEvalQ(cl = cluster, library(rugarch))
+  # clusterEvalQ(cl = cluster, library(fExtremes))
+  # clusterEvalQ(cl = cluster, library(xts))
+  # clusterExport(cluster, c("data", "spec", "n.roll", "window.size", "NT"),
+  #               envir = environment())
+
+  tmp.list <- mclapply(1:n.roll, function(i){
+    garch.fit <- try(ugarchfit(spec,
+                           data[i:(window.size+i)],
                            solver = "hybrid"))
     # 3 cases: General Error, Failure to Converge, Failure to invert Hessian (bad solution)
     if(inherits(garch.fit, 'try-error') || convergence(garch.fit)!=0 || is.null(garch.fit@fit$cvar)){
-      lapply_ans <- t(cbind(rep(NA, 10)))
+      lapply_ans <- t(cbind(rep(NA, 9)))
       # Se algum erro, envia como resposta NA, mas nao interrompe a estimacao
-      # Depois no xts retornado pela funcao roll_fit, preencher os NA com os dados 
+      # Depois no xts retornado pela funcao roll_fit, preencher os NA com os dados
       # da estimacao anterior com na.locf
     } else{
       # Salvar o coeficiente beta1 apenas para mostrar a evolucao deste ao longo
@@ -60,22 +62,23 @@ roll_fit_cevt <- function(data, spec, n.roll, window.size) {
       Zq990 <- mu_t+sigma_t*zq990
       Sq975 <- mu_t+sigma_t*sq975
       Sq990 <- mu_t+sigma_t*sq990
-      
+
       # Verbose mode
       #cat("Estimacao numero:", i, "as", as.character(Sys.time()))
       lapply_ans <- cbind(beta1, xi, beta, xi_se, beta_se, Zq975, Zq990, Sq975, Sq990)
     } # fim do else
     return(lapply_ans)
-  }) # fim do parLapply
-  stopCluster(cluster)
+  },
+  mc.cores = cores) # fim do mclapply
+  #stopCluster(cluster)
   # ao final da iteracao teremos uma lista com n.roll elementos, cada um correspondente
-  # a uma data onde foi feito o ajuste dos dados. Nas colunas de cada elemento da lista estao 
+  # a uma data onde foi feito o ajuste dos dados. Nas colunas de cada elemento da lista estao
   # os parametros e medidas de risco estimados para cada um dos dias fora da amostra
-  # Junta-se tudo por rbind e joga fora o ultimo elemento, pois nao tem 
+  # Junta-se tudo por rbind e joga fora o ultimo elemento, pois nao tem
   # perda realizada para comparar com.
   # Depois forma um xts indexado pelos dias fora da amostra a partir do segundo dia
   ans <- do.call(rbind, tmp.list)
-  ans <- ans[-dim(ans)[1],]           
+  ans <- ans[-dim(ans)[1],]
   ans <- xts(ans, order.by = index(data[(window.size+2):(window.size+n.roll)]))
   colnames(ans) <- c("beta1", "xi", "beta", "xi_se", "beta_se", "Zq975", "Zq990", "Sq975", "Sq990")
   # Preenche os NA com a ultima observacao conhecida
@@ -92,7 +95,7 @@ roll_fit_cevt <- function(data, spec, n.roll, window.size) {
 # Ajusta os dados para um modelo Normal incondicional
 roll_fit_unorm <- function(data, n.roll, window.size) {
   tic <- Sys.time()
-  tmp.list <- lapply(1:n.roll, function(i){
+  tmp.list <- mclapply(1:n.roll, function(i){
     xts <- data[i:(window.size+i)]
     mean <- mean(xts)
     sd <- sd(xts)
@@ -109,7 +112,8 @@ roll_fit_unorm <- function(data, n.roll, window.size) {
       0.990,
       1)$value / (1-0.990)
     return(cbind(mean, sd, Zq975, Zq990, Sq975, Sq990))
-  }) # Fim do lapply
+  },
+  mc.cores = cores) # Fim do lapply
   # ao final da iteracao teremos uma lista com n.roll elementos, cada um correspondente
   # a uma data onde foi feito o ajuste dos dados. Nas colunas de cada elemento da lista estao 
   # os parametros e medidas de risco estimados para cada um dos dias fora da amostra
@@ -131,7 +135,7 @@ roll_fit_unorm <- function(data, n.roll, window.size) {
 # Ajusta os dados para um modelo t-Student incondicional
 roll_fit_ut <- function(data, n.roll, window.size) {
   tic <- Sys.time()
-  tmp.list <- lapply(1:n.roll, function(i){
+  tmp.list <- mclapply(1:n.roll, function(i){
     xts <- data[i:(window.size+i)]
     t_fit <- fitdist(distribution = "std", xts)
     t_mu <- t_fit$pars["mu"]
@@ -156,7 +160,8 @@ roll_fit_ut <- function(data, n.roll, window.size) {
       0.990,
       1)$value / (1-0.990)
     return(cbind(t_mu, t_sigma, t_shape, Zq975, Zq990, Sq975, Sq990))
-  }) # Fim do lapply
+  },
+  mc.cores = cores) # Fim do mclapply
   # ao final da iteracao teremos uma lista com n.roll elementos, cada um correspondente
   # a uma data onde foi feito o ajuste dos dados. Nas colunas de cada elemento da lista estao 
   # os parametros e medidas de risco estimados para cada um dos dias fora da amostra
@@ -185,14 +190,14 @@ roll_fit_uevt <- function(data, spec, n.roll, window.size) {
   # data deve ser o xts com as perdas de todo o periodo
   tic <- Sys.time()
   NT <- length(data) # Tamanho total da amostra de dados
-  cluster <- makePSOCKcluster(4)
-  clusterEvalQ(cl = cluster, library(rugarch))
-  clusterEvalQ(cl = cluster, library(fExtremes))
-  clusterEvalQ(cl = cluster, library(xts))
-  clusterExport(cluster, c("data", "spec", "n.roll", "window.size", "NT"),
-                envir = environment())
-  
-  tmp.list <- parLapply(cl = cluster, 1:n.roll, fun = function(i){
+  # cluster <- makePSOCKcluster(4)
+  # clusterEvalQ(cl = cluster, library(rugarch))
+  # clusterEvalQ(cl = cluster, library(fExtremes))
+  # clusterEvalQ(cl = cluster, library(xts))
+  # clusterExport(cluster, c("data", "spec", "n.roll", "window.size", "NT"),
+  #               envir = environment())
+  # 
+  tmp.list <- mclapply(1:n.roll, function(i){
     garch.fit <- try(ugarchfit(spec, 
                                data[i:(window.size+i)], 
                                solver = "hybrid"))
@@ -234,8 +239,9 @@ roll_fit_uevt <- function(data, spec, n.roll, window.size) {
       lapply_ans <- cbind(beta1, xi, beta, xi_se, beta_se, Zq975, Zq990, Sq975, Sq990)
     } # fim do else
     return(lapply_ans)
-  }) # fim do parLapply
-  stopCluster(cluster)
+  },
+  mc.cores = cores) # fim do mclapply
+  #stopCluster(cluster)
   # ao final da iteracao teremos uma lista com n.roll elementos, cada um correspondente
   # a uma data onde foi feito o ajuste dos dados. Nas colunas de cada elemento da lista estao 
   # os parametros e medidas de risco estimados para cada um dos dias fora da amostra

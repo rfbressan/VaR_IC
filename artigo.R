@@ -18,38 +18,40 @@ new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"
 if(length(new.packages)) install.packages(new.packages)
 
 #library(fGarch)
-library(fExtremes)
 #library(fBasics)
 #library(QRM)
-library(rugarch)
 #library(timeSeries)
-library(xts)
-library(PerformanceAnalytics)
-library(xtable)
 library(tidyverse)
 library(broom)
 library(purrr)
 library(gridExtra)
 library(ggplot2)
+library(xtable)
 library(WeightedPortTest)
 #library(CADFtest) # Teste Dickey-Fuller
+library(xts)
+library(PerformanceAnalytics)
+library(fExtremes)
+library(rugarch)
 source("artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
 
 # AUMENTAR O TAMANHO DA AMOSTRA!!!
 # INICIAR OS DADOS EM 2003
-start <- as.Date("2005-08-31")
+start <- as.Date("2003-08-31")
 end <- as.Date("2013-08-31")
 backstart <- as.Date("2013-09-01")
 
-list.returns <- function(asset) {
-  tb <- read.csv(paste0("artigo-", asset, ".csv"), stringsAsFactors = FALSE)
-  prices <- as.xts(read.zoo(tb, format = "%Y-%m-%d", FUN = as.Date))
-  return(100*na.omit(Return.calculate(prices$Adj.Close, method = "log")))
+list.returns <- function(asset, start) {
+  tb <- read_csv(paste0("artigo-", asset, ".csv"), 
+                 col_types = cols_only(Date = col_date(), `Adj Close` = col_double()))
+  prices <- xts(tb$`Adj Close`, order.by = tb$Date)[paste0(start, "/")]
+  colnames(prices) <- "close"
+  return(100*na.omit(Return.calculate(prices, method = "log")))
 }
 # Gera um tible com uma coluna com o codigo do ativo, a serie de retornos - ts e
 # o nome do indice - id_name
 assets <- c("BVSP", "GSPC", "GSPTSE", "IPSA", "MERV", "MXX")
-lista <- lapply(assets, list.returns)
+lista <- lapply(assets, list.returns, start)
 names(lista) <- assets
 assets.tbl <- enframe(lista) %>% 
   cbind(c("IBovespa", "S&P500", "S&P TSE", "IPSA", "Merval", "IPC"),
@@ -87,7 +89,7 @@ colnames(df.descritivas) <- c("Descritivas", assets.tbl$id_name)
 
 # Cria o xtable
 tab1 <- xtable(df.descritivas, caption = "Estatísticas descritivas dos retornos 
-               (amostra completa de 31/08/2005 a 30/08/2017).",
+               (amostra completa de 31/08/2003 a 30/08/2017).",
                digits = 5,
                label = "tab:descritivas",
                auto = TRUE)
@@ -119,15 +121,25 @@ adf <- unnest(adf)
 adf
 
 # Teste para graficos QQ normal
-op <- par(mfrow = c(3,2))
+op <- par(mfrow = c(3,2),
+          mar = c(4, 3, 3, 2))
 for(i in 1:dim(assets.tbl)[1]){
-  qqnormPlot(as.timeSeries(assets.tbl$ts[[i]]), labels = FALSE, title = FALSE, mtext = FALSE,
-             main = assets.tbl$id_name[[i]],
-             xlab = "Normal",
-             ylab = "Amostra")
+  qqnormPlot(assets.tbl$ts[[i]], labels = FALSE, title = FALSE, mtext = FALSE,
+             main = assets.tbl$id_name[[i]], 
+             xlab = "")
+             #ylab = "Amostra")
 }
 par(op)
 
+list.plot <- lapply(seq_along(assets.tbl$indice), 
+                    function(x) {ggplot(assets.tbl$ts[[x]], 
+                                        aes(sample = assets.tbl$ts[[x]]))+
+                        geom_qq()+
+                        labs(x = "", y = "", title = paste(assets.tbl$id_name[[x]], "retornos"))+
+                        geom_abline(slope = 1, intercept = 0)}) 
+
+grid.arrange(grobs = list.plot)
+#ggsave("artigo-qqplots.png", width = 6, height = 9)
 
 # Modelo eGARCH in Sample-----------------------------------------------------------
 ## Ja as distribuicoes de zt a normal e t-Student nao apresentam bom fit
@@ -297,8 +309,8 @@ evt.models <- garch.models %>%
             resid_z = map(garch_fit, ~coredata(residuals(.x, standardize = TRUE))),
             mut = map(garch_fit, ~coredata(fitted(.x))),
             sigmat = map(garch_fit, ~coredata(sigma(.x))),
-            Nu = map_int(resid_z, ~sum(.x > quantile(.x, 0.90))),
-            gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, 0.90))),
+            Nu = map_int(resid_z, ~sum(.x > quantile(.x, 0.95))),
+            gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, 0.95))),
             u = map_dbl(gpdfit, ~.x@parameter$u),
             xi = map_dbl(gpdfit, ~.x@fit$par.ests[1]),
             beta = map_dbl(gpdfit, ~.x@fit$par.ests[2]),
