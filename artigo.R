@@ -35,18 +35,18 @@ library(fExtremes)
 library(rugarch)
 source("artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
 
-# AUMENTAR O TAMANHO DA AMOSTRA!!!
-# INICIAR OS DADOS EM 2003
-start <- as.Date("2003-08-31")
-end <- as.Date("2013-08-31")
-backstart <- as.Date("2013-09-01")
+# AMOSTRA COM DADOS A PARTIR DE 31-08-2000
+# 
+start <- as.Date("2005-08-31")
+end <- as.Date("2014-08-31")
+backstart <- as.Date("2014-09-01")
 
 list.returns <- function(asset, start) {
   tb <- read_csv(paste0("artigo-", asset, ".csv"), 
                  col_types = cols_only(Date = col_date(), `Adj Close` = col_double()))
   prices <- xts(tb$`Adj Close`, order.by = tb$Date)[paste0(start, "/")]
   colnames(prices) <- "close"
-  return(100*na.omit(Return.calculate(prices, method = "log")))
+  return(na.omit(Return.calculate(prices, method = "log")))
 }
 # Gera um tible com uma coluna com o codigo do ativo, a serie de retornos - ts e
 # o nome do indice - id_name
@@ -121,6 +121,8 @@ adf <- unnest(adf)
 adf
 
 # Teste para graficos QQ normal
+jpeg(filename = "artigo-qqplots.jpeg",
+     width = 600, height = 800, quality = 100)
 op <- par(mfrow = c(3,2),
           mar = c(4, 3, 3, 2))
 for(i in 1:dim(assets.tbl)[1]){
@@ -130,16 +132,7 @@ for(i in 1:dim(assets.tbl)[1]){
              #ylab = "Amostra")
 }
 par(op)
-
-list.plot <- lapply(seq_along(assets.tbl$indice), 
-                    function(x) {ggplot(assets.tbl$ts[[x]], 
-                                        aes(sample = assets.tbl$ts[[x]]))+
-                        geom_qq()+
-                        labs(x = "", y = "", title = paste(assets.tbl$id_name[[x]], "retornos"))+
-                        geom_abline(slope = 1, intercept = 0)}) 
-
-grid.arrange(grobs = list.plot)
-#ggsave("artigo-qqplots.png", width = 6, height = 9)
+dev.off()
 
 # Modelo eGARCH in Sample-----------------------------------------------------------
 ## Ja as distribuicoes de zt a normal e t-Student nao apresentam bom fit
@@ -152,7 +145,7 @@ grid.arrange(grobs = list.plot)
 # Uma especificacao para cada ativo
 ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
                      variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
-                     distribution.model = "sstd")
+                     distribution.model = "norm")
 garch.specs <- replicate(length(assets), ruspec)
 names(garch.specs) <- assets
 garch.specs <- enframe(garch.specs)
@@ -209,7 +202,7 @@ garch.models.par <- garch.models %>%
   rm(garch.models.par) # Nao utilizado mais
   # Xtable
   tab2 <- xtable(garchcoef, caption = "Par\\^ametros estimados do modelo eGARCH. Valores p apresentados 
-               de acordo com erros padrão robustos. (amostra de trabalho entre 31/08/2005 a 31/08/2013).",
+               de acordo com erros padrão robustos. (amostra de trabalho entre 31/08/2003 a 31/08/2013).",
                  digits = 5,
                  label = "tab:garchcoef",
                  auto = TRUE)
@@ -321,15 +314,15 @@ evt.models <- garch.models %>%
             sq975= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.975)$shortfall),
             sq990= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.990)$shortfall))
 # ## Teste com o pacote evir
-# testez <- coredata(residuals(garch.models$garch_fit[[1]], standardize = TRUE))
-# teste_evir <- gpd(testez, threshold = quantile(testez, 0.95)) # Mesmos valores do fExtremes
-# meplot(-testez)
+testez <- coredata(residuals(garch.models$garch_fit[[1]], standardize = TRUE))
+teste_evir <- gpd(testez, threshold = quantile(testez, 0.925)) # Mesmos valores do fExtremes
+meplot(testez, type = "l")
 # shape(testez, models = 10, start = 90, end = 150)
 # ## Teste com o pacote evd
 # teste_evd <- fpot(testez, quantile(testez, 0.95))
 # fitted.values(teste_evd)
 # std.errors(teste_evd)  # Iguais ao fExtremes e evir
-# mrlplot(-testez)
+# mrlplot(testez)
 evtcoef <- evt.models %>% 
   transmute(insample = insample,
             u = u,
@@ -348,7 +341,7 @@ evtcoef <- cbind(param, evtcoef)
 colnames(evtcoef) <- c("", evt.models$id_name)
 # Xtable
 tab4 <- xtable(evtcoef, caption = "Parâmetros estimados para o modelo EVT dos resíduos padronizados. 
-               (amostra de trabalho entre 31/08/2005 a 31/08/2013).",
+               (amostra de trabalho entre 31/08/2003 a 31/08/2013).",
                digits = 5,
                label = "tab:evtcoef",
                auto = TRUE)
@@ -369,25 +362,24 @@ par(op)
 
 ## VaR: xq_t = mu_t+1 + sigma_t+1*zq
 ## ES: Sq_t = mu_t+1 + sigma_t+1*sq
-# riskmeasures <- evt.models %>% 
-#   transmute(indice = indice,
-#             id_name = id_name,
-#             loss_in = loss_in,
-#             VaR975 = pmap(., ~(..6+..7*..15)), ## VaR = mu_t+1 + sigma_t+1*zq
-#             VaR990 = pmap(., ~(..6+..7*..16)),
-#             ES975 = pmap(., ~(..6+..7*..17)),  ## ES = mu_t+1 + sigma_t+1*sq
-#             ES990 = pmap(., ~(..6+..7*..18))) 
+riskmeasures <- evt.models %>%
+  transmute(indice = indice,
+            id_name = id_name,
+            loss_in = loss_in,
+            VaR975 = pmap(., ~(..6+..7*..15)), ## VaR = mu_t+1 + sigma_t+1*zq
+            VaR990 = pmap(., ~(..6+..7*..16)),
+            ES975 = pmap(., ~(..6+..7*..17)),  ## ES = mu_t+1 + sigma_t+1*sq
+            ES990 = pmap(., ~(..6+..7*..18)))
 # %>% 
 #   mutate(out_VaR975 = pmap(., ~..6[c((..5+1):(..5+..4-1))]), #out_VaR = VaR[(n_old+1):(n_old+out-1)]
 #          out_VaR990 = pmap(., ~..7[c((..5+1):(..5+..4-1))]),
 #          out_ES975 = pmap(., ~..8[c((..5+1):(..5+..4-1))]),  #out_ES = ES[(n_old+1):(n_old+out-1)]
 #          out_ES990 = pmap(., ~..9[c((..5+1):(..5+..4-1))]),
 #          out_loss = map2(loss, n_old, ~coredata(.x[-c(1:(.y+1))])[, 1, drop = TRUE])) #out_los = loss[-c(1:n_old+1)]
-# Plotando os valores fora da amostra
+# Plotando os valores dentro da amostra
 plot_risks <- function(loss, VaR, ES, id_name) {
-  tindex <- 1:length(loss)
-  df <- data.frame(x = tindex, loss = loss, VaR = VaR, ES = ES)
-  plot <- ggplot(df, aes(x = x))+
+  xts <- merge(loss = loss, VaR = VaR, ES = ES)
+  plot <- ggplot(xts, aes(x = Index))+
     geom_line(aes(y = loss), color = "black")+
     geom_line(aes(y = VaR), color = "red")+
     geom_line(aes(y = ES), color = "darkgreen")+
@@ -395,8 +387,11 @@ plot_risks <- function(loss, VaR, ES, id_name) {
   return(plot)
 }
 VaR_plots <- riskmeasures %>% 
-  transmute(VaR975_plot = pmap(., ~plot_risks(..14, ..10, ..12, ..2)),
-            VaR990_plot = pmap(., ~plot_risks(..14, ..11, ..13, ..2)))
+  transmute(VaR975_plot = pmap(., ~plot_risks(..3, ..4, ..6, ..2)),
+            VaR990_plot = pmap(., ~plot_risks(..3, ..5, ..7, ..2)))
+VaR_plots$VaR975_plot[[1]]+
+  coord_cartesian(xlim = c(as.Date("2011-08-31"), 
+                           as.Date("2014-08-31")))
 
 grid.arrange(grobs = VaR_plots$VaR975_plot)
 grid.arrange(grobs = VaR_plots$VaR990_plot)
@@ -405,22 +400,22 @@ grid.arrange(grobs = VaR_plots$VaR990_plot)
 ## Com os valores de n_old, out e as perdas, calcular a quantidade de violacoes do VaR 
 ## e colocar em um tibble para cada ativo
 #VaR para uma normal incondicional
-out_loss <- riskmeasures$out_loss[[1]]
-varnorm <- qnorm(0.990,
-                 mean(coredata(garch.filtered$loss[[1]][paste0("/", end)])),
-                 sd(coredata(garch.filtered$loss[[1]][paste0("/", end)])))
-varex <- sum(out_loss > riskmeasures$out_VaR990[[1]])
-varex/length(out_loss)*100
-varexnorm <- sum(out_loss > varnorm)
-varexnorm/length(out_loss)*100
-dfex <- data.frame(modelo = c("EVT", "Normal"),
-                   nex = c(varex, varexnorm),
-                   propex = c(varex/length(out_loss)*100, varexnorm/length(out_loss)*100))
-colnames(dfex) <- c("Modelo", "Violações", "Proporção")
+# out_loss <- riskmeasures$out_loss[[1]]
+# varnorm <- qnorm(0.990,
+#                  mean(coredata(garch.filtered$loss[[1]][paste0("/", end)])),
+#                  sd(coredata(garch.filtered$loss[[1]][paste0("/", end)])))
+# varex <- sum(out_loss > riskmeasures$out_VaR990[[1]])
+# varex/length(out_loss)*100
+# varexnorm <- sum(out_loss > varnorm)
+# varexnorm/length(out_loss)*100
+# dfex <- data.frame(modelo = c("EVT", "Normal"),
+#                    nex = c(varex, varexnorm),
+#                    propex = c(varex/length(out_loss)*100, varexnorm/length(out_loss)*100))
+# colnames(dfex) <- c("Modelo", "Violações", "Proporção")
 # stargazer(dfex, out = "artigo-apresentacao-tabela.tex", 
 #           summary = FALSE, rownames = FALSE, font.size = "tiny",
 #           style = "aer")
-knitr::kable(dfex, format = "pandoc")
+# knitr::kable(dfex, format = "pandoc")
 
 
 # Backtesting com refit ----------------------------------------------
@@ -431,12 +426,13 @@ n.roll <- ndays(ibov.xts[paste0(backstart, "/")])
 # Periodo fora da amostra + 1, para fazer as comparacoes entre
 # VaRt e realizado t+1
 ibov_os <- (window.size+2):(window.size+n.roll) 
-realized <- ibov.xts[ibov_os] # Perdas realizadas durante o periodo fora da amostra
+realized <- tibble(indice = c(assets.tbl$indice[[1]]),
+                  realizado = list(ibov.xts[ibov_os])) # Perdas realizadas durante o periodo fora da amostra
 
 ###### Modelo EVT condicional #########################################
 rollspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
                        variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
-                       distribution.model = "sstd")
+                       distribution.model = "norm")
 # Ajusta os dados fora da amostra para o modelo EVT condicional
 # Retorna um xts com os parametros da GPD e as medidas de risco
 # CUIDADO!! uma rodada desta com 1000 observacoes fora da amostra
@@ -449,28 +445,46 @@ ibov_os.xts <- readRDS("ibov_os.xts.rds")
 # Limpa a memoria para nao acumular muitos dados
 #rm(list = "ibov_os.xts")
 
+###### Modelo EVT incondicional #########################################
+# Ajusta os dados para um modelo EVT incondicional
+ibov_os_uevt.xts <- roll_fit_uevt(ibov.xts, rollspec, n.roll, window.size)
 ###### Modelo Normal incondicional #########################################
 # Ajusta os dados para um modelo Normal incondicional
 ibov_os_norm.xts <- roll_fit_unorm(ibov.xts, n.roll, window.size)
 ###### Modelo t-Student incondicional ######################################
 # Ajusta os dados para um modelo t-Student incondicional
 ibov_os_t.xts <- roll_fit_ut(ibov.xts, n.roll, window.size)
-###### Modelo EVT incondicional #########################################
-# Ajusta os dados para um modelo EVT incondicional
-ibov_os_uevt.xts <- roll_fit_uevt(ibov.xts, rollspec, n.roll, window.size)
+###### Modelo RiskMetrics com suavizacao exponencial ##########################
+# Ajusta os dados para um modelo RiskMetrics
+ibov_os_riskmetrics <- roll_fit_riskmetrics(ibov.xts, n.roll, window.size)
 
+# Testes estatisticos para o VaR ------------------------------------------
+# Quais testes fazer?
+# VaRTest possui 2 testes, incondicional de Kupiec1995 e condicional de Christoffersen2001
+# que nao esta convergindo
+# Existe tambem o teste de Christoffersen2004 de tempo entre as violacoes
+# Pode ser feito um teste do tipo Model Confidence Set - MCS - com a funcao VaRloss e 
+# mcsTest
+num <- 4 # numero de modelos ja estimados entre "cevt", "unorm", "ut", "riskmetrics", etc.
+ibov_risk <- tibble(indice = rep(assets.tbl$indice[[1]], 2*num), 
+                    id_name = rep(assets.tbl$id_name[[1]], 2*num),
+                    coverage = c(rep(0.025, num), rep(0.01, num)),
+                    model_type = rep(c("cevt", "unorm", "ut", "riskmetrics"), 2),
+                    VaR = list(ibov_os_cevt.xts$Zq975,
+                               ibov_os_norm.xts$Zq975,
+                               ibov_os_t.xts$Zq975,
+                               ibov_os_riskmetrics$Zq975,
+                               ibov_os_cevt.xts$Zq990,
+                               ibov_os_norm.xts$Zq990,
+                               ibov_os_t.xts$Zq990,
+                               ibov_os_riskmetrics$Zq990))
 
+ibov_vartest <- ibov_risk %>% 
+  left_join(realized, by = "indice") %>% 
+  transmute(indice = indice,
+            id_name = id_name,
+            coverage = coverage,
+            model_type = model_type,
+            VaRtest = pmap(., ~VaRTest(..3, -coredata(..6), -coredata(..5))))
 
-
-# E por fim calcula as medidas de risco para os residuos zt
-risks <- gpdRiskMeasures(evtfit, prob = 0.99) # Medidas sem intervalo de conf.
-tail <- gpdTailPlot(evtfit)
-varci <- gpdQPlot(tail)
-esci <- gpdSfallPlot(tail)
-risktable <- rbind(varci, esci)
-dimnames(risktable) <- list(c("$z_{.99}$", "$s_{.99}$"), c("Inf", "Estimativa", "Sup"))
-print.xtable(xtable(risktable, caption = "Valores de $z_{.99}$ e $s_{.99}$ encontrados e seus
-                    respectivos intervalos de confian\\c ca a 95\\%",
-                    label = "tab:tabevtAAPL2", align = c("r", "r", "c", "r")),
-             file = "..\\tables\\tabevtAAPL2.tex", sanitize.text.function = function(x) {x})
-
+VaRplot(ibov_risk$coverage[1], -realized$realizado[[1]], -ibov_risk$VaR[[1]])

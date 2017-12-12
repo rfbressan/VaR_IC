@@ -261,3 +261,32 @@ roll_fit_uevt <- function(data, spec, n.roll, window.size) {
   # com os valores realizados NO DIA SEGUINTE a data onde foram calculadas
 } # fim da roll_fit_cevt
 
+# roll_fit_riskmetrics -----------------------------------------------------------
+roll_fit_riskmetrics <- function(data, n.roll, window.size){
+  # Eh uma especificacao de Garch(1,1) com mu = 0, omega = 0, lambda = beta1 e 1-lambda = alpha1
+  # Como os parametros do Garch sao fixos, pode-se utilizar o metodo ugarchfilter
+  lambda <- 0.94 # Valor apontado como ideal para dados diarios
+  ruspec <- ugarchspec(mean.model = list(armaOrder = c(0,0),
+                                         include.mean = FALSE),
+                       variance.model = list(model = "iGARCH",
+                                             garchOrder = c(1, 1)),
+                       distribution.model = "norm",
+                       fixed.pars = list(omega = 0,
+                                         alpha1 = (1-lambda))) # Beta eh calculado no modelo iGarch
+  filter <- ugarchfilter(ruspec, data[(window.size+1):(window.size+n.roll)])
+  resid <- residuals(filter)
+  sigma <- sigma(filter)
+  Zq975 <- sigma*qnorm(0.975)
+  Zq990 <- sigma*qnorm(0.990)
+  Sq975 <- (coredata(sigma)*dnorm(qnorm(0.975)))/0.025 # Eq 4.7 p. 37 de Pfaff2013
+  Sq990 <- (coredata(sigma)*dnorm(qnorm(0.990)))/0.01
+  
+  ans <- cbind(Zq975, Zq990, Sq975, Sq990) # 
+  ans <- ans[-dim(ans)[1],]           
+  ans <- xts(ans, order.by = index(data[(window.size+2):(window.size+n.roll)]))
+  colnames(ans) <- c("Zq975", "Zq990", "Sq975", "Sq990") # 
+  # Preenche os NA com a ultima observacao conhecida
+  ans <- na.locf(ans)
+  return(ans)
+}
+
