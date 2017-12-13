@@ -54,8 +54,7 @@ assets <- c("BVSP", "GSPC", "GSPTSE", "IPSA", "MERV", "MXX")
 lista <- lapply(assets, list.returns, start)
 names(lista) <- assets
 assets.tbl <- enframe(lista) %>% 
-  cbind(c("IBovespa", "S&P500", "S&P TSE", "IPSA", "Merval", "IPC"),
-        stringsAsFactors = FALSE)
+  bind_cols(tibble(id_name = c("IBovespa", "S&P500", "S&P TSE", "IPSA", "Merval", "IPC")))
 
 colnames(assets.tbl) <- c("indice", "ts", "id_name")
 # Qual o tamanho da janela in sample?
@@ -419,17 +418,27 @@ grid.arrange(grobs = VaR_plots$VaR990_plot)
 
 
 # Backtesting com refit ----------------------------------------------
-# Primeiro um teste apenas para o Ibovespa
-ibov.xts <- -assets.tbl$ts[[1]]
-window.size <- ndays(ibov.xts[paste0("/", end)])
-n.roll <- ndays(ibov.xts[paste0(backstart, "/")])
+# Monta o tibble para as estimacoes out of sample
+assets_os.tbl <- garch.models %>% 
+  transmute(indice = indice,
+            id_name = id_name,
+            loss = loss,
+            window.size = map_int(loss, ~as.integer(ndays(.x[paste0("/", end)]))),
+            n.roll = map2_int(loss, window.size, ~length(.x)-.y),
+            spec = spec)
+
 # Periodo fora da amostra + 1, para fazer as comparacoes entre
 # VaRt e realizado t+1
-ibov_os <- (window.size+2):(window.size+n.roll) 
-realized <- tibble(indice = c(assets.tbl$indice[[1]]),
-                  realizado = list(ibov.xts[ibov_os])) # Perdas realizadas durante o periodo fora da amostra
+# realized tera n.roll-1 observacoes devido ao deslocamento das observacoes de VaR e ES
+# para serem comparados.
+# As series de VaR e ES no tibble de risco tambem terao n.roll-1 observacoes e estarao nas 
+# datas corretas para COMPARACAO (a medida foi calculada no dia anterior)
+realized <- assets_os.tbl %>% 
+  transmute(indice = indice,
+            real = pmap(., ~..3[(..4+2):(..4+..5)])) # real = loss[(window.size+2):(window.size+n.roll)]
 
-###### Modelo EVT condicional #########################################
+######################### NAO USADO ####################################################################         
+## Modelo EVT condicional ###
 rollspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
                        variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
                        distribution.model = "norm")
@@ -437,26 +446,27 @@ rollspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
 # Retorna um xts com os parametros da GPD e as medidas de risco
 # CUIDADO!! uma rodada desta com 1000 observacoes fora da amostra
 # pode levar mais de 6 HORAS (estimado 22 segundos para cada rolagem)
-ibov_os_cevt.xts <- roll_fit_cevt(ibov.xts, rollspec, n.roll, window.size)
-object.size(ibov_os.xts) # Retorna o tamanho em bytes, nao eh grande
+ibov_os_cevt.list <- roll_fit_cevt(ibov.xts, window.size, n.roll, rollspec)
+object.size(ibov_os.list) # Retorna o tamanho em bytes, nao eh grande
 # Salva os dados obtidos para tratamento posterior
-saveRDS(ibov_os.xts, file = "ibov_os.xts.rds")
-ibov_os.xts <- readRDS("ibov_os.xts.rds")
+saveRDS(ibov_os.list, file = "ibov_os.list.rds")
+ibov_os.xts <- readRDS("ibov_os.list.rds")
 # Limpa a memoria para nao acumular muitos dados
-#rm(list = "ibov_os.xts")
+#rm(list = "ibov_os.list")
 
-###### Modelo EVT incondicional #########################################
+### Modelo EVT incondicional ###
 # Ajusta os dados para um modelo EVT incondicional
-ibov_os_uevt.xts <- roll_fit_uevt(ibov.xts, rollspec, n.roll, window.size)
-###### Modelo Normal incondicional #########################################
+ibov_os_uevt.xts <- roll_fit_uevt(ibov.xts, window.size, n.roll, rollspec)
+###### Modelo Normal incondicional ##
 # Ajusta os dados para um modelo Normal incondicional
-ibov_os_norm.xts <- roll_fit_unorm(ibov.xts, n.roll, window.size)
-###### Modelo t-Student incondicional ######################################
+ibov_os_norm.xts <- roll_fit_unorm(ibov.xts, window.size, n.roll)
+###### Modelo t-Student incondicional ###
 # Ajusta os dados para um modelo t-Student incondicional
-ibov_os_t.xts <- roll_fit_ut(ibov.xts, n.roll, window.size)
-###### Modelo RiskMetrics com suavizacao exponencial ##########################
+ibov_os_t.xts <- roll_fit_ut(ibov.xts, window.size, n.roll)
+###### Modelo RiskMetrics com suavizacao exponencial ###
 # Ajusta os dados para um modelo RiskMetrics
-ibov_os_riskmetrics <- roll_fit_riskmetrics(ibov.xts, n.roll, window.size)
+ibov_os_riskmetrics <- roll_fit_riskmetrics(ibov.xts, window.size, n.roll)
+##########################################################################################
 
 # Testes estatisticos para o VaR ------------------------------------------
 # Quais testes fazer?
@@ -465,26 +475,81 @@ ibov_os_riskmetrics <- roll_fit_riskmetrics(ibov.xts, n.roll, window.size)
 # Existe tambem o teste de Christoffersen2004 de tempo entre as violacoes
 # Pode ser feito um teste do tipo Model Confidence Set - MCS - com a funcao VaRloss e 
 # mcsTest
-num <- 4 # numero de modelos ja estimados entre "cevt", "unorm", "ut", "riskmetrics", etc.
-ibov_risk <- tibble(indice = rep(assets.tbl$indice[[1]], 2*num), 
-                    id_name = rep(assets.tbl$id_name[[1]], 2*num),
-                    coverage = c(rep(0.025, num), rep(0.01, num)),
-                    model_type = rep(c("cevt", "unorm", "ut", "riskmetrics"), 2),
-                    VaR = list(ibov_os_cevt.xts$Zq975,
-                               ibov_os_norm.xts$Zq975,
-                               ibov_os_t.xts$Zq975,
-                               ibov_os_riskmetrics$Zq975,
-                               ibov_os_cevt.xts$Zq990,
-                               ibov_os_norm.xts$Zq990,
-                               ibov_os_t.xts$Zq990,
-                               ibov_os_riskmetrics$Zq990))
 
-ibov_vartest <- ibov_risk %>% 
-  left_join(realized, by = "indice") %>% 
+######### TESTE PARA OS 6 INDICES ###
+# roll_fit(data, window.size, n.roll, spec, models)
+# de assets_os.tbl temos os seguintes numeros
+# 1: indice 
+# 2: id_name
+# 3: loss 
+# 4: window.size 
+# 5: n.roll 
+# 6: spec 
+models <- c("cevt", "unorm", "ut", "uevt", "riskmetrics")
+teste.tbl <- assets_os.tbl # Copia os dados para um tibble de teste
+## ATENCAO! Aqui eh alterado o valor de n.roll para o teste ser rapido
+## no artigo completo deve-se EXCLUIR ESTA PROXIMA LINHA
+teste.tbl$n.roll <- as.integer(rep(5, 6))
+teste_roll.tbl <- teste.tbl %>% 
   transmute(indice = indice,
             id_name = id_name,
-            coverage = coverage,
-            model_type = model_type,
-            VaRtest = pmap(., ~VaRTest(..3, -coredata(..6), -coredata(..5))))
+            roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
+teste_roll_unnest <- teste_roll.tbl %>% 
+  unnest() %>% 
+  mutate(risk.tbl = map(roll, ~.x$risk.tbl),
+         param.xts = map(roll, ~.x$param.xts))
 
-VaRplot(ibov_risk$coverage[1], -realized$realizado[[1]], -ibov_risk$VaR[[1]])
+# Extrai a evolucao dos parametros de cada modelo no tempo
+param.tbl <- teste_roll_unnest %>% 
+  transmute(indice = indice,
+            id_name = id_name,
+            model_type = model_type,
+            param.xts = param.xts)
+# Extrai a evolucao das medidas de risco de cada modelo, para cada cobertura, no tempo
+teste_risk.tbl <- teste_roll_unnest %>% 
+  transmute(indice = indice,
+            id_name = id_name,
+            model_type = model_type,
+            risk.tbl = risk.tbl) %>% 
+  unnest()
+format(object.size(teste_risk.tbl), units = "Kb") # Verifica o tamanho do objeto
+
+## Faz os testes de VaR para os 6 indices
+## VaRTest(alpha = 0.05, actual, VaR, conf.level = 0.95)
+teste_realized <- realized %>% # Copia os dados para um tibble de teste
+  left_join(teste.tbl, by = "indice") %>% 
+  transmute(indice = indice,
+            real = map2(real, n.roll, ~.x[1:(.y-1)]))
+vartest.tbl <- teste_risk.tbl %>% 
+  left_join(teste_realized, by = "indice") %>% 
+  transmute(indice = indice,
+            id_name = id_name,
+            model_type = model_type,
+            coverage = coverage,
+            VaRtest = pmap(., ~VaRTest(..4, -coredata(..7), -coredata(..5))))
+
+# Plot do VaR e violacoes
+lin <- 5 # Escolhe uma das linhas de risk, de 1 a 10 para ficar no Ibovespa
+VaRplot(teste_risk.tbl$coverage[lin], -teste_realized$real[[1]], -teste_risk.tbl$VaR[[lin]])
+
+## VaRDurTest
+vardurtest.tbl <- teste_risk.tbl %>% 
+  left_join(teste_realized, by = "indice") %>% 
+  transmute(indice = indice,
+            id_name = id_name,
+            model_type = model_type,
+            coverage = coverage,
+            VaRDurTest = pmap(., ~VaRDurTest(..4, -coredata(..7), -coredata(..5))))
+
+## MCS para os VaR atraves da funcao VaRLoss
+mcs.tbl <- teste_risk.tbl %>% 
+  left_join(teste_realized, by = "indice") %>% 
+  transmute(indice = indice,
+            model_type = model_type,
+            coverage = coverage,
+            VaRloss = pmap(., ~VaRloss(..4, -coredata(..7), -coredata(..5)))) %>% 
+  group_by(indice, coverage) %>% 
+  summarise(loss_matrix = list(do.call(cbind, VaRloss))) %>% 
+  mutate(mcs_test = map2(loss_matrix, coverage, ~mcsTest(.x, .y)))
+
+

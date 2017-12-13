@@ -1,15 +1,46 @@
 ## Funcoes utilizadas em artigo.R
 ## artigo_fun.R
-if(!all(c("rugarch", "fExtremes", "xts") %in% loadedNamespaces())){
-  library(rugarch)
-  library(fExtremes)
+if(!all(c("rugarch", "fExtremes", "xts", "tidyverse") %in% loadedNamespaces())){
+  library(tidyverse)
   library(xts)
+  library(fExtremes)
+  library(rugarch)
 } # Carrega os pacotes necessarios se faltantes
 
 cores <- detectCores() # Quantos cores estao rodando
 
+# roll_fit ----------------------------------------------------------------
+
+roll_fit <- function(data, window.size, n.roll, spec, models) {
+  # Check para os argumentos
+  if(!is.xts(data)) stop("roll_fit: data deve ser um xts")
+  if(any(is.null(window.size), is.null(n.roll), is.null(spec), is.null(models)))
+    stop("roll_fit: Devem ser passados todos os argumentos!")
+  if(class(spec) != "uGARCHspec") stop("roll_fit: spec deve ser da classe uGARCspec")
+  
+  tmp.list <- map(models, 
+                  ~switch (.x,
+                           cevt = roll_fit_cevt(data, window.size, n.roll, spec),
+                           uevt = roll_fit_uevt(data, window.size, n.roll, spec),
+                           unorm = roll_fit_unorm(data, window.size, n.roll),
+                           ut = roll_fit_ut(data, window.size, n.roll),
+                           riskmetrics = roll_fit_riskmetrics(data, window.size, n.roll)
+                           ) # fim switch
+                  ) # fim map
+  names(tmp.list) <- models
+  tmp.list <- enframe(tmp.list)
+  colnames(tmp.list) <- c("model_type", "roll")
+  return(tmp.list)
+}
 # roll_fit_cevt -----------------------------------------------------------
-roll_fit_cevt <- function(data, spec, n.roll, window.size) {
+roll_fit_cevt <- function(data, window.size, n.roll, spec) {
+  #tic <- Sys.time()
+  # Check para os argumentos
+  if(!is.xts(data)) stop("roll_fit_cevt: data deve ser um xts")
+  if(any(is.null(window.size), is.null(n.roll), is.null(spec)))
+    stop("roll_fit_cevt: Devem ser passados todos os argumentos!")
+  if(class(spec) != "uGARCHspec") stop("roll_fit_cevt: spec deve ser da classe uGARCspec")
+  
   # Deve-se fazer o fit
   # Extrair residuos padronizados
   # Aplicar o gpfFit
@@ -17,7 +48,6 @@ roll_fit_cevt <- function(data, spec, n.roll, window.size) {
   # Para cada interacao. n.roll vezes
   # Devolver tudo em um data.frame
   # data deve ser o xts com as perdas de todo o periodo
-  tic <- Sys.time()
   NT <- length(data) # Tamanho total da amostra de dados
   # cluster <- makePSOCKcluster(4)
   # clusterEvalQ(cl = cluster, library(rugarch))
@@ -83,9 +113,13 @@ roll_fit_cevt <- function(data, spec, n.roll, window.size) {
   colnames(ans) <- c("beta1", "xi", "beta", "xi_se", "beta_se", "Zq975", "Zq990", "Sq975", "Sq990")
   # Preenche os NA com a ultima observacao conhecida
   ans <- na.locf(ans)
-  toc <- Sys.time()
-  print(toc-tic)
-  return(ans)
+  risk <- tibble(coverage = c(0.025, 0.01),
+                 VaR.xts = list(ans$Zq975, ans$Zq990),
+                 ES.xts = list(ans$Sq975, ans$Sq990))
+  param <- ans[, c("beta1", "xi", "beta", "xi_se", "beta_se")]
+  #toc <- Sys.time()
+  #print(toc-tic)
+  return(list(risk.tbl = risk, param.xts = param))
   # Os valores retornados das medidas de risco devem ser comparadas
   # com os valores realizados NO DIA SEGUINTE a data onde foram calculadas
 } # fim da roll_fit_cevt
@@ -93,8 +127,13 @@ roll_fit_cevt <- function(data, spec, n.roll, window.size) {
 
 # roll_fit_unorm ----------------------------------------------------------
 # Ajusta os dados para um modelo Normal incondicional
-roll_fit_unorm <- function(data, n.roll, window.size) {
-  tic <- Sys.time()
+roll_fit_unorm <- function(data, window.size, n.roll) {
+  #tic <- Sys.time()
+  # Check para os argumentos
+  if(!is.xts(data)) stop("roll_fit_unorm: data deve ser um xts")
+  if(any(is.null(window.size), is.null(n.roll)))
+    stop("roll_fit_unorm: Devem ser passados todos os argumentos!")
+  
   tmp.list <- mclapply(1:n.roll, function(i){
     xts <- data[i:(window.size+i)]
     mean <- mean(xts)
@@ -126,15 +165,24 @@ roll_fit_unorm <- function(data, n.roll, window.size) {
   colnames(ans) <- c("mu", "sigma", "Zq975", "Zq990", "Sq975", "Sq990")
   # Preenche os NA com a ultima observacao conhecida
   ans <- na.locf(ans)
-  toc <- Sys.time()
-  print(toc-tic)
-  return(ans)
+  risk <- tibble(coverage = c(0.025, 0.01),
+                 VaR.xts = list(ans$Zq975, ans$Zq990),
+                 ES.xts = list(ans$Sq975, ans$Sq990))
+  param <- ans[, c("mu", "sigma")]
+  #toc <- Sys.time()
+  #print(toc-tic)
+  return(list(risk.tbl = risk, param.xts = param))
 }
 
 # roll_fit_ut ----------------------------------------------------------
 # Ajusta os dados para um modelo t-Student incondicional
-roll_fit_ut <- function(data, n.roll, window.size) {
-  tic <- Sys.time()
+roll_fit_ut <- function(data, window.size, n.roll) {
+  #tic <- Sys.time()
+  # Check para os argumentos
+  if(!is.xts(data)) stop("roll_fit_ut: data deve ser um xts")
+  if(any(is.null(window.size), is.null(n.roll)))
+    stop("roll_fit_ut: Devem ser passados todos os argumentos!")
+  
   tmp.list <- mclapply(1:n.roll, function(i){
     xts <- data[i:(window.size+i)]
     t_fit <- fitdist(distribution = "std", xts)
@@ -174,13 +222,24 @@ roll_fit_ut <- function(data, n.roll, window.size) {
   colnames(ans) <- c("mu", "sigma", "shape", "Zq975", "Zq990", "Sq975", "Sq990")
   # Preenche os NA com a ultima observacao conhecida
   ans <- na.locf(ans)
-  toc <- Sys.time()
-  print(toc-tic)
-  return(ans)
+  risk <- tibble(coverage = c(0.025, 0.01),
+                 VaR.xts = list(ans$Zq975, ans$Zq990),
+                 ES.xts = list(ans$Sq975, ans$Sq990))
+  param <- ans[, c("mu", "sigma", "shape")]
+  # toc <- Sys.time()
+  # print(toc-tic)
+  return(list(risk.tbl = risk, param.xts = param))
 }
 
 # roll_fit_uevt -----------------------------------------------------------
-roll_fit_uevt <- function(data, spec, n.roll, window.size) {
+roll_fit_uevt <- function(data, window.size, n.roll, spec) {
+  #tic <- Sys.time()
+  # Check para os argumentos
+  if(!is.xts(data)) stop("roll_fit_uevt: data deve ser um xts")
+  if(any(is.null(window.size), is.null(n.roll), is.null(spec)))
+    stop("roll_fit_uevt: Devem ser passados todos os argumentos!")
+  if(class(spec) != "uGARCHspec") stop("roll_fit: spec deve ser da classe uGARCspec")
+  
   # Deve-se fazer o fit
   # Extrair residuos padronizados
   # Aplicar o gpfFit
@@ -188,7 +247,6 @@ roll_fit_uevt <- function(data, spec, n.roll, window.size) {
   # Para cada interacao. n.roll vezes
   # Devolver tudo em um data.frame (ou lista)
   # data deve ser o xts com as perdas de todo o periodo
-  tic <- Sys.time()
   NT <- length(data) # Tamanho total da amostra de dados
   # cluster <- makePSOCKcluster(4)
   # clusterEvalQ(cl = cluster, library(rugarch))
@@ -254,15 +312,23 @@ roll_fit_uevt <- function(data, spec, n.roll, window.size) {
   colnames(ans) <- c("beta1", "xi", "beta", "xi_se", "beta_se", "Zq975", "Zq990", "Sq975", "Sq990")
   # Preenche os NA com a ultima observacao conhecida
   ans <- na.locf(ans)
-  toc <- Sys.time()
-  print(toc-tic)
-  return(ans)
+  risk <- tibble(coverage = c(0.025, 0.01),
+                 VaR.xts = list(ans$Zq975, ans$Zq990),
+                 ES.xts = list(ans$Sq975, ans$Sq990))
+  param <- ans[, c("beta1", "xi", "beta", "xi_se", "beta_se")]
+  #toc <- Sys.time()
+  #print(toc-tic)
+  return(list(risk.tbl = risk, param.xts = param))
   # Os valores retornados das medidas de risco devem ser comparadas
   # com os valores realizados NO DIA SEGUINTE a data onde foram calculadas
 } # fim da roll_fit_cevt
 
 # roll_fit_riskmetrics -----------------------------------------------------------
-roll_fit_riskmetrics <- function(data, n.roll, window.size){
+roll_fit_riskmetrics <- function(data, window.size, n.roll){
+  # Check para os argumentos
+  if(!is.xts(data)) stop("roll_fit_riskmetrics: data deve ser um xts")
+  if(any(is.null(window.size), is.null(n.roll)))
+    stop("roll_fit_riskmetrics: Devem ser passados todos os argumentos!")
   # Eh uma especificacao de Garch(1,1) com mu = 0, omega = 0, lambda = beta1 e 1-lambda = alpha1
   # Como os parametros do Garch sao fixos, pode-se utilizar o metodo ugarchfilter
   lambda <- 0.94 # Valor apontado como ideal para dados diarios
@@ -281,12 +347,16 @@ roll_fit_riskmetrics <- function(data, n.roll, window.size){
   Sq975 <- (coredata(sigma)*dnorm(qnorm(0.975)))/0.025 # Eq 4.7 p. 37 de Pfaff2013
   Sq990 <- (coredata(sigma)*dnorm(qnorm(0.990)))/0.01
   
-  ans <- cbind(Zq975, Zq990, Sq975, Sq990) # 
+  ans <- cbind(lambda, Zq975, Zq990, Sq975, Sq990) # 
   ans <- ans[-dim(ans)[1],]           
   ans <- xts(ans, order.by = index(data[(window.size+2):(window.size+n.roll)]))
-  colnames(ans) <- c("Zq975", "Zq990", "Sq975", "Sq990") # 
+  colnames(ans) <- c("lambda", "Zq975", "Zq990", "Sq975", "Sq990") # 
   # Preenche os NA com a ultima observacao conhecida
   ans <- na.locf(ans)
-  return(ans)
+  risk <- tibble(coverage = c(0.025, 0.01),
+                 VaR.xts = list(ans$Zq975, ans$Zq990),
+                 ES.xts = list(ans$Sq975, ans$Sq990))
+  param <- ans[, c("lambda")]
+  return(list(risk.tbl = risk, param.xts = param))
 }
 
