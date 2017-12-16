@@ -24,12 +24,15 @@ roll_fit <- function(data, window.size, n.roll, spec, models) {
                            uevt = roll_fit_uevt(data, window.size, n.roll, spec),
                            unorm = roll_fit_unorm(data, window.size, n.roll),
                            ut = roll_fit_ut(data, window.size, n.roll),
-                           riskmetrics = roll_fit_riskmetrics(data, window.size, n.roll)
+                           riskmetrics = roll_fit_riskmetrics(data, window.size, n.roll),
+                           cat("Modelo não definido:", .x)
                            ) # fim switch
                   ) # fim map
   names(tmp.list) <- models
   tmp.list <- enframe(tmp.list)
   colnames(tmp.list) <- c("model_type", "roll")
+  tmp.list <- subset(tmp.list, subset = !is.null(tmp.list$roll))
+  tmp.list
   return(tmp.list)
 }
 # roll_fit_cevt -----------------------------------------------------------
@@ -86,13 +89,13 @@ roll_fit_cevt <- function(data, window.size, n.roll, spec) {
       sq975 <- gpdRiskMeasures(gpd.fit, prob = 0.975)$shortfall
       sq990 <- gpdRiskMeasures(gpd.fit, prob = 0.990)$shortfall
       # Agora escalar e deslocar as medidas de risco de acordo com o modelo garch
-      # Zq = mu_t+sigma_t*zq
-      # Sq = mu_t+sigma_t*sq
+      # Zq = mu_t+sqrt(sigma_t)*zq
+      # Sq = mu_t+sqrt(sigma_t)*sq
       Zq975 <- mu_t+sigma_t*zq975
       Zq990 <- mu_t+sigma_t*zq990
       Sq975 <- mu_t+sigma_t*sq975
       Sq990 <- mu_t+sigma_t*sq990
-
+      
       # Verbose mode
       #cat("Estimacao numero:", i, "as", as.character(Sys.time()))
       lapply_ans <- cbind(beta1, xi, beta, xi_se, beta_se, Zq975, Zq990, Sq975, Sq990)
@@ -261,7 +264,7 @@ roll_fit_uevt <- function(data, window.size, n.roll, spec) {
                                solver = "hybrid"))
     # 3 cases: General Error, Failure to Converge, Failure to invert Hessian (bad solution)
     if(inherits(garch.fit, 'try-error') || convergence(garch.fit)!=0 || is.null(garch.fit@fit$cvar)){
-      lapply_ans <- t(cbind(rep(NA, 10)))
+      lapply_ans <- t(cbind(rep(NA, 9)))
       # Se algum erro, envia como resposta NA, mas nao interrompe a estimacao
       # Depois no xts retornado pela funcao roll_fit, preencher os NA com os dados 
       # da estimacao anterior com na.locf
@@ -272,7 +275,7 @@ roll_fit_uevt <- function(data, window.size, n.roll, spec) {
       # Retirar os residuos padronizados, e o ultimo mu_t e sigma_t
       resid_z <- coredata(residuals(garch.fit, standardize = TRUE))
       mu_t <- uncmean(garch.fit)
-      sigma_t <- uncvariance(garch.fit)
+      sigma_t <- sqrt(uncvariance(garch.fit)) 
       # Ajustar uma gpd aos dados de residuos padronizados
       gpd.fit <- gpdFit(resid_z, u = quantile(resid_z, 0.95))
       xi = gpd.fit@fit$par.ests[1]
@@ -321,7 +324,7 @@ roll_fit_uevt <- function(data, window.size, n.roll, spec) {
   return(list(risk.tbl = risk, param.xts = param))
   # Os valores retornados das medidas de risco devem ser comparadas
   # com os valores realizados NO DIA SEGUINTE a data onde foram calculadas
-} # fim da roll_fit_cevt
+} # fim da roll_fit_uevt
 
 # roll_fit_riskmetrics -----------------------------------------------------------
 roll_fit_riskmetrics <- function(data, window.size, n.roll){
@@ -341,7 +344,7 @@ roll_fit_riskmetrics <- function(data, window.size, n.roll){
                                          alpha1 = (1-lambda))) # Beta eh calculado no modelo iGarch
   filter <- ugarchfilter(ruspec, data[(window.size+1):(window.size+n.roll)])
   resid <- residuals(filter)
-  sigma <- sigma(filter)
+  sigma <- sigma(filter) # variancia!! eh necessario tirar a raiz para obter o desv. padrao
   Zq975 <- sigma*qnorm(0.975)
   Zq990 <- sigma*qnorm(0.990)
   Sq975 <- (coredata(sigma)*dnorm(qnorm(0.975)))/0.025 # Eq 4.7 p. 37 de Pfaff2013
@@ -358,5 +361,89 @@ roll_fit_riskmetrics <- function(data, window.size, n.roll){
                  ES.xts = list(ans$Sq975, ans$Sq990))
   param <- ans[, c("lambda")]
   return(list(risk.tbl = risk, param.xts = param))
+}
+
+# es_test -----------------------------------------------------------------
+# Teste nao parametrico para os residuos das violacoes ao VaR, conforme 
+# teste de ES de MacNeil2000
+# ATENCAO!! Este teste so faz sentido ser realizados apos os teste de VaR
+# aprovarem o modelo
+es_test <- function(alpha = 0.0275, losses, ES, VaR, conf.level = 0.95, n.boot = 1000) {
+  # Check for univariate series
+  if(!all(dim(losses)[2] == 1,
+          dim(ES)[2] == 1,
+          dim(VaR)[2] == 1))
+    stop("\nSeries are not univariate!")
+  # Check for the same length in all series
+  N <-  length(losses)
+  if(!all(length(VaR) == N,
+          length(ES) == N))
+    stop("\nLength of series are not equal!")
+  idx <-  which(losses > VaR)
+  s <-  ES[idx] # ES values when VaR violation occurred
+  x <- losses[idx] # losses that violated VaR
+  
+  # One-sided test. H0: mean of x is less than or equal to mean of s
+  # We do not want to reject H0
+  boot <- boot.t.test(x, s, reps = n.boot, alternative = "greater")
+  
+  ans <-  tibble(expected.exceed = floor(alpha*N),
+                 actual.exceed = length(idx)) %>% 
+    bind_cols(boot)
+  # conditional expected shortfall is systematically underestimated
+  ans$H0 <- "Mean of Excess Violations of VaR is less than or equal to zero"
+  ans$Decision <- ifelse(ans$p.value < (1 - conf.level), "Reject H0", "Failed to reject H0")
+  return(ans)
+} # end of es_test
+
+# boot.t.test -------------------------------------------------------------
+# Codigo importado de https://github.com/tpepler/nonpar
+# Adaptado apenas para as checagens dos argumentos
+boot.t.test <- function(x, y, reps = 1000, mu = 0, alternative = c("two.sided", "less", "greater")){
+  # Bootstrap t-test as described in Efron and Tibshirani (1993), (Algorithm 16.2, p224)
+  if(is.null(x) | is.null(y)) 
+    stop("\nArguments to boot.t.test cannot be NULL!")
+  if((length(x) <= 1) | (length(y) <= 1)) 
+    stop("\nboot.t.test: Sample lengths cannot be less than 10!")
+  
+  nx <- length(x)
+  ny <- length(y)
+  t.obs <- (mean(x) - mean(y) - mu) / sqrt(var(x) / nx + var(y) / ny)
+  comb.mean <- mean(c(x, y))
+  x.c <- x - mean(x) + comb.mean
+  y.c <- y - mean(y) + comb.mean
+  t.boot <- rep(NA, times = reps)
+  
+  bootFunc <- function(){
+    bootx <- x.c[sample(1:nx, size = nx, replace = TRUE)]
+    booty <- y.c[sample(1:ny, size = ny, replace = TRUE)]
+    return((mean(bootx) - mean(booty) - mu) / sqrt(var(bootx) / nx + var(booty) / ny))
+  }
+  
+  t.boot <- replicate(reps, expr = bootFunc())
+  
+  if(alternative[1] == "two.sided"){
+    pval <- length(t.boot[abs(t.boot) >= abs(t.obs)]) / reps
+    h1phrase <- "not equal to"
+  }
+  
+  if(alternative[1] == "less"){
+    pval <- length(t.boot[t.boot <= t.obs]) / reps
+    h1phrase <- "less than"
+  }
+  
+  if(alternative[1] == "greater"){
+    pval <- length(t.boot[t.boot >= t.obs]) / reps
+    h1phrase <- "greater than"
+  }
+  
+  cat("\nBootstrap Two Sample t-test\n")
+  cat(paste("\nt = ", round(t.obs, 3), ", p-value = ", round(pval, 4), "\n", sep=""))
+  cat(paste("Alternative hypothesis: true difference in means is ", h1phrase, " ", mu, "\n\n", sep=""))
+  
+  return(tibble(mu0 = mu,
+                statistic = t.obs,
+                alternative = alternative[1],
+                p.value = pval))
 }
 

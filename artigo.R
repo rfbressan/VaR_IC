@@ -216,20 +216,20 @@ garch.models.par <- garch.models %>%
 ## Para obter os valores de mu_t, sigma_t e z_t fora da amostra
 ## se utiliza o metodo ugarchfilter com os parametros fixados nos 
 ## valores estimados pelo ugarchfit
-garch.filtered <- garch.models %>% 
-  mutate(n_old = map_int(garch_fit, ~.x@model$modeldata$T),
-         f_params = map(garch_fit, ~as.list(coef(.x))),
-         out_spec = map(f_params, ~ugarchspec(mean.model = list(armaOrder = c(1,0)),
-                                              variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
-                                              distribution.model = "sstd",
-                                              fixed.pars = .x))) %>% 
-  mutate(garch_filter = pmap(., ~ugarchfilter(..8,
-                                              ..4,
-                                              n.old = ..6)))
-
-# Teste para verificar os residuos padronizados sao os mesmos inicialmente
-head(rugarch::residuals(garch.filtered$garch_fit[[2]], standardize = TRUE))
-head(rugarch::residuals(garch.filtered$garch_filter[[2]], standardize = TRUE))
+# garch.filtered <- garch.models %>% 
+#   mutate(n_old = map_int(garch_fit, ~.x@model$modeldata$T),
+#          f_params = map(garch_fit, ~as.list(coef(.x))),
+#          out_spec = map(f_params, ~ugarchspec(mean.model = list(armaOrder = c(1,0)),
+#                                               variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
+#                                               distribution.model = "sstd",
+#                                               fixed.pars = .x))) %>% 
+#   mutate(garch_filter = pmap(., ~ugarchfilter(..8,
+#                                               ..4,
+#                                               n.old = ..6)))
+# 
+# # Teste para verificar os residuos padronizados sao os mesmos inicialmente
+# head(rugarch::residuals(garch.filtered$garch_fit[[2]], standardize = TRUE))
+# head(rugarch::residuals(garch.filtered$garch_filter[[2]], standardize = TRUE))
 # Agora garch.filtered contem tudo sobre os modelos Garch, nao precisamos mais de garch.models
 ##########################################################################################
 
@@ -391,31 +391,11 @@ VaR_plots <- riskmeasures %>%
 VaR_plots$VaR975_plot[[1]]+
   coord_cartesian(xlim = c(as.Date("2011-08-31"), 
                            as.Date("2014-08-31")))
+# Verifica quantas violacoes
+sum(riskmeasures$loss_in[[1]] > riskmeasures$VaR975[[1]])
 
 grid.arrange(grobs = VaR_plots$VaR975_plot)
 grid.arrange(grobs = VaR_plots$VaR990_plot)
-
-# Teste APENAS PARA FORA DA AMOSTRA 
-## Com os valores de n_old, out e as perdas, calcular a quantidade de violacoes do VaR 
-## e colocar em um tibble para cada ativo
-#VaR para uma normal incondicional
-# out_loss <- riskmeasures$out_loss[[1]]
-# varnorm <- qnorm(0.990,
-#                  mean(coredata(garch.filtered$loss[[1]][paste0("/", end)])),
-#                  sd(coredata(garch.filtered$loss[[1]][paste0("/", end)])))
-# varex <- sum(out_loss > riskmeasures$out_VaR990[[1]])
-# varex/length(out_loss)*100
-# varexnorm <- sum(out_loss > varnorm)
-# varexnorm/length(out_loss)*100
-# dfex <- data.frame(modelo = c("EVT", "Normal"),
-#                    nex = c(varex, varexnorm),
-#                    propex = c(varex/length(out_loss)*100, varexnorm/length(out_loss)*100))
-# colnames(dfex) <- c("Modelo", "Violações", "Proporção")
-# stargazer(dfex, out = "artigo-apresentacao-tabela.tex", 
-#           summary = FALSE, rownames = FALSE, font.size = "tiny",
-#           style = "aer")
-# knitr::kable(dfex, format = "pandoc")
-
 
 # Backtesting com refit ----------------------------------------------
 # Monta o tibble para as estimacoes out of sample
@@ -439,33 +419,33 @@ realized <- assets_os.tbl %>%
 
 ######################### NAO USADO ####################################################################         
 ## Modelo EVT condicional ###
-rollspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
-                       variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
-                       distribution.model = "norm")
+#rollspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
+#                       variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
+#                       distribution.model = "norm")
 # Ajusta os dados fora da amostra para o modelo EVT condicional
 # Retorna um xts com os parametros da GPD e as medidas de risco
 # CUIDADO!! uma rodada desta com 1000 observacoes fora da amostra
 # pode levar mais de 6 HORAS (estimado 22 segundos para cada rolagem)
-ibov_os_cevt.list <- roll_fit_cevt(ibov.xts, window.size, n.roll, rollspec)
-object.size(ibov_os.list) # Retorna o tamanho em bytes, nao eh grande
+# ibov_os_cevt.list <- roll_fit_cevt(ibov.xts, window.size, n.roll, rollspec)
+# object.size(ibov_os.list) # Retorna o tamanho em bytes, nao eh grande
 # Salva os dados obtidos para tratamento posterior
-saveRDS(ibov_os.list, file = "ibov_os.list.rds")
-ibov_os.xts <- readRDS("ibov_os.list.rds")
+# saveRDS(ibov_os.list, file = "ibov_os.list.rds")
+# ibov_os.xts <- readRDS("ibov_os.list.rds")
 # Limpa a memoria para nao acumular muitos dados
 #rm(list = "ibov_os.list")
 
 ### Modelo EVT incondicional ###
 # Ajusta os dados para um modelo EVT incondicional
-ibov_os_uevt.xts <- roll_fit_uevt(ibov.xts, window.size, n.roll, rollspec)
+#ibov_os_uevt.xts <- roll_fit_uevt(ibov.xts, window.size, n.roll, rollspec)
 ###### Modelo Normal incondicional ##
 # Ajusta os dados para um modelo Normal incondicional
-ibov_os_norm.xts <- roll_fit_unorm(ibov.xts, window.size, n.roll)
+#ibov_os_norm.xts <- roll_fit_unorm(ibov.xts, window.size, n.roll)
 ###### Modelo t-Student incondicional ###
 # Ajusta os dados para um modelo t-Student incondicional
-ibov_os_t.xts <- roll_fit_ut(ibov.xts, window.size, n.roll)
+#ibov_os_t.xts <- roll_fit_ut(ibov.xts, window.size, n.roll)
 ###### Modelo RiskMetrics com suavizacao exponencial ###
 # Ajusta os dados para um modelo RiskMetrics
-ibov_os_riskmetrics <- roll_fit_riskmetrics(ibov.xts, window.size, n.roll)
+#ibov_os_riskmetrics <- roll_fit_riskmetrics(ibov.xts, window.size, n.roll)
 ##########################################################################################
 
 # Testes estatisticos para o VaR ------------------------------------------
@@ -486,10 +466,11 @@ ibov_os_riskmetrics <- roll_fit_riskmetrics(ibov.xts, window.size, n.roll)
 # 5: n.roll 
 # 6: spec 
 models <- c("cevt", "unorm", "ut", "uevt", "riskmetrics")
-teste.tbl <- assets_os.tbl # Copia os dados para um tibble de teste
+teste.tbl <- assets_os.tbl[2,] # Copia os dados para um tibble de teste
 ## ATENCAO! Aqui eh alterado o valor de n.roll para o teste ser rapido
 ## no artigo completo deve-se EXCLUIR ESTA PROXIMA LINHA
-teste.tbl$n.roll <- as.integer(rep(5, 6))
+teste.tbl$n.roll <- 100
+#teste.tbl$n.roll <- as.integer(rep(15, 6))
 teste_roll.tbl <- teste.tbl %>% 
   transmute(indice = indice,
             id_name = id_name,
@@ -517,7 +498,7 @@ format(object.size(teste_risk.tbl), units = "Kb") # Verifica o tamanho do objeto
 ## Faz os testes de VaR para os 6 indices
 ## VaRTest(alpha = 0.05, actual, VaR, conf.level = 0.95)
 teste_realized <- realized %>% # Copia os dados para um tibble de teste
-  left_join(teste.tbl, by = "indice") %>% 
+  inner_join(teste.tbl, by = "indice") %>% 
   transmute(indice = indice,
             real = map2(real, n.roll, ~.x[1:(.y-1)]))
 vartest.tbl <- teste_risk.tbl %>% 
@@ -526,11 +507,11 @@ vartest.tbl <- teste_risk.tbl %>%
             id_name = id_name,
             model_type = model_type,
             coverage = coverage,
-            VaRtest = pmap(., ~VaRTest(..4, -coredata(..7), -coredata(..5))))
+            VaRtest = pmap(., ~VaRTest(..4, -coredata(..7), -coredata(..5)))) # Troca o sinal!!
 
 # Plot do VaR e violacoes
-lin <- 5 # Escolhe uma das linhas de risk, de 1 a 10 para ficar no Ibovespa
-VaRplot(teste_risk.tbl$coverage[lin], -teste_realized$real[[1]], -teste_risk.tbl$VaR[[lin]])
+lin <- 2 # Escolhe uma das linhas de risk, de 1 a 10 para ficar no Ibovespa
+VaRplot(teste_risk.tbl$coverage[lin], -teste_realized$real[[1]], -teste_risk.tbl$VaR.xts[[lin]])
 
 ## VaRDurTest
 vardurtest.tbl <- teste_risk.tbl %>% 
@@ -539,7 +520,7 @@ vardurtest.tbl <- teste_risk.tbl %>%
             id_name = id_name,
             model_type = model_type,
             coverage = coverage,
-            VaRDurTest = pmap(., ~VaRDurTest(..4, -coredata(..7), -coredata(..5))))
+            VaRDurTest = pmap(., ~VaRDurTest(..4, -coredata(..7), -coredata(..5)))) # Troca o sinal!!
 
 ## MCS para os VaR atraves da funcao VaRLoss
 mcs.tbl <- teste_risk.tbl %>% 
@@ -547,9 +528,40 @@ mcs.tbl <- teste_risk.tbl %>%
   transmute(indice = indice,
             model_type = model_type,
             coverage = coverage,
-            VaRloss = pmap(., ~VaRloss(..4, -coredata(..7), -coredata(..5)))) %>% 
+            VaRloss = pmap(., ~VaRloss(..4, -coredata(..7), -coredata(..5)))) %>% # Troca o sinal!!
   group_by(indice, coverage) %>% 
   summarise(loss_matrix = list(do.call(cbind, VaRloss))) %>% 
   mutate(mcs_test = map2(loss_matrix, coverage, ~mcsTest(.x, .y)))
+
+# Testes estatisticos para o ES -------------------------------------------
+# ATENCAO!! Este teste so faz sentido ser realizados apos os teste de VaR
+# aprovarem o modelo
+# ESTest(alpha = 0.05, actual, ES, VaR, conf.level = 0.95, boot = FALSE, n.boot = 1000)
+# Pelo codigo fonte nao parece ser bem o teste implementado pelo McNeil2000 com o algoritmo
+# do Efron1993
+estest.tbl <- teste_risk.tbl %>% 
+  left_join(teste_realized, by = "indice") %>% 
+  transmute(indice = indice,
+            id_name = id_name,
+            model_type = model_type,
+            coverage = coverage,
+            EStest = pmap(., ~ESTest(..4, -coredata(..7), -coredata(..6), -coredata(..5), # troca o sinal!!
+                                     boot = TRUE, n.boot = 1000)))
+
+# ATENCAO!! Este teste so faz sentido ser realizados apos os teste de VaR
+# aprovarem o modelo
+# Chamando a funcao propria es_test
+es.test <- teste_risk.tbl %>%
+  left_join(teste_realized, by = "indice") %>%
+  transmute(indice = indice,
+            id_name = id_name,
+            model_type = model_type,
+            coverage = coverage,
+            EStest = pmap(., ~es_test(..4, coredata(..7), coredata(..6), coredata(..5)))) # Nao troca o sinal
+
+losses <- coredata(riskmeasures$loss_in[[2]])
+VaR <- riskmeasures$VaR975[[2]]
+ES <- riskmeasures$ES975[[2]]
+es.test <- es_test(0.0275, losses, ES, VaR, n.boot = 100)
 
 

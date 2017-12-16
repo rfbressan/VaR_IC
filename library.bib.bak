@@ -1351,7 +1351,7 @@
   timestamp     = {2017.11.03},
 }
 
-@Book{,
+@Book{Hull2015,
   title     = {Risk Management and Financial Institutions},
   publisher = {John Wiley and Sons, Inc.},
   year      = {2015},
