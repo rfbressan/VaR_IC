@@ -12,9 +12,9 @@
 # Dados entre 31/08/2005 a 31/08/2017
 
 # Inicio ------------------------------------------------------------------
-list.of.packages <- c("fExtremes", "rugarch", "xts", "PerformanceAnalytics", "xtable", "tidyverse", 
+packages <- c("fExtremes", "rugarch", "xts", "PerformanceAnalytics", "xtable", "tidyverse", 
                       "broom", "purrr", "gridExtra", "ggplot2", "WeightedPortTest")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
 #library(fGarch)
@@ -406,7 +406,6 @@ assets_os.tbl <- garch.models %>%
             window.size = map_int(loss, ~as.integer(ndays(.x[paste0("/", end)]))),
             n.roll = map2_int(loss, window.size, ~length(.x)-.y),
             spec = spec)
-
 # Periodo fora da amostra + 1, para fazer as comparacoes entre
 # VaRt e realizado t+1
 # realized tera n.roll-1 observacoes devido ao deslocamento das observacoes de VaR e ES
@@ -466,43 +465,47 @@ realized <- assets_os.tbl %>%
 # 5: n.roll 
 # 6: spec 
 models <- c("cevt", "unorm", "ut", "uevt", "riskmetrics")
-teste.tbl <- assets_os.tbl[2,] # Copia os dados para um tibble de teste
+#teste.tbl <- assets_os.tbl[2,] # Copia os dados para um tibble de teste
 ## ATENCAO! Aqui eh alterado o valor de n.roll para o teste ser rapido
 ## no artigo completo deve-se EXCLUIR ESTA PROXIMA LINHA
-teste.tbl$n.roll <- 100
+#teste.tbl$n.roll <- 100
 #teste.tbl$n.roll <- as.integer(rep(15, 6))
-teste_roll.tbl <- teste.tbl %>% 
+cat("\nInicio do map roll_fit:", as.character(Sys.time()))
+os_roll.tbl <- assets_os.tbl %>% 
   transmute(indice = indice,
             id_name = id_name,
             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
-teste_roll_unnest <- teste_roll.tbl %>% 
+cat("\nFim do map roll_fit:", as.character(Sys.time()))
+saveRDS(os_roll.tbl, file = "os_roll_tbl.rds")
+
+os_roll_unnest <- os_roll.tbl %>% 
   unnest() %>% 
   mutate(risk.tbl = map(roll, ~.x$risk.tbl),
          param.xts = map(roll, ~.x$param.xts))
 
 # Extrai a evolucao dos parametros de cada modelo no tempo
-param.tbl <- teste_roll_unnest %>% 
+param.tbl <- os_roll_unnest %>% 
   transmute(indice = indice,
             id_name = id_name,
             model_type = model_type,
             param.xts = param.xts)
 # Extrai a evolucao das medidas de risco de cada modelo, para cada cobertura, no tempo
-teste_risk.tbl <- teste_roll_unnest %>% 
+os_risk.tbl <- os_roll_unnest %>% 
   transmute(indice = indice,
             id_name = id_name,
             model_type = model_type,
             risk.tbl = risk.tbl) %>% 
   unnest()
-format(object.size(teste_risk.tbl), units = "Kb") # Verifica o tamanho do objeto
+format(object.size(os_risk.tbl), units = "Kb") # Verifica o tamanho do objeto
 
 ## Faz os testes de VaR para os 6 indices
 ## VaRTest(alpha = 0.05, actual, VaR, conf.level = 0.95)
-teste_realized <- realized %>% # Copia os dados para um tibble de teste
-  inner_join(teste.tbl, by = "indice") %>% 
-  transmute(indice = indice,
-            real = map2(real, n.roll, ~.x[1:(.y-1)]))
-vartest.tbl <- teste_risk.tbl %>% 
-  left_join(teste_realized, by = "indice") %>% 
+# teste_realized <- realized %>% # Copia os dados para um tibble de teste
+#   inner_join(teste.tbl, by = "indice") %>% 
+#   transmute(indice = indice,
+#             real = map2(real, n.roll, ~.x[1:(.y-1)]))
+vartest.tbl <- os_risk.tbl %>% 
+  left_join(realized, by = "indice") %>% 
   transmute(indice = indice,
             id_name = id_name,
             model_type = model_type,
@@ -511,11 +514,11 @@ vartest.tbl <- teste_risk.tbl %>%
 
 # Plot do VaR e violacoes
 lin <- 2 # Escolhe uma das linhas de risk, de 1 a 10 para ficar no Ibovespa
-VaRplot(teste_risk.tbl$coverage[lin], -teste_realized$real[[1]], -teste_risk.tbl$VaR.xts[[lin]])
+VaRplot(os_risk.tbl$coverage[lin], -realized$real[[1]], -os_risk.tbl$VaR.xts[[lin]])
 
 ## VaRDurTest
-vardurtest.tbl <- teste_risk.tbl %>% 
-  left_join(teste_realized, by = "indice") %>% 
+vardurtest.tbl <- os_risk.tbl %>% 
+  left_join(os_realized, by = "indice") %>% 
   transmute(indice = indice,
             id_name = id_name,
             model_type = model_type,
@@ -523,8 +526,8 @@ vardurtest.tbl <- teste_risk.tbl %>%
             VaRDurTest = pmap(., ~VaRDurTest(..4, -coredata(..7), -coredata(..5)))) # Troca o sinal!!
 
 ## MCS para os VaR atraves da funcao VaRLoss
-mcs.tbl <- teste_risk.tbl %>% 
-  left_join(teste_realized, by = "indice") %>% 
+mcs.tbl <- os_risk.tbl %>% 
+  left_join(realized, by = "indice") %>% 
   transmute(indice = indice,
             model_type = model_type,
             coverage = coverage,
@@ -539,8 +542,8 @@ mcs.tbl <- teste_risk.tbl %>%
 # ESTest(alpha = 0.05, actual, ES, VaR, conf.level = 0.95, boot = FALSE, n.boot = 1000)
 # Pelo codigo fonte nao parece ser bem o teste implementado pelo McNeil2000 com o algoritmo
 # do Efron1993
-estest.tbl <- teste_risk.tbl %>% 
-  left_join(teste_realized, by = "indice") %>% 
+ru_estest.tbl <- os_risk.tbl %>% 
+  left_join(realized, by = "indice") %>% 
   transmute(indice = indice,
             id_name = id_name,
             model_type = model_type,
@@ -562,6 +565,6 @@ es.test <- teste_risk.tbl %>%
 losses <- coredata(riskmeasures$loss_in[[2]])
 VaR <- riskmeasures$VaR975[[2]]
 ES <- riskmeasures$ES975[[2]]
-es.test <- es_test(0.0275, losses, ES, VaR, n.boot = 100)
+t_es.test <- es_test(0.0275, losses, ES, VaR, n.boot = 100)
 
 

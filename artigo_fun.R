@@ -12,6 +12,7 @@ cores <- detectCores() # Quantos cores estao rodando
 # roll_fit ----------------------------------------------------------------
 
 roll_fit <- function(data, window.size, n.roll, spec, models) {
+  cat("\nroll_fit do ativo inicio:", as.character(Sys.time()))
   # Check para os argumentos
   if(!is.xts(data)) stop("roll_fit: data deve ser um xts")
   if(any(is.null(window.size), is.null(n.roll), is.null(spec), is.null(models)))
@@ -32,12 +33,12 @@ roll_fit <- function(data, window.size, n.roll, spec, models) {
   tmp.list <- enframe(tmp.list)
   colnames(tmp.list) <- c("model_type", "roll")
   tmp.list <- subset(tmp.list, subset = !is.null(tmp.list$roll))
-  tmp.list
+  cat("\nroll_fit do ativo fim:", as.character(Sys.time()))
   return(tmp.list)
 }
 # roll_fit_cevt -----------------------------------------------------------
 roll_fit_cevt <- function(data, window.size, n.roll, spec) {
-  #tic <- Sys.time()
+  tic <- Sys.time()
   # Check para os argumentos
   if(!is.xts(data)) stop("roll_fit_cevt: data deve ser um xts")
   if(any(is.null(window.size), is.null(n.roll), is.null(spec)))
@@ -120,8 +121,8 @@ roll_fit_cevt <- function(data, window.size, n.roll, spec) {
                  VaR.xts = list(ans$Zq975, ans$Zq990),
                  ES.xts = list(ans$Sq975, ans$Sq990))
   param <- ans[, c("beta1", "xi", "beta", "xi_se", "beta_se")]
-  #toc <- Sys.time()
-  #print(toc-tic)
+  toc <- Sys.time()
+  cat("\ncevt:", toc-tic, attr(toc-tic, which = "units"))
   return(list(risk.tbl = risk, param.xts = param))
   # Os valores retornados das medidas de risco devem ser comparadas
   # com os valores realizados NO DIA SEGUINTE a data onde foram calculadas
@@ -131,7 +132,7 @@ roll_fit_cevt <- function(data, window.size, n.roll, spec) {
 # roll_fit_unorm ----------------------------------------------------------
 # Ajusta os dados para um modelo Normal incondicional
 roll_fit_unorm <- function(data, window.size, n.roll) {
-  #tic <- Sys.time()
+  tic <- Sys.time()
   # Check para os argumentos
   if(!is.xts(data)) stop("roll_fit_unorm: data deve ser um xts")
   if(any(is.null(window.size), is.null(n.roll)))
@@ -172,15 +173,15 @@ roll_fit_unorm <- function(data, window.size, n.roll) {
                  VaR.xts = list(ans$Zq975, ans$Zq990),
                  ES.xts = list(ans$Sq975, ans$Sq990))
   param <- ans[, c("mu", "sigma")]
-  #toc <- Sys.time()
-  #print(toc-tic)
+  toc <- Sys.time()
+  cat("\nunorm:", toc-tic, attr(toc-tic, which = "units"))
   return(list(risk.tbl = risk, param.xts = param))
 }
 
 # roll_fit_ut ----------------------------------------------------------
 # Ajusta os dados para um modelo t-Student incondicional
 roll_fit_ut <- function(data, window.size, n.roll) {
-  #tic <- Sys.time()
+  tic <- Sys.time()
   # Check para os argumentos
   if(!is.xts(data)) stop("roll_fit_ut: data deve ser um xts")
   if(any(is.null(window.size), is.null(n.roll)))
@@ -229,14 +230,14 @@ roll_fit_ut <- function(data, window.size, n.roll) {
                  VaR.xts = list(ans$Zq975, ans$Zq990),
                  ES.xts = list(ans$Sq975, ans$Sq990))
   param <- ans[, c("mu", "sigma", "shape")]
-  # toc <- Sys.time()
-  # print(toc-tic)
+  toc <- Sys.time()
+  cat("\nut:", toc-tic, attr(toc-tic, which = "units"))
   return(list(risk.tbl = risk, param.xts = param))
 }
 
 # roll_fit_uevt -----------------------------------------------------------
 roll_fit_uevt <- function(data, window.size, n.roll, spec) {
-  #tic <- Sys.time()
+  tic <- Sys.time()
   # Check para os argumentos
   if(!is.xts(data)) stop("roll_fit_uevt: data deve ser um xts")
   if(any(is.null(window.size), is.null(n.roll), is.null(spec)))
@@ -319,8 +320,8 @@ roll_fit_uevt <- function(data, window.size, n.roll, spec) {
                  VaR.xts = list(ans$Zq975, ans$Zq990),
                  ES.xts = list(ans$Sq975, ans$Sq990))
   param <- ans[, c("beta1", "xi", "beta", "xi_se", "beta_se")]
-  #toc <- Sys.time()
-  #print(toc-tic)
+  toc <- Sys.time()
+  cat("\nuevt:", toc-tic, attr(toc-tic, which = "units"))
   return(list(risk.tbl = risk, param.xts = param))
   # Os valores retornados das medidas de risco devem ser comparadas
   # com os valores realizados NO DIA SEGUINTE a data onde foram calculadas
@@ -328,6 +329,7 @@ roll_fit_uevt <- function(data, window.size, n.roll, spec) {
 
 # roll_fit_riskmetrics -----------------------------------------------------------
 roll_fit_riskmetrics <- function(data, window.size, n.roll){
+  tic <- Sys.time()
   # Check para os argumentos
   if(!is.xts(data)) stop("roll_fit_riskmetrics: data deve ser um xts")
   if(any(is.null(window.size), is.null(n.roll)))
@@ -360,6 +362,8 @@ roll_fit_riskmetrics <- function(data, window.size, n.roll){
                  VaR.xts = list(ans$Zq975, ans$Zq990),
                  ES.xts = list(ans$Sq975, ans$Sq990))
   param <- ans[, c("lambda")]
+  toc <- Sys.time()
+  cat("\nriskmetrics:", toc-tic, attr(toc-tic, which = "units"))
   return(list(risk.tbl = risk, param.xts = param))
 }
 
