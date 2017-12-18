@@ -464,7 +464,7 @@ realized <- assets_os.tbl %>%
 # 4: window.size 
 # 5: n.roll 
 # 6: spec 
-models <- c("cevt", "unorm", "ut", "uevt", "riskmetrics")
+models <- c("cevt", "cnorm", "ct", "uevt", "unorm", "ut", "riskmetrics")
 #teste.tbl <- assets_os.tbl[2,] # Copia os dados para um tibble de teste
 ## ATENCAO! Aqui eh alterado o valor de n.roll para o teste ser rapido
 ## no artigo completo deve-se EXCLUIR ESTA PROXIMA LINHA
