@@ -33,7 +33,7 @@ library(xts)
 library(PerformanceAnalytics)
 library(fExtremes)
 library(rugarch)
-source("artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
+source("./R/artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
 
 # AMOSTRA COM DADOS A PARTIR DE 31-08-2000
 # 
@@ -42,7 +42,7 @@ end <- as.Date("2014-08-31")
 backstart <- as.Date("2014-09-01")
 
 list.returns <- function(asset, start) {
-  tb <- read_csv(paste0("artigo-", asset, ".csv"), 
+  tb <- read_csv(paste0("./input/artigo-", asset, ".csv"), 
                  col_types = cols_only(Date = col_date(), `Adj Close` = col_double()))
   prices <- xts(tb$`Adj Close`, order.by = tb$Date)[paste0(start, "/")]
   colnames(prices) <- "close"
@@ -93,7 +93,7 @@ tab1 <- xtable(df.descritivas, caption = "Estatísticas descritivas dos retornos
                label = "tab:descritivas",
                auto = TRUE)
 print.xtable(tab1, 
-             file = "artigo-tab-descritivas.tex",
+             file = "./tables/artigo-tab-descritivas.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
@@ -120,7 +120,7 @@ adf <- unnest(adf)
 adf
 
 # Teste para graficos QQ normal
-jpeg(filename = "artigo-qqplots.jpeg",
+jpeg(filename = "./figs/artigo-qqplots.jpeg",
      width = 600, height = 800, quality = 100)
 op <- par(mfrow = c(3,2),
           mar = c(4, 3, 3, 2))
@@ -206,7 +206,7 @@ garch.models.par <- garch.models %>%
                  label = "tab:garchcoef",
                  auto = TRUE)
   print.xtable(tab2, 
-               file = "artigo-tab-garchcoef.tex",
+               file = "./tables/artigo-tab-garchcoef.tex",
                caption.placement = "top",
                table.placement = "H",
                sanitize.colnames.function = NULL,
@@ -239,7 +239,7 @@ garch.models.par <- garch.models %>%
 
 # Gerar 6 figuras com estes 4 graficos ACF
 for(i in 1:dim(garch.models)[1]) {
-  jpeg(filename = paste0("artigo-acf-", garch.models$id_name[i], ".jpeg"),
+  jpeg(filename = paste0("./figs/artigo-acf-", garch.models$id_name[i], ".jpeg"),
        width = 800, height = 800, quality = 100)
   op <- par(mfrow=c(2,2))
   plot(garch.models$garch_fit[[i]], which = 4)
@@ -249,8 +249,8 @@ for(i in 1:dim(garch.models)[1]) {
   par(op)
   dev.off()
 }
-file.rename(c("artigo-acf-S&P500.jpeg", "artigo-acf-S&P TSE.jpeg"), 
-            c("artigo-acf-SP500.jpeg", "artigo-acf-SP-TSE.jpeg"))
+file.rename(c("./figs/artigo-acf-S&P500.jpeg", "./figs/artigo-acf-S&P TSE.jpeg"), 
+            c("./figs/artigo-acf-SP500.jpeg", "./figs/artigo-acf-SP-TSE.jpeg"))
 ## Estatisticas modelo eGARCH in sample
 # JB, Q e Q^2 para os residuos padronizados
 garch.models.stats <- garch.models %>%
@@ -282,7 +282,7 @@ tab3 <- xtable(garch.models.stats, caption = "Estatísticas de diagnóstico para
                label = "tab:garchstats",
                auto = TRUE)
 print.xtable(tab3, 
-             file = "artigo-tab-garchstats.tex",
+             file = "./tables/artigo-tab-garchstats.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
@@ -345,7 +345,7 @@ tab4 <- xtable(evtcoef, caption = "Parâmetros estimados para o modelo EVT dos r
                label = "tab:evtcoef",
                auto = TRUE)
 print.xtable(tab4, 
-             file = "artigo-tab-evtcoef.tex",
+             file = "./tables/artigo-tab-evtcoef.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
