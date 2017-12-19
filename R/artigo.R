@@ -88,7 +88,7 @@ colnames(df.descritivas) <- c("Descritivas", assets.tbl$id_name)
 
 # Cria o xtable
 tab1 <- xtable(df.descritivas, caption = "Estatísticas descritivas dos retornos 
-               (amostra completa de 31/08/2003 a 30/08/2017).",
+               (amostra completa de 31/08/2005 a 30/08/2017).",
                digits = 5,
                label = "tab:descritivas",
                auto = TRUE)
@@ -277,7 +277,7 @@ garch.models.stats <- cbind(param, garch.models.stats)
 colnames(garch.models.stats) <- c("Estatística", garch.models$id_name)
 # Xtable
 tab3 <- xtable(garch.models.stats, caption = "Estatísticas de diagnóstico para o modelo eGARCH. 
-               (amostra de trabalho entre 31/08/2005 a 31/08/2013).",
+               (amostra de trabalho entre 31/08/2005 a 31/08/2014).",
                digits = 5,
                label = "tab:garchstats",
                auto = TRUE)
@@ -340,7 +340,7 @@ evtcoef <- cbind(param, evtcoef)
 colnames(evtcoef) <- c("", evt.models$id_name)
 # Xtable
 tab4 <- xtable(evtcoef, caption = "Parâmetros estimados para o modelo EVT dos resíduos padronizados. 
-               (amostra de trabalho entre 31/08/2003 a 31/08/2013).",
+               (amostra de trabalho entre 31/08/2005 a 31/08/2015).",
                digits = 5,
                label = "tab:evtcoef",
                auto = TRUE)
