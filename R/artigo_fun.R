@@ -19,12 +19,22 @@ roll_fit <- function(data, window.size, n.roll, spec, models) {
     stop("roll_fit: Devem ser passados todos os argumentos!")
   if(class(spec) != "uGARCHspec") stop("roll_fit: spec deve ser da classe uGARCspec")
   
+  garch_fit.list <- mclapply(1:n.roll, function(i){
+    garch.fit <- try(ugarchfit(spec,
+                               data[i:(window.size+i)],
+                               solver = "hybrid"))
+    return(garch.fit)
+  },
+  mc.cores = cores) # Fim do mclapply
+  # Indice para ordenar as respostas das funcoes roll_fit_X
+  id.xts <- index(data[(window.size+2):(window.size+n.roll)])
+  
   tmp.list <- map(models, 
                   ~switch (.x,
-                           cevt = roll_fit_cevt(data, window.size, n.roll, spec),
-                           cnorm = roll_fit_cnorm(data, window.size, n.roll, spec),
-                           ct = roll_fit_ct(data, window.size, n.roll, spec),
-                           uevt = roll_fit_uevt(data, window.size, n.roll, spec),
+                           cevt = roll_fit_cevt(garch_fit.list, id.xts),
+                           cnorm = roll_fit_cnorm(garch_fit.list, id.xts),
+                           ct = roll_fit_ct(garch_fit.list, id.xts),
+                           uevt = roll_fit_uevt(garch_fit.list, id.xts),
                            unorm = roll_fit_unorm(data, window.size, n.roll),
                            ut = roll_fit_ut(data, window.size, n.roll),
                            riskmetrics = roll_fit_riskmetrics(data, window.size, n.roll),
@@ -35,39 +45,25 @@ roll_fit <- function(data, window.size, n.roll, spec, models) {
   tmp.list <- enframe(tmp.list)
   colnames(tmp.list) <- c("model_type", "roll")
   tmp.list <- subset(tmp.list, subset = !is.null(tmp.list$roll))
-  cat("\nroll_fit do ativo fim:", as.character(Sys.time()))
+  cat("\nroll_fit do ativo fim:", as.character(Sys.time()), "\n")
   return(tmp.list)
 }
 # roll_fit_cevt -----------------------------------------------------------
-roll_fit_cevt <- function(data, window.size, n.roll, spec) {
+roll_fit_cevt <- function(garch_list, id_xts) {
   tic <- Sys.time()
   # Check para os argumentos
-  if(!is.xts(data)) stop("roll_fit_cevt: data deve ser um xts")
-  if(any(is.null(window.size), is.null(n.roll), is.null(spec)))
-    stop("roll_fit_cevt: Devem ser passados todos os argumentos!")
-  if(class(spec) != "uGARCHspec") stop("roll_fit_cevt: spec deve ser da classe uGARCspec")
-  
-  # Deve-se fazer o fit
+  if(!length(garch_list)) stop("roll_fit_cevt: argumento de tamanho invalido!")
   # Extrair residuos padronizados
   # Aplicar o gpfFit
   # Calcular zq e sq
   # Para cada interacao. n.roll vezes
   # Devolver tudo em um data.frame
   # data deve ser o xts com as perdas de todo o periodo
-  NT <- length(data) # Tamanho total da amostra de dados
-  # cluster <- makePSOCKcluster(4)
-  # clusterEvalQ(cl = cluster, library(rugarch))
-  # clusterEvalQ(cl = cluster, library(fExtremes))
-  # clusterEvalQ(cl = cluster, library(xts))
-  # clusterExport(cluster, c("data", "spec", "n.roll", "window.size", "NT"),
-  #               envir = environment())
-
-  tmp.list <- mclapply(1:n.roll, function(i){
-    garch.fit <- try(ugarchfit(spec,
-                           data[i:(window.size+i)],
-                           solver = "hybrid"))
+  tmp.list <- mclapply(seq_along(garch_list), function(i){
     # 3 cases: General Error, Failure to Converge, Failure to invert Hessian (bad solution)
-    if(inherits(garch.fit, 'try-error') || convergence(garch.fit)!=0 || is.null(garch.fit@fit$cvar)){
+    if(inherits(garch_list[[i]], 'try-error') || 
+       convergence(garch_list[[i]])!=0 || 
+       is.null(garch_list[[i]]@fit$cvar)){
       lapply_ans <- t(cbind(rep(NA, 9)))
       # Se algum erro, envia como resposta NA, mas nao interrompe a estimacao
       # Depois no xts retornado pela funcao roll_fit, preencher os NA com os dados
@@ -75,11 +71,11 @@ roll_fit_cevt <- function(data, window.size, n.roll, spec) {
     } else{
       # Salvar o coeficiente beta1 apenas para mostrar a evolucao deste ao longo
       # do período
-      beta1 <- coef(garch.fit)["beta1"]
+      beta1 <- coef(garch_list[[i]])["beta1"]
       # Retirar os residuos padronizados, e o ultimo mu_t e sigma_t
-      resid_z <- coredata(residuals(garch.fit, standardize = TRUE))
-      mu_t <- last(fitted(garch.fit))
-      sigma_t <- last(sigma(garch.fit))
+      resid_z <- coredata(residuals(garch_list[[i]], standardize = TRUE))
+      mu_t <- last(fitted(garch_list[[i]]))
+      sigma_t <- last(sigma(garch_list[[i]]))
       # Ajustar uma gpd aos dados de residuos padronizados
       gpd.fit <- gpdFit(resid_z, u = quantile(resid_z, 0.95))
       xi = gpd.fit@fit$par.ests[1]
@@ -115,7 +111,7 @@ roll_fit_cevt <- function(data, window.size, n.roll, spec) {
   # Depois forma um xts indexado pelos dias fora da amostra a partir do segundo dia
   ans <- do.call(rbind, tmp.list)
   ans <- ans[-dim(ans)[1],]
-  ans <- xts(ans, order.by = index(data[(window.size+2):(window.size+n.roll)]))
+  ans <- xts(ans, order.by = id_xts)
   colnames(ans) <- c("beta1", "xi", "beta", "xi_se", "beta_se", "Zq975", "Zq990", "Sq975", "Sq990")
   # Preenche os NA com a ultima observacao conhecida
   ans <- na.locf(ans)
@@ -131,34 +127,25 @@ roll_fit_cevt <- function(data, window.size, n.roll, spec) {
 } # fim da roll_fit_cevt
 
 # roll_fit_cnorm -----------------------------------------------------------
-roll_fit_cnorm <- function(data, window.size, n.roll, spec) {
+roll_fit_cnorm <- function(garch_list, id_xts) {
   tic <- Sys.time()
   # Check para os argumentos
-  if(!is.xts(data)) stop("roll_fit_cnorm: data deve ser um xts")
-  if(any(is.null(window.size), is.null(n.roll), is.null(spec)))
-    stop("roll_fit_cnorm: Devem ser passados todos os argumentos!")
-  if(class(spec) != "uGARCHspec") stop("roll_fit_cnorm: spec deve ser da classe uGARCspec")
+  if(!length(garch_list)) stop("roll_fit_cnorm: argumento de tamanho invalido!")
   
-  NT <- length(data) # Tamanho total da amostra de dados
-  
-  tmp.list <- mclapply(1:n.roll, function(i){
-    garch.fit <- try(ugarchfit(spec,
-                               data[i:(window.size+i)],
-                               solver = "hybrid"))
+  tmp.list <- mclapply(seq_along(garch_list), function(i){
     # 3 cases: General Error, Failure to Converge, Failure to invert Hessian (bad solution)
-    if(inherits(garch.fit, 'try-error') || convergence(garch.fit)!=0 || is.null(garch.fit@fit$cvar)){
-      lapply_ans <- t(cbind(rep(NA, 9)))
+    if(inherits(garch_list[[i]], 'try-error') || 
+       convergence(garch_list[[i]])!=0 || 
+       is.null(garch_list[[i]]@fit$cvar)){
+      lapply_ans <- t(cbind(rep(NA, 5)))
       # Se algum erro, envia como resposta NA, mas nao interrompe a estimacao
       # Depois no xts retornado pela funcao roll_fit, preencher os NA com os dados
       # da estimacao anterior com na.locf
     } else{
-      # Salvar o coeficiente beta1 apenas para mostrar a evolucao deste ao longo
-      # do período
-      beta1 <- coef(garch.fit)["beta1"]
       # Retirar os residuos padronizados, e o ultimo mu_t e sigma_t
-      resid_z <- coredata(residuals(garch.fit, standardize = TRUE))
-      mu_t <- last(fitted(garch.fit))
-      sigma_t <- last(sigma(garch.fit))
+      resid_z <- coredata(residuals(garch_list[[i]], standardize = TRUE))
+      mu_t <- last(fitted(garch_list[[i]]))
+      sigma_t <- last(sigma(garch_list[[i]]))
       # Ajustar os dados de residuos padronizados
       fit <- fitdist(distribution = "norm", resid_z)
       # Obter os quantis do residuo padronizado
@@ -183,7 +170,7 @@ roll_fit_cnorm <- function(data, window.size, n.roll, spec) {
       Sq975 <- mu_t+sigma_t*sq975
       Sq990 <- mu_t+sigma_t*sq990
 
-      lapply_ans <- cbind(beta1, xi, beta, xi_se, beta_se, Zq975, Zq990, Sq975, Sq990)
+      lapply_ans <- cbind(fit$pars["sigma"], Zq975, Zq990, Sq975, Sq990)
     } # fim do else
     return(lapply_ans)
   },
@@ -197,50 +184,39 @@ roll_fit_cnorm <- function(data, window.size, n.roll, spec) {
   # Depois forma um xts indexado pelos dias fora da amostra a partir do segundo dia
   ans <- do.call(rbind, tmp.list)
   ans <- ans[-dim(ans)[1],]
-  ans <- xts(ans, order.by = index(data[(window.size+2):(window.size+n.roll)]))
-  colnames(ans) <- c("beta1", "xi", "beta", "xi_se", "beta_se", "Zq975", "Zq990", "Sq975", "Sq990")
+  ans <- xts(ans, order.by = id_xts)
+  colnames(ans) <- c("sigma", "Zq975", "Zq990", "Sq975", "Sq990")
   # Preenche os NA com a ultima observacao conhecida
   ans <- na.locf(ans)
   risk <- tibble(coverage = c(0.025, 0.01),
                  VaR.xts = list(ans$Zq975, ans$Zq990),
                  ES.xts = list(ans$Sq975, ans$Sq990))
-  param <- ans[, c("beta1", "xi", "beta", "xi_se", "beta_se")]
+  param <- ans[, c("sigma")]
   toc <- Sys.time()
   cat("\ncnorm:", toc-tic, attr(toc-tic, which = "units"))
   return(list(risk.tbl = risk, param.xts = param))
-  # Os valores retornados das medidas de risco devem ser comparadas
-  # com os valores realizados NO DIA SEGUINTE a data onde foram calculadas
 } # fim da roll_fit_cnorm
 
 # roll_fit_ct -----------------------------------------------------------
-roll_fit_ct <- function(data, window.size, n.roll, spec) {
+roll_fit_ct <- function(garch_list, id_xts) {
   tic <- Sys.time()
   # Check para os argumentos
-  if(!is.xts(data)) stop("roll_fit_ct: data deve ser um xts")
-  if(any(is.null(window.size), is.null(n.roll), is.null(spec)))
-    stop("roll_fit_ct: Devem ser passados todos os argumentos!")
-  if(class(spec) != "uGARCHspec") stop("roll_fit_ct: spec deve ser da classe uGARCspec")
+  if(!length(garch_list)) stop("roll_fit_ct: argumento de tamanho invalido!")
   
-  NT <- length(data) # Tamanho total da amostra de dados
-  
-  tmp.list <- mclapply(1:n.roll, function(i){
-    garch.fit <- try(ugarchfit(spec,
-                               data[i:(window.size+i)],
-                               solver = "hybrid"))
+    tmp.list <- mclapply(seq_along(garch_list), function(i){
     # 3 cases: General Error, Failure to Converge, Failure to invert Hessian (bad solution)
-    if(inherits(garch.fit, 'try-error') || convergence(garch.fit)!=0 || is.null(garch.fit@fit$cvar)){
-      lapply_ans <- t(cbind(rep(NA, 9)))
+    if(inherits(garch_list[[i]], 'try-error') || 
+       convergence(garch_list[[i]])!=0 || 
+       is.null(garch_list[[i]]@fit$cvar)){
+      lapply_ans <- t(cbind(rep(NA, 6)))
       # Se algum erro, envia como resposta NA, mas nao interrompe a estimacao
       # Depois no xts retornado pela funcao roll_fit, preencher os NA com os dados
       # da estimacao anterior com na.locf
     } else{
-      # Salvar o coeficiente beta1 apenas para mostrar a evolucao deste ao longo
-      # do período
-      beta1 <- coef(garch.fit)["beta1"]
       # Retirar os residuos padronizados, e o ultimo mu_t e sigma_t
-      resid_z <- coredata(residuals(garch.fit, standardize = TRUE))
-      mu_t <- last(fitted(garch.fit))
-      sigma_t <- last(sigma(garch.fit))
+      resid_z <- coredata(residuals(garch_list[[i]], standardize = TRUE))
+      mu_t <- last(fitted(garch_list[[i]]))
+      sigma_t <- last(sigma(garch_list[[i]]))
       # Ajustar os dados de residuos padronizados
       fit <- fitdist(distribution = "std", resid_z)
       # Obter os quantis do residuo padronizado
@@ -273,7 +249,7 @@ roll_fit_ct <- function(data, window.size, n.roll, spec) {
       Sq975 <- mu_t+sigma_t*sq975
       Sq990 <- mu_t+sigma_t*sq990
       
-      lapply_ans <- cbind(beta1, xi, beta, xi_se, beta_se, Zq975, Zq990, Sq975, Sq990)
+      lapply_ans <- cbind(fit$pars["sigma"], fit$pars["shape"], Zq975, Zq990, Sq975, Sq990)
     } # fim do else
     return(lapply_ans)
   },
@@ -287,14 +263,14 @@ roll_fit_ct <- function(data, window.size, n.roll, spec) {
   # Depois forma um xts indexado pelos dias fora da amostra a partir do segundo dia
   ans <- do.call(rbind, tmp.list)
   ans <- ans[-dim(ans)[1],]
-  ans <- xts(ans, order.by = index(data[(window.size+2):(window.size+n.roll)]))
-  colnames(ans) <- c("beta1", "xi", "beta", "xi_se", "beta_se", "Zq975", "Zq990", "Sq975", "Sq990")
+  ans <- xts(ans, order.by = id_xts)
+  colnames(ans) <- c("sigma", "shape", "Zq975", "Zq990", "Sq975", "Sq990")
   # Preenche os NA com a ultima observacao conhecida
   ans <- na.locf(ans)
   risk <- tibble(coverage = c(0.025, 0.01),
                  VaR.xts = list(ans$Zq975, ans$Zq990),
                  ES.xts = list(ans$Sq975, ans$Sq990))
-  param <- ans[, c("beta1", "xi", "beta", "xi_se", "beta_se")]
+  param <- ans[, c("sigma", "shape")]
   toc <- Sys.time()
   cat("\nct:", toc-tic, attr(toc-tic, which = "units"))
   return(list(risk.tbl = risk, param.xts = param))
@@ -409,53 +385,36 @@ roll_fit_ut <- function(data, window.size, n.roll) {
 }
 
 # roll_fit_uevt -----------------------------------------------------------
-roll_fit_uevt <- function(data, window.size, n.roll, spec) {
+roll_fit_uevt <- function(garch_list, id_xts) {
   tic <- Sys.time()
   # Check para os argumentos
-  if(!is.xts(data)) stop("roll_fit_uevt: data deve ser um xts")
-  if(any(is.null(window.size), is.null(n.roll), is.null(spec)))
-    stop("roll_fit_uevt: Devem ser passados todos os argumentos!")
-  if(class(spec) != "uGARCHspec") stop("roll_fit: spec deve ser da classe uGARCspec")
-  
-  # Deve-se fazer o fit
+  if(!length(garch_list)) stop("roll_fit_uevt: argumento de tamanho invalido!")
   # Extrair residuos padronizados
   # Aplicar o gpfFit
   # Calcular zq e sq com base na media e variancia INCONDICIONAIS
   # Para cada interacao. n.roll vezes
   # Devolver tudo em um data.frame (ou lista)
   # data deve ser o xts com as perdas de todo o periodo
-  NT <- length(data) # Tamanho total da amostra de dados
-  # cluster <- makePSOCKcluster(4)
-  # clusterEvalQ(cl = cluster, library(rugarch))
-  # clusterEvalQ(cl = cluster, library(fExtremes))
-  # clusterEvalQ(cl = cluster, library(xts))
-  # clusterExport(cluster, c("data", "spec", "n.roll", "window.size", "NT"),
-  #               envir = environment())
-  # 
-  tmp.list <- mclapply(1:n.roll, function(i){
-    garch.fit <- try(ugarchfit(spec, 
-                               data[i:(window.size+i)], 
-                               solver = "hybrid"))
+  tmp.list <- mclapply(seq_along(garch_list), function(i){
     # 3 cases: General Error, Failure to Converge, Failure to invert Hessian (bad solution)
-    if(inherits(garch.fit, 'try-error') || convergence(garch.fit)!=0 || is.null(garch.fit@fit$cvar)){
-      lapply_ans <- t(cbind(rep(NA, 9)))
+    if(inherits(garch_list[[i]], 'try-error') || 
+       convergence(garch_list[[i]])!=0 || 
+       is.null(garch_list[[i]]@fit$cvar)){
+      lapply_ans <- t(cbind(rep(NA, 6)))
       # Se algum erro, envia como resposta NA, mas nao interrompe a estimacao
       # Depois no xts retornado pela funcao roll_fit, preencher os NA com os dados 
       # da estimacao anterior com na.locf
     } else{
-      # Salvar o coeficiente beta1 apenas para mostrar a evolucao deste ao longo
-      # do período
-      beta1 <- coef(garch.fit)["beta1"]
       # Retirar os residuos padronizados, e o ultimo mu_t e sigma_t
-      resid_z <- coredata(residuals(garch.fit, standardize = TRUE))
-      mu_t <- uncmean(garch.fit)
-      sigma_t <- sqrt(uncvariance(garch.fit)) 
+      resid_z <- coredata(residuals(garch_list[[i]], standardize = TRUE))
+      mu_t <- uncmean(garch_list[[i]])
+      sigma_t <- sqrt(uncvariance(garch_list[[i]])) 
       # Ajustar uma gpd aos dados de residuos padronizados
       gpd.fit <- gpdFit(resid_z, u = quantile(resid_z, 0.95))
       xi = gpd.fit@fit$par.ests[1]
       beta = gpd.fit@fit$par.ests[2]
-      xi_se = gpd.fit@fit$par.ses[1]
-      beta_se = gpd.fit@fit$par.ses[2]
+      # xi_se = gpd.fit@fit$par.ses[1]
+      # beta_se = gpd.fit@fit$par.ses[2]
       # Obter as medias de risco do residuo padronizado
       zq975 <- gpdRiskMeasures(gpd.fit, prob = 0.975)$quantile
       zq990 <- gpdRiskMeasures(gpd.fit, prob = 0.990)$quantile
@@ -471,7 +430,7 @@ roll_fit_uevt <- function(data, window.size, n.roll, spec) {
       
       # Verbose mode
       #cat("Estimacao numero:", i, "as", as.character(Sys.time()))
-      lapply_ans <- cbind(beta1, xi, beta, xi_se, beta_se, Zq975, Zq990, Sq975, Sq990)
+      lapply_ans <- cbind(xi, beta, Zq975, Zq990, Sq975, Sq990)
     } # fim do else
     return(lapply_ans)
   },
@@ -485,14 +444,14 @@ roll_fit_uevt <- function(data, window.size, n.roll, spec) {
   # Depois forma um xts indexado pelos dias fora da amostra a partir do segundo dia
   ans <- do.call(rbind, tmp.list)
   ans <- ans[-dim(ans)[1],]           
-  ans <- xts(ans, order.by = index(data[(window.size+2):(window.size+n.roll)]))
-  colnames(ans) <- c("beta1", "xi", "beta", "xi_se", "beta_se", "Zq975", "Zq990", "Sq975", "Sq990")
+  ans <- xts(ans, order.by = id_xts)
+  colnames(ans) <- c("xi", "beta", "Zq975", "Zq990", "Sq975", "Sq990")
   # Preenche os NA com a ultima observacao conhecida
   ans <- na.locf(ans)
   risk <- tibble(coverage = c(0.025, 0.01),
                  VaR.xts = list(ans$Zq975, ans$Zq990),
                  ES.xts = list(ans$Sq975, ans$Sq990))
-  param <- ans[, c("beta1", "xi", "beta", "xi_se", "beta_se")]
+  param <- ans[, c("xi", "beta")]
   toc <- Sys.time()
   cat("\nuevt:", toc-tic, attr(toc-tic, which = "units"))
   return(list(risk.tbl = risk, param.xts = param))

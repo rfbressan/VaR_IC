@@ -465,18 +465,21 @@ realized <- assets_os.tbl %>%
 # 5: n.roll 
 # 6: spec 
 models <- c("cevt", "cnorm", "ct", "uevt", "unorm", "ut", "riskmetrics")
-#teste.tbl <- assets_os.tbl[2,] # Copia os dados para um tibble de teste
+teste_assets_os <- readRDS("./input/teste_assets_os.rds") # Copia dados de teste
+teste_realized <- readRDS("./input/teste_realized.rds")
+teste_os_roll <- teste_assets_os %>% 
+  transmute(indice = indice,
+            id_name = id_name,
+            roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
+
 ## ATENCAO! Aqui eh alterado o valor de n.roll para o teste ser rapido
-## no artigo completo deve-se EXCLUIR ESTA PROXIMA LINHA
-#teste.tbl$n.roll <- 100
-#teste.tbl$n.roll <- as.integer(rep(15, 6))
 cat("\nInicio do map roll_fit:", as.character(Sys.time()))
 os_roll.tbl <- assets_os.tbl %>% 
   transmute(indice = indice,
             id_name = id_name,
             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
 cat("\nFim do map roll_fit:", as.character(Sys.time()))
-saveRDS(os_roll.tbl, file = "os_roll_tbl.rds")
+saveRDS(os_roll.tbl, file = "./output/os_roll_tbl.rds")
 
 os_roll_unnest <- os_roll.tbl %>% 
   unnest() %>% 
