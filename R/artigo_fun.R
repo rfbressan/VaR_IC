@@ -583,3 +583,105 @@ boot.t.test <- function(x, y, reps = 1000, mu = 0, alternative = c("two.sided", 
                 p.value = pval))
 }
 
+# var_test ----------------------------------------------------------------
+# Retirado e modificado de rugarch
+# https://bitbucket.org/alexiosg/rugarch
+# De source/R/rugarch-tests.R
+var_test <- function(cover = 0.025, loss, var, conf.level = 0.95) {
+  N <- length(loss)
+  VaRn <- floor(N * cover)
+  if(N != length(var)) stop("\nlength of realized losses not equal to length of VaR!")
+  tmp <- LR.cc.test(p = cover, lr_loss = loss, lr_var = var, conf_level = conf.level)
+  ans  <- tibble(
+    expected.exceed = floor(cover*tmp$TN),
+    actual.exceed = tmp$N,
+    uc.H0 = "Correct Exceedances",
+    uc.LRstat = tmp$stat.uc,
+    uc.critical = tmp$crit.val.uc,
+    uc.LRp = tmp$p.value.uc,
+    uc.Decision = ifelse(uc.LRp<(1-conf.level), "Reject H0", "Fail to Reject H0"),
+    cc.H0 = "Correct Exceedances & Independent",
+    cc.LRstat = tmp$stat.cc,
+    cc.critical = tmp$crit.val.cc,
+    cc.LRp = tmp$p.value.cc,
+    cc.Decision = ifelse(cc.LRp<(1-conf.level), "Reject H0", "Fail to Reject H0"))
+  return(ans)  
+}
+
+# LR.cc.test --------------------------------------------------------------
+# Retirado e modificado de rugarch
+# https://bitbucket.org/alexiosg/rugarch
+# De source/R/rugarch-tests.R
+# Modificado para fazer bootstrap de stat.ind que pode apresentar por varias vezes
+# o valor NaN
+########################################################################
+# Available in a number of locations/textbooks.
+# This code originally presented in a webcast by Guy Yollin Feb 2006 (from Insightful)
+# Functions to perform Hypothesis test
+# on VaR models based on # of exceedances
+# calc LR.uc statistic
+LR.cc.test <- function (p, lr_loss, lr_var, conf_level = 0.95) 
+{
+  result <- .LR.cc(p = p, actual = lr_loss, VaR = lr_var, reps = 1000)
+  crit.val.uc <- qchisq(conf_level, df = 1)
+  crit.val.cc <- qchisq(conf_level, df = 2)
+  p.value.cc <- 1 - pchisq(result$stat.cc, df = 2)
+  p.value.uc <- 1 - pchisq(result$stat.uc, df = 1)
+  reject <- ifelse(p.value.cc < 1 - conf_level, TRUE, FALSE)
+  return(list(stat.cc = result$stat.cc, 
+              stat.uc = result$stat.uc, 
+              p.value.cc = p.value.cc, 
+              p.value.uc = p.value.uc, 
+              conf.level = conf_level, 
+              reject = reject, 
+              N = result$N, 
+              TN = result$TN, 
+              crit.val.uc = crit.val.uc, 
+              crit.val.cc = crit.val.cc))
+} # Fim da LR.cc.test
+
+.LR.cc <- function (p, actual, VaR, reps = 1000) 
+{
+  VaR.ind <- ifelse(actual > VaR, 1, 0)
+  N <- sum(VaR.ind)
+  TN <- length(VaR.ind)
+  # Bootstrap routine
+  ind.boot <- rep(0, times = reps)
+  bootFunc <- function(){
+    bootvar <- VaR.ind[sample(1:TN, size = TN, replace = TRUE)]
+    T00 <- sum(c(0, ifelse(bootvar[2:TN] == 0 & bootvar[1:(TN - 1)] == 0, 1, 0)))
+    T11 <- sum(c(0, ifelse(bootvar[2:TN] == 1 & bootvar[1:(TN - 1)] == 1, 1, 0)))
+    T01 <- sum(c(0, ifelse(bootvar[2:TN] == 1 & bootvar[1:(TN - 1)] == 0, 1, 0)))
+    T10 <- sum(c(0, ifelse(bootvar[2:TN] == 0 & bootvar[1:(TN - 1)] == 1, 1, 0)))
+    T0 <- T00 + T01
+    T1 <- T10 + T11
+    pi0 <- T01/T0
+    pi1 <- T11/T1
+    pe <- (T01 + T11)/(T0 + T1)
+    stat.ind <- -2 *( (T00 + T10)*log(1 - pe) + (T01 + T11)*log(pe)) + 2 * (T00*log(1 - pi0)+T01*log(pi0)+T10*log(1 - pi1)+T11*log(pi1))
+    return(stat.ind)
+  }
+  
+  ind.boot <- replicate(reps, expr = bootFunc()) # ind.boot may contain NaN
+  stat.ind <- mean(ind.boot, na.rm = TRUE)
+  # stat.ind = -2 * log((1 - pe)^(T00 + T10) * pe^(T01 + T11)) + 2 * log((1 - pi0)^T00 * pi0^T01 * (1 - pi1)^T10 * pi1^T11)
+  stat.uc <- .LR.uc(p = p, TN = TN, N = N)
+  stat.cc <- stat.uc + stat.ind
+  return(list(stat.cc = stat.cc, stat.uc = stat.uc, N = N, 
+              TN = TN))
+}
+
+.LR.uc <- function (p, TN, N) 
+{
+  stat.uc <- -2 *( (TN - N)*log(1 - p)+ N*log(p) ) + 2 * ( (TN - N)*log(1 - N/TN)+N*log(N/TN) )
+  return(stat.uc)
+}
+
+.Log <- function(x){
+  ans <- log(x)
+  #if(!is.finite(ans)) ans = sign(ans) * 1e10
+  ans
+}
+
+
+
