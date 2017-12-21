@@ -539,7 +539,7 @@ boot.t.test <- function(x, y, reps = 1000, mu = 0, alternative = c("two.sided", 
   # Bootstrap t-test as described in Efron and Tibshirani (1993), (Algorithm 16.2, p224)
   if(is.null(x) | is.null(y)) 
     stop("\nArguments to boot.t.test cannot be NULL!")
-  if((length(x) <= 1) | (length(y) <= 1)) 
+  if((length(x) <= 10) | (length(y) <= 10)) 
     stop("\nboot.t.test: Sample lengths cannot be less than 10!")
   
   nx <- length(x)
@@ -681,6 +681,28 @@ LR.cc.test <- function (p, lr_loss, lr_var, conf_level = 0.95)
   ans <- log(x)
   #if(!is.finite(ans)) ans = sign(ans) * 1e10
   ans
+}
+
+# vartest -----------------------------------------------------------------
+# Funcao para englobar o teste de Kupiec1995 e de Christoffersen2004
+# Chama as funcoes VaRTest e VaRDurTest e agrega apenas as informacoes de interesse
+vartest <- function(alpha = 0.025, actual_ret, VaR, conf.level = 0.95) {
+  if(length(actual_ret) != length(VaR))
+    stop("\nvartest: Length of returns and VaR series are different!")
+  
+  ans_var <- flatten_df(VaRTest(alpha = alpha, 
+                                actual = actual_ret, 
+                                VaR = VaR, 
+                                conf.level = conf.level))
+  ans_dur <- flatten_df(VaRDurTest(alpha = alpha,
+                                   actual = actual_ret,
+                                   VaR = VaR,
+                                   conf.level = conf.level))
+  ans <- ans_var %>% 
+    select(uc.LRstat, uc.LRp) %>% 
+    bind_cols(select(ans_dur, uLL, rLL, LRp))
+  
+  return(ans)
 }
 
 

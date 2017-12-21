@@ -37,9 +37,9 @@ source("./R/artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
 
 # AMOSTRA COM DADOS A PARTIR DE 31-08-2000
 # 
-start <- as.Date("2005-08-31")
-end <- as.Date("2014-08-31")
-backstart <- as.Date("2014-09-01")
+start <- as.Date("2002-12-31")
+end <- as.Date("2008-12-31")
+backstart <- end + 1
 
 list.returns <- function(asset, start) {
   tb <- read_csv(paste0("./input/artigo-", asset, ".csv"), 
@@ -103,11 +103,14 @@ print.xtable(tab1,
              include.rownames = FALSE)
 
 # Graficos retornos------------------------------------------------------
+jpeg(filename = "./figs/artigo-retornos.jpeg",
+     width = 640, height = 800, quality = 100)
 list.plot <- lapply(seq_along(assets.tbl$indice), 
                     function(x) {autoplot(assets.tbl$ts[[x]])+
                         labs(x = "", y = "", title = paste(assets.tbl$id_name[[x]], "retornos"))}) 
 
 grid.arrange(grobs = list.plot)
+dev.off()
 
 ## Teste de estacionariedade das series de retornos
 # Teste Dickey-Fuller encontrado no pacote CADFtest
@@ -123,7 +126,7 @@ grid.arrange(grobs = list.plot)
 
 # Teste para graficos QQ normal
 jpeg(filename = "./figs/artigo-qqplots.jpeg",
-     width = 600, height = 800, quality = 100)
+     width = 640, height = 800, quality = 100)
 op <- par(mfrow = c(3,2),
           mar = c(4, 3, 3, 2))
 for(i in 1:dim(assets.tbl)[1]){
@@ -167,10 +170,10 @@ garch.models <- assets.tbl[,1:3] %>%
          ts = NULL)
 
 # Mostra a convergencia para cada modelo
-lapply(garch.models$garch_fit, convergence)
+#lapply(garch.models$garch_fit, convergence)
 
 # Sumarios dos modelos GARCH
-show(garch.models$garch_fit[[1]])
+#show(garch.models$garch_fit[[1]])
 
 ## Construindo a tabela com os parametros estimados do eGARCH in sample
 garch.models.par <- garch.models %>% 
@@ -354,14 +357,14 @@ for(i in seq_len(dim(garch.models)[1])) {
 
 ## VaR: xq_t = mu_t+1 + sigma_t+1*zq
 ## ES: Sq_t = mu_t+1 + sigma_t+1*sq
-riskmeasures <- evt.models %>%
-  transmute(indice = indice,
-            id_name = id_name,
-            loss_in = loss_in,
-            VaR975 = pmap(., ~(..6+..7*..15)), ## VaR = mu_t+1 + sigma_t+1*zq
-            VaR990 = pmap(., ~(..6+..7*..16)),
-            ES975 = pmap(., ~(..6+..7*..17)),  ## ES = mu_t+1 + sigma_t+1*sq
-            ES990 = pmap(., ~(..6+..7*..18)))
+# riskmeasures <- evt.models %>%
+#   transmute(indice = indice,
+#             id_name = id_name,
+#             loss_in = loss_in,
+#             VaR975 = pmap(., ~(..6+..7*..15)), ## VaR = mu_t+1 + sigma_t+1*zq
+#             VaR990 = pmap(., ~(..6+..7*..16)),
+#             ES975 = pmap(., ~(..6+..7*..17)),  ## ES = mu_t+1 + sigma_t+1*sq
+#             ES990 = pmap(., ~(..6+..7*..18)))
 # %>% 
 #   mutate(out_VaR975 = pmap(., ~..6[c((..5+1):(..5+..4-1))]), #out_VaR = VaR[(n_old+1):(n_old+out-1)]
 #          out_VaR990 = pmap(., ~..7[c((..5+1):(..5+..4-1))]),
@@ -369,26 +372,26 @@ riskmeasures <- evt.models %>%
 #          out_ES990 = pmap(., ~..9[c((..5+1):(..5+..4-1))]),
 #          out_loss = map2(loss, n_old, ~coredata(.x[-c(1:(.y+1))])[, 1, drop = TRUE])) #out_los = loss[-c(1:n_old+1)]
 # Plotando os valores dentro da amostra
-plot_risks <- function(loss, VaR, ES, id_name) {
-  xts <- merge(loss = loss, VaR = VaR, ES = ES)
-  plot <- ggplot(xts, aes(x = Index))+
-    geom_line(aes(y = loss), color = "black")+
-    geom_line(aes(y = VaR), color = "red")+
-    geom_line(aes(y = ES), color = "darkgreen")+
-    labs(x = "", y = "", title = id_name)
-  return(plot)
-}
-VaR_plots <- riskmeasures %>% 
-  transmute(VaR975_plot = pmap(., ~plot_risks(..3, ..4, ..6, ..2)),
-            VaR990_plot = pmap(., ~plot_risks(..3, ..5, ..7, ..2)))
-VaR_plots$VaR975_plot[[1]]+
-  coord_cartesian(xlim = c(as.Date("2011-08-31"), 
-                           as.Date("2014-08-31")))
-# Verifica quantas violacoes
-sum(riskmeasures$loss_in[[1]] > riskmeasures$VaR975[[1]])
-
-grid.arrange(grobs = VaR_plots$VaR975_plot)
-grid.arrange(grobs = VaR_plots$VaR990_plot)
+# plot_risks <- function(loss, VaR, ES, id_name) {
+#   xts <- merge(loss = loss, VaR = VaR, ES = ES)
+#   plot <- ggplot(xts, aes(x = Index))+
+#     geom_line(aes(y = loss), color = "black")+
+#     geom_line(aes(y = VaR), color = "red")+
+#     geom_line(aes(y = ES), color = "darkgreen")+
+#     labs(x = "", y = "", title = id_name)
+#   return(plot)
+# }
+# VaR_plots <- riskmeasures %>% 
+#   transmute(VaR975_plot = pmap(., ~plot_risks(..3, ..4, ..6, ..2)),
+#             VaR990_plot = pmap(., ~plot_risks(..3, ..5, ..7, ..2)))
+# VaR_plots$VaR975_plot[[1]]+
+#   coord_cartesian(xlim = c(as.Date("2011-08-31"), 
+#                            as.Date("2014-08-31")))
+# # Verifica quantas violacoes
+# sum(riskmeasures$loss_in[[1]] > riskmeasures$VaR975[[1]])
+# 
+# grid.arrange(grobs = VaR_plots$VaR975_plot)
+# grid.arrange(grobs = VaR_plots$VaR990_plot)
 
 # Backtesting com refit ----------------------------------------------
 # Monta o tibble para as estimacoes out of sample
@@ -435,14 +438,19 @@ models <- c("cevt", "cnorm", "ct", "uevt", "unorm", "ut", "riskmetrics")
 #             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
 
 ## ATENCAO! Aqui eh alterado o valor de n.roll para o teste ser rapido
+f <- file("log.txt", open = "wt")
+sink(f) # Inicia o log no arquivo
+sink(f, type = "message") # Inclusive mensagens de erro e avisos
 cat("\nInicio do map roll_fit:", as.character(Sys.time()))
-# os_roll.tbl <- assets_os.tbl %>% 
-#   transmute(indice = indice,
-#             id_name = id_name,
-#             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
-# cat("\nFim do map roll_fit:", as.character(Sys.time()))
-# saveRDS(os_roll.tbl, file = "./output/os_roll_tbl.rds")
-os_roll.tbl <- readRDS(file = "./output/os_roll_tbl.rds")
+os_roll.tbl <- assets_os.tbl %>%
+  transmute(indice = indice,
+            id_name = id_name,
+            roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
+cat("\nFim do map roll_fit:", as.character(Sys.time()))
+saveRDS(os_roll.tbl, file = "./output/os_roll_tbl.rds")
+#os_roll.tbl <- readRDS(file = "./output/os_roll_tbl.rds")
+sink(type = "message")
+sink() # Finaliza o log
 
 os_roll_unnest <- os_roll.tbl %>% 
   unnest() %>% 
@@ -504,41 +512,51 @@ print.xtable(tab5,
 
 ## Faz os testes de VaR para os 6 indices
 ## VaRTest(alpha = 0.05, actual, VaR, conf.level = 0.95)
-## var_test(cover = 0.025, loss, var, conf.level = 0.95)
+## var_test(cover = 0.025, loss, var, conf.level = 0.95) Com bootstrap para cc
+## vartest(cover = 0.025, loss, var, conf.level = 0.95) engloba uc e DurTest
 vartest.tbl <- os_risk.tbl %>% 
   left_join(realized, by = "indice") %>% 
   transmute(indice = indice,
             id_name = id_name,
             model_type = model_type,
             coverage = coverage,
-            VaRtest = pmap(., ~var_test(..4, coredata(..7), coredata(..5)))) %>% 
+            VaRtest = pmap(., ~vartest(..4, -coredata(..7), -coredata(..5)))) %>% 
   unnest() %>% 
-  select(id_name, coverage, model_type, uc.LRstat, uc.LRp, cc.LRstat, cc.LRp) %>% 
+  select(id_name, coverage, model_type, uc.LRstat, uc.LRp, uLL, rLL, LRp) %>% 
   gather(key = stat_name, value = stat_value, -c(id_name, coverage, model_type), factor_key = TRUE) %>% 
   spread(key = id_name, value = stat_value)
 
+# Xtable
+cap <- paste("Testes estatísticos para o VaR. Teste incondicional de Kupiec e teste de
+             independência por duração de Christoffersen e Pelletier (fora da amostra, 
+             dados entre",
+             format(backstart+1, "%d/%m/%Y"), "e 31/08/2017")
+
+tab6 <- xtable(varviolations.tbl, 
+               caption = cap,
+               digits = 2,
+               label = "tab:vartest",
+               auto = TRUE)
+print.xtable(tab6, 
+             file = "./tables/artigo-tab-vartest.tex",
+             caption.placement = "top",
+             table.placement = "H",
+             sanitize.colnames.function = NULL,
+             sanitize.text.function = function(x) {x},
+             include.rownames = FALSE)
 ###### Teste da funcao var_test
-teste_risk <- os_risk.tbl %>% 
-  subset(subset = (indice == "IPSA" & model_type == "cevt" & coverage == 0.01)) %>% 
-  left_join(realized, by = "indice")
-var_test.tbl <- var_test(cover = teste_risk$coverage,
-                         loss = unlist(teste_risk$real), 
-                         var = unlist(teste_risk$VaR.xts))
+# teste_risk <- os_risk.tbl %>% 
+#   subset(subset = (indice == "IPSA" & model_type == "cevt" & coverage == 0.01)) %>% 
+#   left_join(realized, by = "indice")
+# var_test.tbl <- var_test(cover = teste_risk$coverage,
+#                          loss = unlist(teste_risk$real), 
+#                          var = unlist(teste_risk$VaR.xts))
 
 # Plot do VaR e violacoes
 teste_varplot <- os_risk.tbl %>% 
   subset(subset = (indice == "IPSA" & model_type == "unorm" & coverage == 0.01)) %>% 
   left_join(realized, by = "indice")
 VaRplot(teste_varplot$coverage, -teste_varplot$real[[1]], -teste_varplot$VaR.xts[[1]])
-
-## VaRDurTest
-vardurtest.tbl <- os_risk.tbl %>% 
-  left_join(os_realized, by = "indice") %>% 
-  transmute(indice = indice,
-            id_name = id_name,
-            model_type = model_type,
-            coverage = coverage,
-            VaRDurTest = pmap(., ~VaRDurTest(..4, -coredata(..7), -coredata(..5)))) # Troca o sinal!!
 
 ## MCS para os VaR atraves da funcao VaRLoss
 mcs.tbl <- os_risk.tbl %>% 
