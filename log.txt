@@ -1,2 +1,63 @@
 
-Inicio do map roll_fit: 2017-12-21 19:19:26
+Inicio do map roll_fit: 2017-12-21 22:04:36
+roll_fit do ativo inicio: 2017-12-21 22:04:37
+cevt: 17.81915 secs
+cnorm: 24.13666 secs
+ct: 2.894471 mins
+uevt: 7.489531 secs
+unorm: 0.4205673 secs
+ut: 2.231942 mins
+riskmetrics: 0.5933995 secs
+roll_fit do ativo fim: 2017-12-21 22:31:00 
+
+roll_fit do ativo inicio: 2017-12-21 22:31:00
+cevt: 1.807639 mins
+cnorm: 2.776544 mins
+ct: 13.57691 mins
+uevt: 52.27685 secs
+unorm: 2.414345 secs
+ut: 44.60101 mins
+riskmetrics: 0.249604 secs
+roll_fit do ativo fim: 2017-12-22 01:00:06 
+
+roll_fit do ativo inicio: 2017-12-22 01:00:06
+cevt: 1.224046 mins
+cnorm: 2.791884 mins
+ct: 16.93891 mins
+uevt: 48.31149 secs
+unorm: 2.301679 secs
+ut: 19.62708 mins
+riskmetrics: 0.07757926 secs
+roll_fit do ativo fim: 2017-12-22 03:31:31 
+
+roll_fit do ativo inicio: 2017-12-22 03:31:31
+cevt: 1.743794 mins
+cnorm: 2.78591 mins
+ct: 15.39883 mins
+uevt: 50.07945 secs
+unorm: 2.269857 secs
+ut: 14.63918 mins
+riskmetrics: 0.08206558 secs
+roll_fit do ativo fim: 2017-12-22 05:43:16 
+
+roll_fit do ativo inicio: 2017-12-22 05:43:16
+cevt: 1.660508 mins
+cnorm: 2.717416 mins
+ct: 12.34737 mins
+uevt: 47.13655 secs
+unorm: 2.289042 secs
+ut: 14.48978 mins
+riskmetrics: 0.1228869 secs
+roll_fit do ativo fim: 2017-12-22 07:43:09 
+
+roll_fit do ativo inicio: 2017-12-22 07:43:09
+cevt: 1.733099 mins
+cnorm: 2.779156 mins
+ct: 14.29543 mins
+uevt: 36.34077 secs
+unorm: 2.398939 secs
+ut: 16.21004 mins
+riskmetrics: 0.1066427 secs
+roll_fit do ativo fim: 2017-12-22 10:02:00 
+
+Fim do map roll_fit: 2017-12-22 10:02:00

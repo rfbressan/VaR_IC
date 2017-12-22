@@ -447,7 +447,8 @@ os_roll.tbl <- assets_os.tbl %>%
             id_name = id_name,
             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
 cat("\nFim do map roll_fit:", as.character(Sys.time()))
-saveRDS(os_roll.tbl, file = "./output/os_roll_tbl.rds")
+saveRDS(os_roll.tbl, 
+        file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "os_roll_tbl.rds"))
 #os_roll.tbl <- readRDS(file = "./output/os_roll_tbl.rds")
 sink(type = "message")
 sink() # Finaliza o log
