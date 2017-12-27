@@ -411,7 +411,8 @@ assets_os.tbl <- garch.models %>%
 realized <- assets_os.tbl %>% 
   transmute(indice = indice,
             real = pmap(., ~..3[(..4+2):(..4+..5)])) # real = loss[(window.size+2):(window.size+n.roll)]
-
+saveRDS(realized, 
+        file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "realized.rds"))
 # Testes estatisticos para o VaR ------------------------------------------
 # Quais testes fazer?
 # VaRTest possui 2 testes, incondicional de Kupiec1995 e condicional de Christoffersen2001
@@ -438,20 +439,21 @@ models <- c("cevt", "cnorm", "ct", "uevt", "unorm", "ut", "riskmetrics")
 #             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
 
 ## ATENCAO! Aqui eh alterado o valor de n.roll para o teste ser rapido
-f <- file("log.txt", open = "wt")
-sink(f) # Inicia o log no arquivo
-sink(f, type = "message") # Inclusive mensagens de erro e avisos
-cat("\nInicio do map roll_fit:", as.character(Sys.time()))
-os_roll.tbl <- assets_os.tbl %>%
-  transmute(indice = indice,
-            id_name = id_name,
-            roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
-cat("\nFim do map roll_fit:", as.character(Sys.time()))
-saveRDS(os_roll.tbl, 
-        file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "os_roll_tbl.rds"))
-#os_roll.tbl <- readRDS(file = "./output/os_roll_tbl.rds")
-sink(type = "message")
-sink() # Finaliza o log
+# f <- file("log.txt", open = "wt")
+# sink(f) # Inicia o log no arquivo
+# sink(f, type = "message") # Inclusive mensagens de erro e avisos
+# cat("\nInicio do map roll_fit:", as.character(Sys.time()))
+# os_roll.tbl <- assets_os.tbl %>%
+#   transmute(indice = indice,
+#             id_name = id_name,
+#             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
+# cat("\nFim do map roll_fit:", as.character(Sys.time()))
+# saveRDS(os_roll.tbl, 
+#         file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "os_roll_tbl.rds"))
+# sink(type = "message")
+# sink() # Finaliza o log
+
+os_roll.tbl <- readRDS(file = "./output/2017-12-22os_roll_tbl.rds")
 
 os_roll_unnest <- os_roll.tbl %>% 
   unnest() %>% 
@@ -490,13 +492,15 @@ varviolations.tbl <- os_risk.tbl %>%
                                               riskmetrics = "RiskMetrics") # Fim do switch
   )) # Fim do map_chr e mutate
 colnames(varviolations.tbl)[2] <- "Modelo"
-varviolations.tbl <- add_row(varviolations.tbl, cov = 1.0, Modelo = "Cobertura = 1\\%", .before = 1)
-varviolations.tbl <- add_row(varviolations.tbl, cov = 2.5, Modelo = "Cobertura = 2.5\\%", .before = 9)
+varviolations.tbl <- add_row(varviolations.tbl, Modelo = "Cobertura = 1\\%", 
+                             .before = 1)
+varviolations.tbl <- add_row(varviolations.tbl, Modelo = "Cobertura = 2.5\\%", 
+                             .after = ceiling(dim(varviolations.tbl)[1]/2))
 varviolations.tbl$cov <- NULL # Retira a coluna cov, que nao eh mais necessaria
 
 # Xtable
 cap <- paste("Percentual de violações. (fora da amostra, dados entre",
-             format(backstart+1, "%d/%m/%Y"), "e 31/08/2017")
+             format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
 
 tab5 <- xtable(varviolations.tbl, 
                caption = cap,
@@ -526,14 +530,19 @@ vartest.tbl <- os_risk.tbl %>%
   select(id_name, coverage, model_type, uc.LRstat, uc.LRp, uLL, rLL, LRp) %>% 
   gather(key = stat_name, value = stat_value, -c(id_name, coverage, model_type), factor_key = TRUE) %>% 
   spread(key = id_name, value = stat_value)
-
+colnames(vartest.tbl)[2] <- "Modelo"
+vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura = 1\\%", 
+                       .before = 1)
+vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura = 2.5\\%",
+                       .after = ceiling(dim(vartest.tbl)[1]/2))
+vartest.tbl$coverage <- NULL # Retira a coluna cov, que nao eh mais necessaria
 # Xtable
 cap <- paste("Testes estatísticos para o VaR. Teste incondicional de Kupiec e teste de
              independência por duração de Christoffersen e Pelletier (fora da amostra, 
              dados entre",
-             format(backstart+1, "%d/%m/%Y"), "e 31/08/2017")
+             format(backstart+1, "%d/%m/%Y"), "e 30/08/2017")
 
-tab6 <- xtable(varviolations.tbl, 
+tab6 <- xtable(vartest.tbl, 
                caption = cap,
                digits = 2,
                label = "tab:vartest",
@@ -544,7 +553,8 @@ print.xtable(tab6,
              table.placement = "H",
              sanitize.colnames.function = NULL,
              sanitize.text.function = function(x) {x},
-             include.rownames = FALSE)
+             include.rownames = FALSE,
+             tabular.environment="longtable")
 ###### Teste da funcao var_test
 # teste_risk <- os_risk.tbl %>% 
 #   subset(subset = (indice == "IPSA" & model_type == "cevt" & coverage == 0.01)) %>% 
