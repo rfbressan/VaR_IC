@@ -116,7 +116,9 @@ This template helps you to create a properly formatted \LaTeX\ manuscript.
 
 \section{Introdução}
 
-\paragraph{A medição do risco de mercado} ao qual os portfólios dos investidores está sujeito é objeto de devoção de esforços tanto por parte das instituições e investidores em geral como por parte dos reguladores. Instituições financeiras em todo o mundo, de acordo com suas regulações locais e com os princípios de Basileia (\emph{Basel Comittee on Banking Supervision} - BCBS do Banco de Compensações Internacionais - BIS\footnote{http://www.bis.org/bcbs/index.htm?m=3\%7C14}) para aquelas que o seguem (o Brasil é um desses países)  são obrigadas a reservar uma parcela de seu capital como provisionamento contra flutuações adversas do mercado em seus portfólios de investimento.
+\paragraph{A medição do risco de mercado} ao qual os portfólios dos investidores está sujeito é objeto de devoção de esforços tanto por parte das instituições e investidores em geral como por parte dos reguladores. Instituições financeiras em todo o mundo, de acordo com suas regulações locais e com os princípios de Basileia (\emph{Basel Comittee on Banking Supervision} - BCBS do Banco de Compensações Internacionais - BIS\footnote{http://www.bis.org/bcbs/index.htm?m=3\%7C14}) para aquelas que o seguem (o Brasil é um desses países)  são obrigadas a reservar uma parcela de seu capital como provisionamento contra flutuações adversas do mercado em seus portfólios de investimento, como forma de mitigar seu risco de insolvência.
+
+Instituições financeiras - IF - devem manter seu risco de insolvência controlado, e a percepção externa deve ser tal que não haja desconfiança do público em geral com a habilidade da instituição em controlar este risco. Confiança é a palavra chave destas instituições e portanto, também aos reguladores. Se a confiança se esvai e a percepção de risco é elevada, rapidamente uma crise de liquidez pode surgir, com depositantes sacando seus recursos e outras fontes de \emph{funding} também sendo limitadas. Em tal situação, é natural o banco (ou IF em geral) buscar o mercado para vender seus ativos e levantar os recursos necessários. É nesse momento que uma crise de liquidez pode levar a uma crise de solvência, não há garantias que no mercado aberto, os ativos do banco serão justamente avaliados e arrematados. A crise financeira de 2008 e 2009 ainda está na memória dos agentes.
 
 Uma importante característica das séries de retornos financeiros é sua alta volatilidade, não constante e tampouco seguindo a distribuição Normal. Assim, eventos extremos, e neste caso estamos interessados em perdas de grande magnitude, acontecem com uma frequência alta demais para serem descartadas como apenas \emph{outliers}, e portanto passaram a atrair a atenção dos participantes do mercado, entre eles os investidores e também os reguladores. Estas observações induziram uma gama enorme de estudos, práticos e teóricos, voltados a explicar o comportamento dos retornos de séries financeiras e modelar de forma adequada as caudas da distribuição destes retornos. Não somente estes estudos são de grande relevância para o gerenciamento de risco nas instituições financeiras, como também são obrigatórios segundo o acordo de Basileia, uma vez que este requer o cálculo do Valor em Risco - VaR, para então a instituição poder projetar o seu nível requerido de capital. 
 
@@ -131,14 +133,7 @@ O método VaR para cálculo de risco de mercado ao qual um portfólio está suje
 
 As variações na metodologia original de estimação do VaR surgem principalmente em função de críticas a abordagem proposta, a qual inclui a suposição de retornos independentes e igualmente distribuídos, covariâncias constantes entre os ativos de um portfólio e a distribuição normal dos retornos.
 
-Por meio de dois artigos \cite{Artzner1997} e \cite{Artzner1999}, foi introduzido na literatura o conceito de medida coerente de risco. Para uma medida ser considerada coerente, primeiramente foram introduzidas quatro propriedades cunhadas através de axiomas, as quais estas medidas deveriam possuir, sendo elas: 
-
-\begin{itemize}
-	\item invariância a translação;
-	\item sub-aditividade;
-	\item homogeneidade positiva, e;
-	\item monotonicidade.
-\end{itemize}
+Por meio de dois artigos \cite{Artzner1997} e \cite{Artzner1999}, foi introduzido na literatura o conceito de medida coerente de risco. Para uma medida ser considerada coerente, primeiramente foram introduzidas quatro propriedades cunhadas através de axiomas, as quais estas medidas deveriam possuir, invariância a translação,	sub-aditividade, homogeneidade positiva, e monotonicidade.
 
 VaR especificamente não possui a propriedade da sub-aditividade para alguns casos, sendo esta uma das grandes críticas ao VaR. Para contornar este fato, \cite{Acerbi2002} propõe o \emph{Expected Shortfall} e comprovam que este é uma medida coerente de risco. Além de ser coerente, o ES possui uma segunda vantagem com relação ao VaR, considerando que o ES nos informa uma medida de tendência central do tamanho das perdas que excedem o valor do quantil VaR. Ou seja, o VaR nos informa apenas que uma proporção $\alpha$ das perdas serão menores que a medida, mas nada nos informa se esta perda extraordinária de fato ocorrer. Mesmo sendo criticado e demonstradamente uma medida não coerente de risco, o VaR continua a ser amplamente utilizado, mesmo que agora em conjunto com o ES. 
 
@@ -174,27 +169,6 @@ Seja \emph{u} um valor de limiar a partir do qual perdas acima deste valor sejam
 
 A EVT está interessada em investigar o comportamento da distribuição dos máximos desta \emph{va} dados por $M_n = \max (X_1, \ldots , X_n)$ para vários valores de $n$ e a medida que $n\rightarrow \infty$. A sequência $M_n$ é chamada de máximos em bloco e foi demonstrado através do conhecido teorema de Fisher-Tippett-Gnedenko, \cite{Fisher1928}, \cite{Gnedenko1941, Gnedenko1943}, que a única distribuição para a qual $M_n$ converge com $n\rightarrow \infty$ é a distribuição de valores extremos generalizada. Se esta distribuição de valores extremos generalizada - GEV - for denotada por $H_\xi$, com $\xi$ um parâmetro da distribuição, então se diz que $F \in MDA(H_\xi)$, $F$ pertence ao domínio de máxima atração de $H_\xi$.
 
-%Para tanto, é necessário normalizarmos esta sequência de máximos de forma que sua distribuição seja convergente para uma distribuição $H(x)$ não-degenerada. Seja $F(x)$ a distribuição original de uma variável aleatória \emph{iid}, é possível normalizar seus máximos em bloco através da relação $M_n^*=(M_n-d_n)/c_n$ de forma que:
-%
-%\begin{equation}
-%\label{eq:H}
-%\lim_{n \rightarrow \infty} P\left(\frac{M_n-d_n}{c_n} \leq x \right) 
-%= \lim_{n \rightarrow \infty} F^n(c_nx + d_n)
-%= H(x)
-%\end{equation}
-
-%Em outras palavras, para determinadas sequências $c_n$ e $d_n$ a serem escolhidas, existe uma distribuição de $H(x)$ não-degenerada a qual representa a distribuição dos máximos em bloco de $F(x)$.
-%
-%A potenciação de $F$ em $n$ deriva diretamente da suposição que a variável aleatória é iid, enquanto que a transformação de $x \rightarrow c_n x+d_n$ é a normalização dos máximos em bloco.
-
-%\begin{defi}[MDA] \label{defi:MDA}
-%	Domínio de máxima atração, se a equação \eqref{eq:H} é válida para uma $H$ não-degenerada, então se diz que $F \in MDA(H)$, $F$ pertence ao domínio de máxima atração de $H$.
-%\end{defi}
-%
-%\begin{teor}[Fisher-Tippett, Gnedenko] \label{teor:fisher-tippett}
-%	Se $F \in MDA(H)$ para alguma $H$ não-degenerada, então $H$ deve ser uma distribuição do tipo de valores extremos generalizada – GEV.
-%\end{teor}
-%O teorema \ref{teor:fisher-tippett} foi estabelecido através de três artigos, \cite{Fisher1928}, \cite{Gnedenko1941, Gnedenko1943}.
 
 \begin{defi}[GEV] \label{defi:GEV}
 	Distribuição de valores extremos generalizada, é definida por sua função densidade de probabilidade - pdf - a qual é dada por:
@@ -245,29 +219,14 @@ Uma importante distribuição que surge na modelagem dos excessos sobre um limia
 
 Os parâmetros $\xi$ e $\psi$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. A GPD tem papel fundamental na teoria de valor extremo em função do teorema de Pickands-Balkema-de Haan, \cite{Pickands1975} e \cite{Balkema1974}, pois estes demonstram que, para um valor suficientemente alto do limiar \emph{u}, a distribuição dos excessos $F_u(x)$ pode ser aproximada por uma GPD $G_{\xi,\psi}(x)$.
 
-%\begin{teor}[Pickands-Balkema-de Haan]
-%	\label{teor:pickands}
-%	Pode ser encontrada uma função $\psi(u)$ tal que:
-%	\begin{equation*}
-%	\lim\limits_{u \rightarrow x_F} \; \sup\limits_{0\leq x <x_F - u} |F_u(x)-G_{\xi, \psi(u)}(x)| = 0 
-%	\end{equation*}
-%	se e somente se $F\in MDA(H_\xi)$ para $\xi \in \mathbb{R}$.
-%\end{teor}
-
 O que este teorema prova é que para distribuições as quais os máximos em bloco normalizados convergem para uma GEV (na forma da equação \eqref{eq:GEV}), então a distribuição dos excessos acima de um limiar destas mesmas distribuições convergem para uma GPD, dado um valor de limiar \emph{u} adequado. Como para fins práticos basicamente todas as distribuições contínuas de fato estão no $MDA(H_\xi)$ para algum valor de $\xi$, temos que a GPD é a distribuição a ser escolhida para modelar excessos acima de um limiar.
 
-Ao se fazer esta suposição que a distribuição dos excessos \emph{é igual} a uma GPD, pode-se então a partir dos dados de perdas estimar os parâmetros de forma e escala e, portanto, modelar a cauda direita da distribuição de perdas de forma parametrizada com o auxílio da equação \eqref{eq:excessdist}. 
+Ao se fazer esta suposição que a distribuição dos excessos \emph{é igual} a uma GPD, pode-se então, a partir dos dados de perdas, estimar os parâmetros de forma e escala e, portanto, modelar a cauda direita da distribuição de perdas de forma parametrizada com o auxílio da equação \eqref{eq:excessdist}. 
 
 
 Dada a parametrização de uma GPD, é interessante saber o valor esperado desta distribuição, uma vez que esta medida de valor central fornece importante informação sobre a quantidade de risco que se está medindo, assim como a informação de que a própria distribuição foi ajustada aos dados de forma satisfatória.
 
 O valor esperado de uma variável aleatória não negativa pode ser computado através da integral de sua cauda, $P(X>x) = 1-P(X \leq x)$. A cauda da GPD é, para $\xi \neq 0$, $\left(1+\xi x / \psi \right)^{-1/ \xi}$.
-
-%Bastando, portanto, integrar em relação a $x$ sobre o domínio deste, que é de $0$ a $\infty$.
-%
-%\begin{equation*}
-%\displaystyle\int\limits_{0}^{\infty} \left(1+ \xi x /\beta(u) \right)^{-1/\xi} dx
-%\end{equation*}
 
 Desta forma, o valor esperado de uma GPD, $G_{\xi,\psi}(x)$, converge para valores de $\xi<1$ e é dado pela seguinte equação:
 
@@ -301,24 +260,10 @@ Assim, quando da análise de uma determinada distribuição de perdas \emph{F} e
 
 Deseja-se o menor valor de \emph{u} para o qual a relação é linear pois, mesmo o método POT implica em grande perda de dados da série temporal, já que apenas os valores acima deste limiar são utilizados para fazer a estimação dos parâmetros $\xi$ e $\psi$ da GPD. Portanto, existe um \emph{trade-off} na escolha do valor limiar \emph{u}, escolhendo um valor muito baixo obtém-se uma boa quantidade de dados para estimar os parâmetros da GPD, mas a própria distribuição resultante não será GPD, uma vez que não estaremos trabalhando na região onde a relação $e(u) \text{ vs } u$ é linear, e portanto os parâmetros estimados serão viesados. Por outro lado, um valor limiar muito alto impõe o custo de trabalhar com poucos dados para fazer a estimação dos parâmetros da distribuição e por conseguinte, os erros padrões dessas estimativas serão elevados.
 
-\todo{incluir parágrafo sobre quantidade ideal de observações para estimar gpd. McNeil20015 tem algo sobre.}
-
-%\begin{lema} \label{lema:ev}
-%	Sob a Suposição \ref{supo:excessdist} segue que $F_v (x)=G_{\xi,\psi+\xi(v-u)} (x)$ para qualquer valor limiar $v \geq u$.
-%\end{lema}
-%
-%Logo, a distribuição dos excessos sobre limiares mais altos que \emph{u}, também segue uma GPD com o mesmo parâmetro de forma $\xi$ e parâmetro de escala que cresce linearmente com este limiar mais alto \emph{v}. Se $\xi < 1$, a média desta nova GPD converge e é dada por:
-%
-%\begin{equation}
-%\label{eq:ev}
-%e(v)=\frac{\psi+\xi(v-u)}{1-\xi}=\frac{\xi v}{1- \xi}+ \frac{\psi-\xi u}{1-\xi}
-%\end{equation}
-%
-%Esta é a função média dos excessos sobre limiares mais altos, e está definida para $u \leq v < \infty$ se $0 \leq \xi < 1$ e, $u \leq v \leq u-\psi / \xi$ se $\xi < 0$.
-%
-%Esta função é muito útil para calcularmos o $ES_\alpha$ (\emph{expected shortfall}), considerando que $VaR_\alpha$ nada mais é que um quantil superior ao limiar $u$ escolhido.
+Considerando este \emph{trade-off}, uma saída é buscar minimizar o erro quadrado médio - MSE (\emph{mean squared error}) do parâmetro estimado. A medida MSE pode ser decomposta entre a soma do quadrado do viés com a variância do estimador, idealmente deseja-se ter viés zero e variância mínima. Na impossibilidade de tal realização, um estimador relativamente eficiente é aquele que possui o menor MSE. Em \cite[seção 5.2.5, p. ~139]{McNeil2015} é explorada através de simulação de Monte Carlo esta relação entre a escolha do limiar \emph{u} e o MSE do parâmetro $\xi$ obtido através do método POT e também da própria medida de risco $VaR_{99\%}$. Chegam a conclusão que uma escolha de limiar tal que o número de excessos a este fique em torno de 100 observações é o ideal, e mais importante, a partir destas 100 observações o MSE é relativamente robusto, se elevando lentamente a partir de seu valor mínimo.
 
 \subsection{Estimando o VaR}
+\label{sec:var}
 
 Através da modelagem da cauda da distribuição \emph{F} de perdas por uma GPD, é possível calcular a medida de risco $VaR_\alpha$ em função dos parâmetros da GPD estimada e também fazendo uso da distribuição empírica de \emph{F}.
 
@@ -347,74 +292,81 @@ Como a equação \eqref{eq:Ftail} fornece a probabilidade de cauda, então esta 
 VaR_\alpha = q_\alpha(F) = u+\frac{\psi}{\xi}\left[ \left( \frac{1-\alpha}{\bar{F}(u)}\right)^{-\xi}-1 \right]
 \end{equation}
 
-A medida $ES_\alpha$ pode ser entendida como a média das perdas que excedem o valor dado por $VaR_\alpha$. Como o próprio $VaR_\alpha$ é um quantil acima do valor de limiar \emph{u}, $ES_\alpha$ é dado pelo valor do $VaR_\alpha$ somado a função média dos excessos dada pela equação \eqref{eq:ev} fazendo $v = VaR_\alpha$. Esta média é convergente para valores de $\xi < 1$ conforme já demonstrado. Ou seja, $ES_\alpha=VaR_\alpha + e(VaR_\alpha)$. A qual nos rende de forma mais geral:
+Portanto, a medida de risco $VaR_\alpha$, para distribuições de perdas que tiveram suas caudas modeladas através de uma GPD da forma $G_{\xi, \psi(u)}$ com $\xi <1 \text{ e } \psi > 0$, pode ser calculada através da equação dada em \eqref{eq:VaRGPD}. A estimativa desta medida de risco será encontrada através das estimativas dos parâmetros da GPD, assim como do limiar utilizado e de uma medida empírica de $\bar{F}(u)$ que será o número de excessos verificados sobre o total de amostras. É claro que, ao se adotar esta estimativa para $\bar{F}(u)$ se está implicitamente supondo que o número de amostras na série de perdas é significativa, assim como o número de excessos verificados. Daí a importância de se utilizar um valor \emph{u} adequado, conforme explicitado na seção \ref{sec:excess}.
 
-\begin{equation}
-\label{eq:ESGPD}
-ES_\alpha = \frac{VaR_\alpha}{1-\xi}+\frac{\psi-\xi u}{1-\xi}
-\end{equation}
+A estimativa de medida de risco desenvolvida nesta seção se qualifica como uma medida incondicional, no sentido que ela não depende do estado atual das coisas, mas sim de todo o histórico de eventos de forma uniforme. Em outras palavras, $VaR_\alpha$ derivado a partir da equação \eqref{eq:VaRGPD} é uma medida histórica de risco associado ao ativo em análise, entretanto, não leva em consideração se nos eventos mais recentes a volatilidade das perdas pode ser diferente do valor histórico.
 
-Portanto, ambas medidas de risco $VaR_\alpha$ e $ES_\alpha$, para distribuições de perdas que tiveram suas caudas modeladas através de uma GPD da forma $G_{\xi, \psi(u)}$ com $\xi <1 \text{ e } \psi > 0$, podem ser calculadas respectivamente através das equações dadas em \eqref{eq:VaRGPD} e \eqref{eq:ESGPD}. As estimativas destas medidas de risco serão encontradas através das estimativas dos parâmetros da GPD, assim como do limiar utilizado e de uma medida empírica de $\bar{F}(u)$ que será o número de excessos verificados sobre o total de amostras. É claro que, ao adotarmos esta estimativa para $\bar{F}(u)$ estamos implicitamente supondo que o número de amostras na série de perdas é significativa, assim como o número de excessos verificados. Daí a importância de se utilizar um valor \emph{u} adequado, conforme explicitado na seção \ref{sec:excess}.
+De fato, uma das características marcantes das perdas (ou equivalentemente, dos retornos) dos ativos financeiros é o chamado \emph{clustering} de volatilidade, onde grandes volatilidades têm tendência a ficarem próximas ao longo da linha temporal. Em geral estes agrupamentos de volatilidades surgem a partir da autocorrelação destas, ou seja, a volatilidade em um período \emph{t} é dependente das volatilidades verificadas em períodos anteriores. Um modelo bastante encontrado na literatura que busca modelar estas dependências é o modelo ARCH e suas variantes como GARCH, propostos por \cite{Engle1982} e \cite{Bollerslev1986} respectivamente.
 
-As estimativas de medidas de risco desenvolvidas nesta seção se qualificam como medidas incondicionais, no sentido que elas não dependem do estado atual das coisas, mas sim de todo o histórico de eventos de forma uniforme. Em outras palavras, $VaR_\alpha \text{ e } ES_\alpha$ derivados a partir das equações \eqref{eq:VaRGPD} e \eqref{eq:ESGPD} são medidas históricas de risco associado ao ativo em análise, entretanto, não levam em consideração se nos eventos mais recentes a volatilidade das perdas pode ser diferente do valor histórico.
+Assim, ao passo que as estimativas de risco desenvolvidas nesta seção são valiosas para prazos mais longos, ainda é necessário desenvolver um modelo que lide com o fato das autocorrelações de volatilidades das perdas e, portanto, com o fatos de a distribuição das perdas não ser independente e igualmente distribuída ao longo do tempo. O modelo proposto por \cite{McNeil2000} pode ser utilizado para encontrar a medida de risco $VaR_\alpha$ condicional que se deseja, ainda dentro da metodologia POT.
 
-De fato, uma das características marcantes das perdas (ou equivalentemente, dos retornos) dos ativos financeiros é o chamado \emph{clustering} de volatilidade, onde grandes volatilidades (retornos positivos ou negativos) têm tendência a ficarem próximas ao longo da linha temporal. Em geral estas aglomerações de volatilidades surgem a partir da autocorrelação destas, ou seja, a volatilidade em um período \emph{t} é dependente das volatilidades verificadas em períodos anteriores. Um modelo bastante encontrado na literatura que busca modelar estas dependências é o modelo ARCH e suas variantes como GARCH, propostos por \cite{Engle1982} e \cite{Bollerslev1986} respectivamente.
+\subsection{Modelo eGARCH-POT}
+\label{sec:egarchpot}
 
-Assim, ao passo que as estimativas de risco desenvolvidas nesta seção são valiosas para prazos mais longos, ainda é necessário desenvolver um modelo que lide com o fato das autocorrelações de volatilidades e portanto, que nossa variável aleatória não é independente e igualmente distribuída ao longo do tempo. O modelo proposto por \cite{McNeil2000} pode ser utilizado para encontrar as medidas de risco $VaR_\alpha$ e $ES_\alpha$ condicionais que desejamos, ainda dentro da metodologia de \emph{peaks over treshold} - POT.
+Ativos financeiros possuem características de autocorrelação, senão em seus retornos propriamente ditos, ao menos em suas volatilidades ou variações absolutas. Ou seja, dada uma grande variação no momento \emph{t} é de se esperar novamente uma grande variação, não necessariamente na mesma direção daquela anterior, para o momento \emph{t+1} e posteriores. Desta forma, medidas de risco incondicionais, conforme aquelas derivadas em \ref{sec:caudas} podem ser adequadas somente para horizontes temporais mais longos, pois implicitamente tomam em consideração os fatos mais recentes com o mesmo valor de predição que fatos mais longínquos.
 
-\subsection{Modelo eGARCH-EVT}
-\label{sec:egarchevt}
+Assim, pode-se trabalhar com um modelo semelhante ao proposto por \cite{McNeil2000} os quais fazem uma adequação dos retornos dos ativos a um modelo GARCH e posteriormente tratam os erros desta modelagem como \emph{iid} e portanto, a metodologia de POT pode ser aplicada. Este modelo pode ser entendido como um modelo condicional para medidas de risco pois, efetivamente, é levado em conta o estado atual da previsão para a média e principalmente para a volatilidade ao se calcular o $VaR_\alpha$. Desta forma a medida responde rapidamente às variações nos humores do mercado e pode sinalizar de forma ágil uma inadequação de capital reservado pela instituição financeira.
 
-Ativos financeiros possuem características de autocorrelação, senão em seus retornos propriamente ditos, ao menos em suas volatilidades ou variações absolutas. Ou seja, dada uma grande variação no momento \emph{t} é de se esperar novamente uma grande variação, não necessariamente na mesma direção daquela anterior, para o momento \emph{t+1} e posteriores. Desta forma, medidas de risco incondicionais, conforme aquelas derivadas na Seção \ref{sec:caudas} podem ser adequadas somente para horizontes temporais mais longos, pois implicitamente tomam em consideração os fatos mais recentes com o mesmo valor de predição que fatos mais longínquos.
+Além desta vantagem de cunho prático, a técnica possui uma atratividade teórica. O método POT deve ser aplicado a séries \emph{iid} que sabidamente não é o caso de perdas de ativos financeiros. Ao se utilizar a técnica POT nos resíduos padronizados de um modelo GARCH das perdas, o que se está realizando é uma pré-filtragem destas perdas que garante, ou chega próximo disto, que os resíduos deste modelo sejam \emph{iid} e portanto, aplicável a teoria de valor extremo. 
 
-Assim, nesta subseção trabalharemos com um modelo semelhante ao proposto por \cite{McNeil2000} os quais fazem uma adequação dos retornos dos ativos a um modelo AR-GARCH e posteriormente tratam os erros desta modelagem como \emph{iid} e portanto, a metodologia de POT pode ser aplicada.
+Primeiramente, neste artigo, diferentemente de \cite{McNeil2000} ou \cite{Karmakar2014}, foi estabelecido um mesmo modelo eGARCH para as perdas dos ativos subjacentes. Esta variação de GARCH foi proposta por \cite{Nelson1991} e busca, além de modelar a heterocedasticidade condicional da variância, também o chamado efeito alavancagem, onde retornos positivos e negativos possuem impactos diferenciados na volatilidade do ativo. 
 
-Primeiramente vamos estabelecer um modelo eGARCH para as perdas do ativo subjacente. Se denotarmos $L_t$ como sendo a perda observada no período \emph{t}, $\mu_t$ e $\sigma_t$ são respectivamente a média e o desvio padrão condicionais e mensuráveis através do conjunto de informações disponíveis em \emph{t-1} e seja $Z_t$ inovações \emph{iid} com média zero e desvio padrão unitário, então temos que:
+Se denotarmos $L_t$ como sendo a perda observada no período \emph{t}, $\mu_t$ e $\sigma_t$ são respectivamente a média e o desvio padrão condicionais, e seja $Z_t$ inovações \emph{iid} com média zero e desvio padrão unitário, então temos que:
 
 \begin{equation}
 \label{eq:loss}
 L_t=\mu_t+\sigma_t Z_t
 \end{equation}
 
-Seja $F_L(l)$ a distribuição marginal de $L_t$, então $F_{L_{t+1} | \mathcal{G}_t}(l)$ é a distribuição preditiva da perda para o próximo período, onde $\mathcal{G}_t$ é o conjunto de informações disponíveis no período \emph{t}, incluindo-o. Portanto, para o cálculo das medidas condicionais de risco estamos interessados em um quantil $\alpha$ na cauda de $F_{L_{t+1} | \mathcal{G}_t}(l)$. Este quantil $\alpha$, que será o nosso $VaR_\alpha$, é o ínfimo \emph{l} tal que o valor da distribuição preditiva seja maior ou igual a $\alpha$. Ao passo que o valor condicional do \emph{ES} será o valor esperado das perdas previstas que sejam maiores que VaR para o mesmo intervalo de confiança. Ou seja:
+Seja $F_L(l)$ a distribuição marginal de $L_t$, então $F_{L_{t+1}} | \mathcal{G}_t(l)$ é a distribuição preditiva da perda para o próximo período, onde $\mathcal{G}_t$ é o conjunto de informações disponíveis no período \emph{t}, incluindo-o. Portanto, para o cálculo de $VaR_\alpha$, se deseja encontrar o alfa-quantil na cauda de $F_{L_{t+1}} | \mathcal{G}_t(l)$. Este quantil $\alpha$ é o ínfimo \emph{l} tal que o valor da distribuição preditiva seja maior ou igual a $\alpha$. Ou seja:
 
 \begin{align}
-VaR_\alpha^t=&\inf\{l \in \mathbb{R}: F_{L_{t+1}} | \mathcal{G}_t(l) \geq \alpha\}, \\
-ES_\alpha^t=&E[L_{t+1} | L_{t+1} > VaR_\alpha^t]
+VaR_\alpha^t=&\inf\{l \in \mathbb{R}: F_{L_{t+1}} | \mathcal{G}_t(l) \geq \alpha\}
 \end{align}
 
-Considerando que nossa distribuição de perdas é dada pela equação \eqref{eq:loss} e sabendo das propriedades de variáveis aleatórias e do operador de expectância, as equações dadas acima subsumem a:
+Veja, este é o preditor de $VaR_\alpha$ calculado com as informações até o período \emph{t}, inclusive. Este valor calculado deve ser comparado a perda realizada em \emph{t+1}, para testar uma possível violação.
+Considerando que a distribuição de perdas é dada pela equação \eqref{eq:loss} e sabendo das propriedades de variáveis aleatórias e do operador de expectância, a expressão de $VaR_\alpha^t$ subsume a:
 
 \begin{align}
-VaR_\alpha^t=&\mu_{t+1}+\sigma_{t+1}z_\alpha, \label{eq:varcond} \\
-ES_\alpha^t=&\mu_{t+1}+\sigma_{t+1}E[Z | Z>z_\alpha] \label{eq:escond}
+\label{eq:varcond} 
+VaR_\alpha^t=&\mu_{t+1}+\sigma_{t+1}z_\alpha 
 \end{align}
-onde $z_\alpha$ é o quantil $\alpha$ das inovações \emph{Z}.
-
-Agora nos falta escolher um processo que modele nossa série temporal dada em \eqref{eq:loss}, ou seja, precisamos especificar o comportamento de $\mu_t$ e $\sigma_t$. Por suposição do modelo, especificamos que o comportamento destas variáveis é dependente de acontecimentos passados, contidos no conjunto de informações  $\mathcal{G}_{t-1}$ . Dentre os diversos modelos já propostos para estimar médias e volatilidades condicionais, está o simples porém efetivo modelo eGARCH(1,1) para a volatilidade condicional e o modelo ARMA(1,2) para a média condicional. Uma extensão destes modelos básicos para outros mais complexos pode ser facilmente obtida e é vasta na literatura, como exemplo modelos GARCH-M, \emph{Treshold} GARCH, EGARCH, etc. e modelos do tipo ARIMA, entre outros encontrados em \cite{Tsay2010}. \todo{Implementar com modelo EGARCH}
-
-Neste trabalho, visando aplicar a teoria do valor extremo para o cálculo das medidas condicionais de risco, não faremos maiores assunções acerca da distribuição das inovações, como por exemplo assumir uma determinada distribuição (e.g. Normal ou t de Student), mas está implícito que esta pertence ao \emph{MDA} de uma GEV e portanto a distribuição de seus excessos sobre um limiar segue aproximadamente uma GPD.
+onde $z_\alpha$ é o quantil $\alpha$ das inovações $Z_t$.
 
 Dadas estas considerações, o modelo adotado segue um formato em dois estágios para ser implementado, como segue.
 \begin{itemize}
-	\item Ajustar um modelo eGARCH para os dados de perdas, sem fazer suposições sobre a distribuição de \emph{Z}, porém, utilizando um método de pseudo máxima verossimilhança (PML). Deste modelo tiramos as estimativas de $\mu_{t+1}$ e $\sigma_{t+1}$ e portanto, calculamos as inovações implícitas resultantes através da equação \eqref{eq:loss}.
-	\item Consideramos estas inovações calculadas como sendo as realizações da variável aleatória \emph{Z}, a qual por suposição pode ter sua cauda ajustada a uma GPD utilizando o método descrito na seção \ref{sec:caudas}. Encontraremos por fim o valor de $z_\alpha$ e $E[Z|Z>z_\alpha]$, com os quais finalizamos os cálculos de nossas medidas condicionais de risco dadas em \eqref{eq:varcond} e \eqref{eq:escond}.
+	\item Ajustar um modelo eGARCH para os dados de perdas, sem fazer suposições sobre a distribuição de \emph{Z}. Deste modelo retira-se as estimativas de $\mu_{t+1}$ e $\sigma_{t+1}$ e calcula-se as inovações implícitas resultantes, através da equação \eqref{eq:loss}.
+	\item Ao se considerar os resíduos padronizados como sendo as realizações da variável aleatória \emph{Z}, esta pode ter sua cauda ajustada a uma GPD utilizando-se o método descrito na seção \ref{sec:caudas}. Encontra-se por fim o valor de $z_\alpha$, com o qual é finalizado o cálculo $VaR_\alpha$ através da equação dada em \eqref{eq:varcond} para os valores de $\alpha$ iguais a 0,975 e 0,99.
 \end{itemize}
 
-Nosso modelo completo para as medidas de risco $VaR_\alpha$ e $ES_\alpha$ condicionais dada a distribuição de perdas $L_t$ de um ativo será, portanto:
+Agora é necessário escolher um processo que modele a série temporal dada em \eqref{eq:loss}, ou seja, precisa-se especificar o comportamento de $\mu_t$ e $\sigma_t$. Por suposição, o comportamento destas variáveis é dependente de acontecimentos passados, contidos no conjunto de informações $\mathcal{G}_{t-1}$ . Pode-se estipular um modelo eGARCH(2,1) para a volatilidade condicional e um simples AR(1) para a média condicional. A ordem destes modelos foi escolhida como uma forma de compromisso entre parcimônia e o melhor ajuste dentre diversos outros modelos e ordens para os 6 ativos sob análise. Estes modelos eGARCH(2,1) e AR(1) para as volatilidades e médias condicionais respectivamente foram aqueles que de forma média se ajustaram mais adequadamente as séries dadas.
+
+Como critérios para a escolha deste modelo de filtro no primeiro estágio, deseja-se que as inovações $Z_t$, através de suas realizações na forma dos resíduos padronizados estimados no modelo possuam 3 características, ausência de autocorrelação serial em seus valores e nos seus quadrados, testados através do método \emph{Weighted Ljung-Box} proposto por \cite{Fisher2012} e ausência de efeitos alavancagem, testado por \emph{Sign bias test} de \cite{Engle1993}.
+
+Visando aplicar a teoria do valor extremo para o cálculo de $VaR_\alpha$, não são feitas maiores assunções acerca da distribuição das inovações, mas está implícito que esta pertence ao \emph{MDA} de uma GEV e portanto a distribuição de seus excessos sobre um limiar segue aproximadamente uma GPD.
+
+O modelo completo para a medida condicional de risco $VaR_\alpha$ dada a distribuição de perdas $L_t$ de um ativo será, portanto:
 
 \begin{align}
-L_t=&\mu_t+\epsilon_t \\
-\mu_t=&\mu+ \phi_1 L_{t-1}+ \theta_1\epsilon_{t-1}+ \theta_2\epsilon_{t-2} \label{eq:mut} \\
+L_t=&\mu+ \phi_1 L_{t-1}+\epsilon_t \\
 \epsilon_t=&\sigma_t Z_t\\
-\ln(\sigma_t^2)=&\omega+ \alpha_1 Z_{t-1}+ \gamma_1(|Z_{t-1}|-E|Z_{t-1}|)+ \beta_1 \ln(\sigma_{t-1}^2) \label{eq:sigma2} \\
+\ln\sigma_t^2=&\omega+ \sum_{i=1}^{2}\left(\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|)\right)+ \beta_1 \ln\sigma_{t-1}^2 \label{eq:sigma2} \\
 Z_t\sim &\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
 \end{align}
-com as equações \eqref{eq:varcond} e \eqref{eq:escond} nos fornecendo os valores das medidas $VaR_\alpha$ e $ES_\alpha$ respectivamente, quando utilizadas em conjunto com aquelas dadas por \eqref{eq:VaRGPD} e \eqref{eq:ESGPD}.
+com a equação \eqref{eq:varcond} fornecendo o valor de $VaR_\alpha$, quando utilizada em conjunto com aquela dada por \eqref{eq:VaRGPD}.
 
-O termo de erro $\epsilon_t$ será uma série estritamente estacionária se $\beta_1+\alpha_1<1$, o que garante que a variância de nosso modelo ($\sigma_t^2$) será finita, apesar de variável no tempo.
-
+\todo{continuar aqui}
 Este modelo é ajustado utilizando-se o método de pseudo máxima verossimilhança, o que significa que, apesar de não adotarmos a distribuição normal para reger as inovações $Z_t$, a utilizamos apenas para estimar os parâmetros do modelo. É demonstrado na literatura, \cite[Capítulo 4]{Gourieroux1997}, que o método PML fornece estimadores consistentes e assintoticamente normais, assim podemos utilizar tal método para obter nossas estimativas de parâmetros e erros padrão, mesmo não aceitando a condição de normalidade das inovações.
+
+Uma vez obtidos os resíduos padronizados do modelo eGARCH, $Z_t$, aplica-se a estes a teoria do valor extremo descrita em \ref{sec:var} para se obter o quantil de interesse $z_\alpha$. Para tanto, considerando a definição da \emph{df} de uma GPD dada na equação \eqref{eq:GPD} e denotando sua \emph{pdf} por $g_{\xi, \psi}$, a função logarítmica de verossimilhança, que deve ser maximizada para a obtenção dos parâmetros $\xi$ e $\psi$ é:
+
+\begin{align}
+\label{eq:gpdloglik}
+\ln L(\xi, \psi; Z_j)=&\sum\limits_{j=1}^{N_u}\ln g_{\xi, \psi}(Z_j)\nonumber\\
+					   =&-N_u \ln \psi-\left(1+\frac{1}{\xi}\right)\sum\limits_{j=1}^{N_u}\ln \left(1+\xi\frac{Z_j}{\psi}\right) 
+\end{align}
+
+o quantil obtido, $z_\alpha$ é aquele derivado de forma semi-paramétrica a partir da teoria EVT \emph{para os resíduos padronizados}, e portanto, ainda deve ser escalado e deslocado através da equação \eqref{eq:varcond} para a obtenção da medida de risco de verdadeiro interesse, $VaR_\alpha$.
 
 \section{Dados utilizados e estatísticas descritivas}
 
@@ -426,6 +378,7 @@ Este modelo é ajustado utilizando-se o método de pseudo máxima verossimilhan�
 
 \input{tables/artigo-tab-garchstats}
 
+\todo{Rodar novamente o modelo com quantil do limiar menor (i.e 0,92 ou 0,90) para que o número de excessos seja em torno de 100 observações}
 \input{tables/artigo-tab-evtcoef}	
 
 \input{tables/artigo-tab-varviol}
