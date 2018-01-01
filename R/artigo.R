@@ -40,6 +40,7 @@ source("./R/artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
 start <- as.Date("2002-12-31")
 end <- as.Date("2008-12-31")
 backstart <- end + 1
+u_quant <- 0.92 # quantile for treshold u
 
 list.returns <- function(asset, start) {
   tb <- read_csv(paste0("./input/artigo-", asset, ".csv"), 
@@ -287,8 +288,8 @@ evt.models <- garch.models %>%
             resid_z = map(garch_fit, ~coredata(residuals(.x, standardize = TRUE))),
             mut = map(garch_fit, ~coredata(fitted(.x))),
             sigmat = map(garch_fit, ~coredata(sigma(.x))),
-            Nu = map_int(resid_z, ~sum(.x > quantile(.x, 0.95))),
-            gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, 0.95))),
+            Nu = map_int(resid_z, ~sum(.x > quantile(.x, u_quant))),
+            gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, u_quant))),
             u = map_dbl(gpdfit, ~.x@parameter$u),
             xi = map_dbl(gpdfit, ~.x@fit$par.ests[1]),
             beta = map_dbl(gpdfit, ~.x@fit$par.ests[2]),
@@ -299,9 +300,9 @@ evt.models <- garch.models %>%
             sq975= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.975)$shortfall),
             sq990= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.990)$shortfall))
 # ## Teste com o pacote evir
-testez <- coredata(residuals(garch.models$garch_fit[[1]], standardize = TRUE))
-teste_evir <- gpd(testez, threshold = quantile(testez, 0.925)) # Mesmos valores do fExtremes
-meplot(testez, type = "l")
+# testez <- coredata(residuals(garch.models$garch_fit[[1]], standardize = TRUE))
+# teste_evir <- gpd(testez, threshold = quantile(testez, 0.925)) # Mesmos valores do fExtremes
+# meplot(testez, type = "l")
 # shape(testez, models = 10, start = 90, end = 150)
 # ## Teste com o pacote evd
 # teste_evd <- fpot(testez, quantile(testez, 0.95))
@@ -438,22 +439,24 @@ models <- c("cevt", "cnorm", "ct", "uevt", "unorm", "ut", "riskmetrics")
 #             id_name = id_name,
 #             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
 
-## ATENCAO! Aqui eh alterado o valor de n.roll para o teste ser rapido
-# f <- file("log.txt", open = "wt")
-# sink(f) # Inicia o log no arquivo
-# sink(f, type = "message") # Inclusive mensagens de erro e avisos
-# cat("\nInicio do map roll_fit:", as.character(Sys.time()))
-# os_roll.tbl <- assets_os.tbl %>%
-#   transmute(indice = indice,
-#             id_name = id_name,
-#             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
-# cat("\nFim do map roll_fit:", as.character(Sys.time()))
-# saveRDS(os_roll.tbl, 
-#         file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "os_roll_tbl.rds"))
-# sink(type = "message")
-# sink() # Finaliza o log
+## ATENCAO! Aqui eh a rotina de estimacao do backtesting!! Rodar somente na AWS!!
 
-os_roll.tbl <- readRDS(file = "./output/2017-12-22os_roll_tbl.rds")
+f <- file("log.txt", open = "wt")
+sink(f) # Inicia o log no arquivo
+sink(f, type = "message") # Inclusive mensagens de erro e avisos
+cat("\nInicio do map roll_fit:", as.character(Sys.time()))
+os_roll.tbl <- assets_os.tbl %>%
+  transmute(indice = indice,
+            id_name = id_name,
+            roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
+cat("\nFim do map roll_fit:", as.character(Sys.time()))
+saveRDS(os_roll.tbl,
+        file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "os_roll_tbl.rds"))
+sink(type = "message")
+sink() # Finaliza o log
+
+# os_roll.tbl <- readRDS(file = "./output/2017-12-22os_roll_tbl.rds")
+# realized <- readRDS(file = "./output/2018-01-02realized.rds")
 
 os_roll_unnest <- os_roll.tbl %>% 
   unnest() %>% 

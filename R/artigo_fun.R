@@ -77,7 +77,7 @@ roll_fit_cevt <- function(garch_list, id_xts) {
       mu_t <- last(fitted(garch_list[[i]]))
       sigma_t <- last(sigma(garch_list[[i]]))
       # Ajustar uma gpd aos dados de residuos padronizados
-      gpd.fit <- gpdFit(resid_z, u = quantile(resid_z, 0.95))
+      gpd.fit <- gpdFit(resid_z, u = quantile(resid_z, u_quant))
       xi = gpd.fit@fit$par.ests[1]
       beta = gpd.fit@fit$par.ests[2]
       xi_se = gpd.fit@fit$par.ses[1]
@@ -410,7 +410,7 @@ roll_fit_uevt <- function(garch_list, id_xts) {
       mu_t <- uncmean(garch_list[[i]])
       sigma_t <- sqrt(uncvariance(garch_list[[i]])) 
       # Ajustar uma gpd aos dados de residuos padronizados
-      gpd.fit <- gpdFit(resid_z, u = quantile(resid_z, 0.95))
+      gpd.fit <- gpdFit(resid_z, u = quantile(resid_z, u_quant))
       xi = gpd.fit@fit$par.ests[1]
       beta = gpd.fit@fit$par.ests[2]
       # xi_se = gpd.fit@fit$par.ses[1]
