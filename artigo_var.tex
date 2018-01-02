@@ -78,6 +78,8 @@
 
 
 \begin{document}
+	
+\listoftodos
 
 \begin{frontmatter}
 
@@ -123,7 +125,6 @@ Instituições financeiras - IF - devem manter seu risco de insolvência control
 Uma importante característica das séries de retornos financeiros é sua alta volatilidade, não constante e tampouco seguindo a distribuição Normal. Assim, eventos extremos, e neste caso estamos interessados em perdas de grande magnitude, acontecem com uma frequência alta demais para serem descartadas como apenas \emph{outliers}, e portanto passaram a atrair a atenção dos participantes do mercado, entre eles os investidores e também os reguladores. Estas observações induziram uma gama enorme de estudos, práticos e teóricos, voltados a explicar o comportamento dos retornos de séries financeiras e modelar de forma adequada as caudas da distribuição destes retornos. Não somente estes estudos são de grande relevância para o gerenciamento de risco nas instituições financeiras, como também são obrigatórios segundo o acordo de Basileia, uma vez que este requer o cálculo do Valor em Risco - VaR, para então a instituição poder projetar o seu nível requerido de capital. 
 
 De acordo com os princípios de Basileia III, \cite{BankingSupervision2011, BankingSupervision2013, BankingSupervision2014}, as instituições financeiras supervisionadas pelos Bancos Centrais devem manter \emph{buffers} de capital contra riscos de mercado, crédito, liquidez, entre outros. Dentro dos riscos de mercado, as duas formas mais usuais de fazer a quantificação destes são os métodos de Valor em Risco - VaR e o \emph{Expected Shortfall} - ES. Este último relacionado ao primeiro, sendo definido como o valor esperado das perdas que excedem o valor VaR calculado para um determinado nível de confiança.
-\todo{Definição de VaR. Nível ou intervalo de confiança? verificar em riskmetrics}
 \todo{Percentuais de VaR por Basileia}
 \todo{Existem penalidades regulatórias para as IF em que seu modelo VaR permite um número maior de perdas do que seria estimado pelo modelo. Verificar onde nos princípios de Basileia}
 
@@ -139,7 +140,7 @@ VaR especificamente não possui a propriedade da sub-aditividade para alguns cas
 
 %Mais recentemente o Comitê de Supervisão Bancária de Basileia tem se proposto a adotar o \emph{Expected Shortfall} como medida de risco de mercado. \cite{BankingSupervision2013a}. O Comitê cita a grande importância da escolha da medida de risco e sua calibração, e portanto estas são relevantes para as decisões de política do Banco. Entre as dificuldades encontradas pelo VaR estão mais notadamente sua inabilidade em estimar o "risco de cauda" da distribuição de perdas, uma vez que VaR não leva em conta a distribuição das perdas acima do valor de corte.
 
-%Desta forma, foi decidido que o ES seria a medida de risco favorita para a abordagem pelo banco chamada de modelos internos. Ou seja, os bancos supervisionados devem utilizar o ES para o cálculo do risco de mercado a que estão sujeitos em seus modelos internos. O comitê também se decidiu por um intervalo de confiança de 97,5\% para o ES, em contraposição a 99\% para o VaR. O comitê espera que esta abordagem para o cálculo da medida de risco de mercado trará benefícios se comparada a antiga abordagem pelo Var, entre elas um modelo com resultados mais estáveis e menor sensibilidade a observações extremas (\emph{outliers}).
+%Desta forma, foi decidido que o ES seria a medida de risco favorita para a abordagem pelo banco chamada de modelos internos. Ou seja, os bancos supervisionados devem utilizar o ES para o cálculo do risco de mercado a que estão sujeitos em seus modelos internos. O comitê também se decidiu por um nível de confiança de 97,5\% para o ES, em contraposição a 99\% para o VaR. O comitê espera que esta abordagem para o cálculo da medida de risco de mercado trará benefícios se comparada a antiga abordagem pelo Var, entre elas um modelo com resultados mais estáveis e menor sensibilidade a observações extremas (\emph{outliers}).
 
 \paragraph{Teoria do valor extremo} EVT da sigla em inglês, é um ramo da estatística que lida diretamente com eventos raros, extremos. Seu objetivo é modelar o comportamento assintótico de eventos que se distanciam muito da mediana de uma distribuição. Justamente por esta característica, a EVT está sendo utilizada para modelar riscos que possuem distribuição com caudas longas, um dos fatos estilizados bem conhecidos sobre retornos de ativos financeiros.
 
@@ -309,9 +310,19 @@ Assim, pode-se trabalhar com um modelo semelhante ao proposto por \cite{McNeil20
 
 Além desta vantagem de cunho prático, a técnica possui uma atratividade teórica. O método POT deve ser aplicado a séries \emph{iid} que sabidamente não é o caso de perdas de ativos financeiros. Ao se utilizar a técnica POT nos resíduos padronizados de um modelo GARCH das perdas, o que se está realizando é uma pré-filtragem destas perdas que garante, ou chega próximo disto, que os resíduos deste modelo sejam \emph{iid} e portanto, aplicável a teoria de valor extremo. 
 
-Primeiramente, neste artigo, diferentemente de \cite{McNeil2000} ou \cite{Karmakar2014}, foi estabelecido um mesmo modelo eGARCH para as perdas dos ativos subjacentes. Esta variação de GARCH foi proposta por \cite{Nelson1991} e busca, além de modelar a heterocedasticidade condicional da variância, também o chamado efeito alavancagem, onde retornos positivos e negativos possuem impactos diferenciados na volatilidade do ativo. 
+Primeiramente, neste artigo, diferentemente de \cite{McNeil2000} ou \cite{Karmakar2014}, foi estabelecido um mesmo modelo eGARCH para as perdas dos ativos subjacentes. Esta variação de GARCH foi proposta por \cite{Nelson1991} e busca, além de modelar a heterocedasticidade condicional da variância, também o chamado efeito alavancagem, onde retornos positivos e negativos possuem impactos diferenciados na volatilidade do ativo. O modelo adotado foi o eGARCH(2,1) e sua variância condicional é definida por:
 
-Se denotarmos $L_t$ como sendo a perda observada no período \emph{t}, $\mu_t$ e $\sigma_t$ são respectivamente a média e o desvio padrão condicionais, e seja $Z_t$ inovações \emph{iid} com média zero e desvio padrão unitário, então temos que:
+\begin{align}
+\label{eq:egarch}
+\ln\sigma_t^2=&\omega+ \sum_{i=1}^{2}\left(\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|)\right)+ \beta_1 \ln\sigma_{t-1}^2
+\end{align}
+onde os coeficientes $\alpha_i$ capturam o efeito do sinal do erro, enquanto que os parâmetros $\gamma_i$ o efeito magnitude destes erros. O coeficiente $\beta_1$ continua a ser o chamado coeficiente garch. %O valor esperado do absoluto das inovações é calculado como segue:
+
+%\begin{align}
+%	E\left| Z_t\right|=&\int_{-\infty}^{\infty}|Z|f(z)dz
+%\end{align}
+
+Denotando $L_t$ como sendo a perda observada no período \emph{t}, $\mu_t$ e $\sigma_t$ são respectivamente a média e o desvio padrão condicionais, e seja $Z_t$ inovações \emph{iid} com média zero e desvio padrão unitário, então tem-se que:
 
 \begin{equation}
 \label{eq:loss}
@@ -355,30 +366,38 @@ Z_t\sim &\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
 \end{align}
 com a equação \eqref{eq:varcond} fornecendo o valor de $VaR_\alpha$, quando utilizada em conjunto com aquela dada por \eqref{eq:VaRGPD}.
 
-\todo{continuar aqui}
-Este modelo é ajustado utilizando-se o método de pseudo máxima verossimilhança, o que significa que, apesar de não adotarmos a distribuição normal para reger as inovações $Z_t$, a utilizamos apenas para estimar os parâmetros do modelo. É demonstrado na literatura, \cite[Capítulo 4]{Gourieroux1997}, que o método PML fornece estimadores consistentes e assintoticamente normais, assim podemos utilizar tal método para obter nossas estimativas de parâmetros e erros padrão, mesmo não aceitando a condição de normalidade das inovações.
+Este modelo é ajustado em seu primeiro estágio utilizando-se máxima-verossimilhança com uma distribuição normal para as inovações $Z_t$, mesmo sabendo que esta distribuição não é a mais adequada. Especificamente com relação a massa das caudas, a normal, mesmo em um modelo GARCH, ainda produz pouca curtose nos resíduos padronizados. Entretanto, é demonstrado, \cite[Capítulo 4]{Gourieroux1997}, que é possível obter estimadores consistentes e assintoticamente normais a partir desta técnica, devendo apenas os erros padrões serem corrigidos para a obtenção de valores robustos a má especificação do modelo.
 
-Uma vez obtidos os resíduos padronizados do modelo eGARCH, $Z_t$, aplica-se a estes a teoria do valor extremo descrita em \ref{sec:var} para se obter o quantil de interesse $z_\alpha$. Para tanto, considerando a definição da \emph{df} de uma GPD dada na equação \eqref{eq:GPD} e denotando sua \emph{pdf} por $g_{\xi, \psi}$, a função logarítmica de verossimilhança, que deve ser maximizada para a obtenção dos parâmetros $\xi$ e $\psi$ é:
+Uma vez obtidos os resíduos padronizados do modelo eGARCH, $\hat{Z}_t$, aplica-se a estes a teoria do valor extremo descrita em \ref{sec:var} para se obter o quantil de interesse $z_\alpha$. Para tanto, considerando a definição da \emph{df} de uma GPD dada na equação \eqref{eq:GPD} e denotando sua \emph{pdf} por $g_{\xi, \psi}$, a função logarítmica de verossimilhança, que deve ser maximizada para a obtenção dos parâmetros $\xi$ e $\psi$ é:
 
 \begin{align}
 \label{eq:gpdloglik}
 \ln L(\xi, \psi; Z_j)=&\sum\limits_{j=1}^{N_u}\ln g_{\xi, \psi}(Z_j)\nonumber\\
 					   =&-N_u \ln \psi-\left(1+\frac{1}{\xi}\right)\sum\limits_{j=1}^{N_u}\ln \left(1+\xi\frac{Z_j}{\psi}\right) 
 \end{align}
-
-o quantil obtido, $z_\alpha$ é aquele derivado de forma semi-paramétrica a partir da teoria EVT \emph{para os resíduos padronizados}, e portanto, ainda deve ser escalado e deslocado através da equação \eqref{eq:varcond} para a obtenção da medida de risco de verdadeiro interesse, $VaR_\alpha$.
+onde $N_u$ é o número de excessos acima do valor de limiar escolhido. O quantil obtido, $z_\alpha$ é aquele derivado de forma semi-paramétrica a partir da teoria EVT \emph{para os resíduos padronizados}, que são tratados como realizações das inovações $Z_t$ e portanto, ainda deve ser escalado e deslocado através da equação \eqref{eq:varcond} para a obtenção da medida de risco de verdadeiro interesse, $VaR_\alpha$.
 
 \section{Dados utilizados e estatísticas descritivas}
 
-\section{Resultados empíricos}
+Neste trabalho serão analisadas as séries de retornos (e perdas) de seis principais índices de ações das Américas, Ibovespa para o Brasil, IPC do México, IPSA no Chile, Merval da Argentina, S\&P500 dos Estados Unidos e S\&P TSE para o Canadá. Os retornos coletados foram entre as datas de 02/01/2003 a 31/12/2008 para o período considerado dentro da amostra, no qual são feitas algumas análises preliminares. O período fora da amostra, de onde são retirados os resultados de \emph{backtesting} se estende de 01/01/2009 a 30/08/2017. Em dias sem negociação nos mercados, os períodos iniciam-se na data útil seguinte e terminam em data útil imediatamente anterior.
+
+A tabela \ref{tab:descritivas} apresenta algumas das estatísticas descritivas mais importantes para as séries de \emph{retornos} dos ativos no período completo, dentro e fora da amostra. É possível verificar que os retornos não podem ser considerados normais, com a estatística de Jarque-Bera rejeitando a hipótese nula e com o alto grau de curtose em excesso verificado para todos os mercados analisados.
+
+Também é possível verificar alguma autocorrelação serial entre os retornos através da estatística Q(10) de Ljung-Box, calculadas com auxílio da metodologia dada por \cite{Fisher2012}. Entretanto, esta mesma correlação serial é muito mais significativa nos quadrados dos retornos, de acordo com os fatos estilizados de séries financeiras já conhecidos, vide \cite{Cont2001}.
 
 \input{tables/artigo-tab-descritivas.tex}
+
+Voltando-se para o período dentro da amostra, o modelo eGARCH(2,1)...
+
+\section{Resultados empíricos}
+
+
 
 \input{tables/artigo-tab-garchcoef}
 
 \input{tables/artigo-tab-garchstats}
 
-\todo{Rodar novamente o modelo com quantil do limiar menor (i.e 0,92 ou 0,90) para que o número de excessos seja em torno de 100 observações}
+\todo{Rodar novamente o modelo e construir a tabela garchstats com o teste de sign bias}
 \input{tables/artigo-tab-evtcoef}	
 
 \input{tables/artigo-tab-varviol}
