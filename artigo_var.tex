@@ -257,7 +257,7 @@ e(u)=\frac{\psi+\xi u}{1-\xi}
 \end{equation}
 onde $0 \leq u < \infty$ se $0 \leq \xi <1$ e $0 \leq u \leq -\psi / \xi$ se $\xi < 0$. É possível observar que de fato a função média dos excessos em uma GPD é linear em \emph{u}. Esta é uma característica importante de uma GPD e que pode ser utilizada para auxiliar a escolha de um valor adequado do limiar \emph{u} de tal forma que a suposição de convergência $F_u(x) \rightarrow G_{\xi, \psi}(x)$ seja válida.
 
-Assim, quando da análise de uma determinada distribuição de perdas \emph{F} e deseja-se ajustar a cauda desta distribuição, ou seja, as perdas acima de um dado valor limiar \emph{u} a uma GPD $G_{\xi, \psi}(x)$ é necessário primeiramente determinar um valor adequado de \emph{u} garantirmos a suposição de convergência. Um método frequentemente utilizado é o gráfico da função média dos excessos com relação a \emph{u}. Analisando este gráfico, escolhe-se o menor valor de \emph{u} para o qual a partir deste ponto a relação $e(u) \text{ vs } u$ torna-se linear.
+Assim, quando da análise de uma determinada distribuição de perdas \emph{F} e deseja-se ajustar a cauda desta, ou seja, ajustar as perdas acima de um dado valor limiar \emph{u} a uma GPD $G_{\xi, \psi}(x)$ é necessário primeiramente determinar um valor adequado de \emph{u} que garanta a suposição de convergência. Um método frequentemente utilizado é o gráfico da função média dos excessos com relação a \emph{u}. Analisando este gráfico, escolhe-se o menor valor de \emph{u} para o qual a partir deste ponto a relação $e(u) \text{ vs } u$ torna-se linear.
 
 Deseja-se o menor valor de \emph{u} para o qual a relação é linear pois, mesmo o método POT implica em grande perda de dados da série temporal, já que apenas os valores acima deste limiar são utilizados para fazer a estimação dos parâmetros $\xi$ e $\psi$ da GPD. Portanto, existe um \emph{trade-off} na escolha do valor limiar \emph{u}, escolhendo um valor muito baixo obtém-se uma boa quantidade de dados para estimar os parâmetros da GPD, mas a própria distribuição resultante não será GPD, uma vez que não estaremos trabalhando na região onde a relação $e(u) \text{ vs } u$ é linear, e portanto os parâmetros estimados serão viesados. Por outro lado, um valor limiar muito alto impõe o custo de trabalhar com poucos dados para fazer a estimação dos parâmetros da distribuição e por conseguinte, os erros padrões dessas estimativas serão elevados.
 
@@ -286,7 +286,7 @@ A segunda parte é justamente a modelagem através de uma GPD com parâmetros $\
 
 O quantil $\alpha$ é a inversa da função distribuição e retorna o valor para o qual um percentual $\alpha$ de observações da amostra é menor ou igual. Como se está trabalhando com a distribuição de perdas, $VaR_\alpha$ nada mais é que um quantil alto para o qual $\alpha \%$ das perdas devem ser menores ou iguais a este valor.
 
-Como a equação \eqref{eq:Ftail} fornece a probabilidade de cauda, então esta é igual a $1- \alpha$ para um valor de $\alpha  \geq F(u)$. O valor $1- \alpha$ é conhecido como a cobertura da medida de risco. Fazendo $\bar{F}(x)=1-\alpha$ na equação \eqref{eq:Ftail} o valor de \emph{x} representará $VaR_\alpha$ e basta manipular esta equação para encontrar $VaR_\alpha$ como função de $\bar{F}(u)$, $\alpha$ e dos parâmetros da GPD $\xi$ e $\psi$. Que garante a equação abaixo:
+Como a equação \eqref{eq:Ftail} fornece a probabilidade de cauda, então esta é igual a $1- \alpha$ para um valor de $\alpha  \geq \bar{F}(u)$. O valor $1- \alpha$ é conhecido como a cobertura da medida de risco. Fazendo $\bar{F}(x)=1-\alpha$ na equação \eqref{eq:Ftail} o valor de \emph{x} representará $VaR_\alpha$ e basta manipular esta equação para encontrar $VaR_\alpha$ como função de $\bar{F}(u)$, $\alpha$ e dos parâmetros da GPD $\xi$ e $\psi$. Que garante a equação abaixo:
 
 \begin{equation}
 \label{eq:VaRGPD}
@@ -350,9 +350,9 @@ Dadas estas considerações, o modelo adotado segue um formato em dois estágios
 	\item Ao se considerar os resíduos padronizados como sendo as realizações da variável aleatória \emph{Z}, esta pode ter sua cauda ajustada a uma GPD utilizando-se o método descrito na seção \ref{sec:caudas}. Encontra-se por fim o valor de $z_\alpha$, com o qual é finalizado o cálculo $VaR_\alpha$ através da equação dada em \eqref{eq:varcond} para os valores de $\alpha$ iguais a 0,975 e 0,99.
 \end{itemize}
 
-Agora é necessário escolher um processo que modele a série temporal dada em \eqref{eq:loss}, ou seja, precisa-se especificar o comportamento de $\mu_t$ e $\sigma_t$. Por suposição, o comportamento destas variáveis é dependente de acontecimentos passados, contidos no conjunto de informações $\mathcal{G}_{t-1}$ . Pode-se estipular um modelo eGARCH(2,1) para a volatilidade condicional e um simples AR(1) para a média condicional. A ordem destes modelos foi escolhida como uma forma de compromisso entre parcimônia e o melhor ajuste dentre diversos outros modelos e ordens para os 6 ativos sob análise. Estes modelos eGARCH(2,1) e AR(1) para as volatilidades e médias condicionais respectivamente foram aqueles que de forma média se ajustaram mais adequadamente as séries dadas.
+Agora é necessário escolher um processo que modele a série temporal dada em \eqref{eq:loss}, ou seja, precisa-se especificar o comportamento de $\mu_t$ e $\sigma_t$. Por suposição, o comportamento destas variáveis é dependente de acontecimentos passados, contidos no conjunto de informações $\mathcal{G}_{t-1}$ . Pode-se estipular um modelo eGARCH(2,1) para a volatilidade condicional e um simples AR(1) para a média condicional. A ordem destes modelos foi escolhida como uma forma de compromisso entre parcimônia e o melhor ajuste dentre diversos outros modelos e ordens para os 6 ativos sob análise. Estes modelos eGARCH(2,1) e AR(1) para as volatilidades e médias condicionais respectivamente foram aqueles que, de forma geral, se ajustaram mais adequadamente as séries dadas.
 
-Como critérios para a escolha deste modelo de filtro no primeiro estágio, deseja-se que as inovações $Z_t$, através de suas realizações na forma dos resíduos padronizados estimados no modelo possuam 3 características, ausência de autocorrelação serial em seus valores e nos seus quadrados, testados através do método \emph{Weighted Ljung-Box} proposto por \cite{Fisher2012} e ausência de efeitos alavancagem, testado por \emph{Sign bias test} de \cite{Engle1993}.
+Como critérios para a escolha deste modelo de filtro no primeiro estágio, deseja-se que as inovações $Z_t$, através de suas realizações na forma dos resíduos padronizados estimados no modelo possuam 2 características, ausência de autocorrelação serial em seus valores e nos seus quadrados.
 
 Visando aplicar a teoria do valor extremo para o cálculo de $VaR_\alpha$, não são feitas maiores assunções acerca da distribuição das inovações, mas está implícito que esta pertence ao \emph{MDA} de uma GEV e portanto a distribuição de seus excessos sobre um limiar segue aproximadamente uma GPD.
 
@@ -372,14 +372,14 @@ Uma vez obtidos os resíduos padronizados do modelo eGARCH, $\hat{Z}_t$, aplica-
 
 \begin{align}
 \label{eq:gpdloglik}
-\ln L(\xi, \psi; Z_j)=&\sum\limits_{j=1}^{N_u}\ln g_{\xi, \psi}(Z_j)\nonumber\\
-					   =&-N_u \ln \psi-\left(1+\frac{1}{\xi}\right)\sum\limits_{j=1}^{N_u}\ln \left(1+\xi\frac{Z_j}{\psi}\right) 
+\ln L(\xi, \psi; Z^u_j)=&\sum\limits_{j=1}^{N_u}\ln g_{\xi, \psi}(Z^u_j)\nonumber\\
+					   =&-N_u \ln \psi-\left(1+\frac{1}{\xi}\right)\sum\limits_{j=1}^{N_u}\ln \left(1+\xi\frac{Z^u_j}{\psi}\right) 
 \end{align}
-onde $N_u$ é o número de excessos acima do valor de limiar escolhido. O quantil obtido, $z_\alpha$ é aquele derivado de forma semi-paramétrica a partir da teoria EVT \emph{para os resíduos padronizados}, que são tratados como realizações das inovações $Z_t$ e portanto, ainda deve ser escalado e deslocado através da equação \eqref{eq:varcond} para a obtenção da medida de risco de verdadeiro interesse, $VaR_\alpha$.
+onde $N_u$ é o número de excessos acima do valor de limiar escolhido e $Z^u_j$ são as inovações em excesso, de acordo com a EVT que exige as perdas em excesso ao limiar. O quantil obtido, $z_\alpha$ é aquele derivado de forma semi-paramétrica a partir da teoria EVT \emph{para os resíduos padronizados}, que são tratados como realizações das inovações $Z_t$ e portanto, ainda deve ser escalado e deslocado através da equação \eqref{eq:varcond} para a obtenção da medida de risco de verdadeiro interesse, $VaR_\alpha$.
 
 \section{Dados utilizados e estatísticas descritivas}
 
-Neste trabalho serão analisadas as séries de retornos (e perdas) de seis principais índices de ações das Américas, Ibovespa para o Brasil, IPC do México, IPSA no Chile, Merval da Argentina, S\&P500 dos Estados Unidos e S\&P TSE para o Canadá. Os retornos coletados foram entre as datas de 02/01/2003 a 31/12/2008 para o período considerado dentro da amostra, no qual são feitas algumas análises preliminares. O período fora da amostra, de onde são retirados os resultados de \emph{backtesting} se estende de 01/01/2009 a 30/08/2017. Em dias sem negociação nos mercados, os períodos iniciam-se na data útil seguinte e terminam em data útil imediatamente anterior.
+Neste trabalho serão analisadas as séries de retornos (e perdas) de seis principais índices de ações das Américas, Ibovespa para o Brasil, IPC do México, IPSA no Chile, Merval da Argentina, S\&P TSE para o Canadá e S\&P500 dos Estados Unidos. Os retornos coletados foram entre as datas de 01/01/2003 a 31/12/2008 para o período considerado dentro da amostra, no qual são feitas algumas análises preliminares. O período fora da amostra, de onde são retirados os resultados de \emph{backtesting} se estende de 01/01/2009 a 30/08/2017. Em dias sem negociação nos mercados, os períodos iniciam-se na data útil seguinte e terminam em data útil imediatamente anterior.
 
 A tabela \ref{tab:descritivas} apresenta algumas das estatísticas descritivas mais importantes para as séries de \emph{retornos} dos ativos no período completo, dentro e fora da amostra. É possível verificar que os retornos não podem ser considerados normais, com a estatística de Jarque-Bera rejeitando a hipótese nula e com o alto grau de curtose em excesso verificado para todos os mercados analisados.
 
@@ -387,22 +387,7 @@ Também é possível verificar alguma autocorrelação serial entre os retornos 
 
 \input{tables/artigo-tab-descritivas.tex}
 
-Voltando-se para o período dentro da amostra, o modelo eGARCH(2,1)...
-
-\section{Resultados empíricos}
-
-
-
-\input{tables/artigo-tab-garchcoef}
-
-\input{tables/artigo-tab-garchstats}
-
-\todo{Rodar novamente o modelo e construir a tabela garchstats com o teste de sign bias}
-\input{tables/artigo-tab-evtcoef}	
-
-\input{tables/artigo-tab-varviol}
-
-\input{tables/artigo-tab-vartest}
+Na figura \ref{fig:artigo-retornos} é possível visualizar as séries de retornos logarítmicos em estudo. Por inspeção visual simples é possível verificar a heterocedasticidade destes retornos, corroborando as estatísticas encontradas na tabela \ref{tab:descritivas}. A figura \ref{fig:artigo-qqplots} é mais interessante para se apreciar a normalidade destes retornos. Tratam-se de gráficos quantil-quantil feitos entre a amostra completa dos retornos e uma curva normal de referência. Caso as séries, e por conseguinte suas amostras, fossem normalmente distribuídas, os pontos deste gráfico estariam todos sobre a reta de referência, o que não é verificado em nenhuma destas. Para todas as séries é observado um desvio da normalidade nas caudas, configurando distribuições leptocúrticas em todos os casos.
 
 \begin{figure}[H]
 	\centering
@@ -418,48 +403,96 @@ Voltando-se para o período dentro da amostra, o modelo eGARCH(2,1)...
 	\label{fig:artigo-qqplots}
 \end{figure}
 
+\subsection{Filtro eGARCH}
+\label{sec:filtro}
+
+Voltando-se para o período dentro da amostra, o filtro proposto eGARCH(2,1) foi aplicado a estas séries, agora nas perdas que nada mais são que os retornos com o sinal trocado, e seus coeficientes estimados conforme a tabela \ref{tab:garchcoef}. Os valores \emph{p} de cada um destes coeficientes estão apresentados entre parênteses e foram calculados com base em erros-padrão robustos, de acordo com \cite{White1982}.
+
+Como era de se esperar, nem todos os coeficientes estimados são significativos ao nível de confiança de 5\% (alguns nem mesmo a 10\%), o que não invalida o modelo, sendo que para alguns índices específicos talvez fosse possível encontrar outro modelo GARCH mais adequado. A principal função do modelo eGARCH neste primeiro estágio, deve ser lembrado, é a filtragem da série de perdas, de modo que os resíduos padronizados resultantes não sejam autocorrelacionados e tampouco possuam heterocedasticidade. E neste ponto o modelo eGARCH(2,1) se saiu muito bem para todas as séries, conforme demonstrado através dos gráficos de autocorrelação nas figuras \ref{fig:artigo-acf-ibovespa} a \ref{fig:artigo-acf-sptse}.
+
+\input{tables/artigo-tab-garchcoef}
+
+Para trabalhar com o \emph{VaR} em seus quantis altos e portanto, modelar a cauda direita da distribuição, passa-se a trabalhar com a distribuição das perdas dos ativos, como alertado anteriormente. Os gráficos ACF são para as distribuições de perdas e seus quadrados na parte superior, e na parte inferior os correlogramas são apresentados para os resíduos padronizados e seus quadrados oriundos do modelo eGARCH. Através destes gráficos fica bastante evidente como a filtragem foi bem sucedida em retirar a autocorrelação encontrada originalmente nas perdas, especialmente em seus quadrados, que demonstra claramente a natureza heterocedástica das séries sob análise. 
+
 % Figuras com os gráficos ACF antes e depois da filtragem eGARCH
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\linewidth]{figs/artigo-acf-IBovespa}
-	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra, Ibovespa 01/01/2013 a 31/12/2008.}
+	\caption{Ibovespa. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
 	\label{fig:artigo-acf-ibovespa}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\linewidth]{figs/artigo-acf-IPC}
-	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra, IPC 01/01/2013 a 31/12/2008.}
+	\caption{IPC. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
 	\label{fig:artigo-acf-ipc}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\linewidth]{figs/artigo-acf-IPSA}
-	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra, IPSA 01/01/2013 a 31/12/2008.}
+	\caption{IPSA. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
 	\label{fig:artigo-acf-ipsa}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\linewidth]{figs/artigo-acf-Merval}
-	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra, Merval 01/01/2013 a 31/12/2008.}
+	\caption{Merval. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
 	\label{fig:artigo-acf-merval}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\linewidth]{figs/artigo-acf-SP500}
-	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra, S\&P500 01/01/2013 a 31/12/2008.}
-	\label{fig:artigo-acf-sp500}
+	\includegraphics[width=0.9\linewidth]{figs/artigo-acf-SP-TSE}
+	\caption{S\&P TSE. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
+	\label{fig:artigo-acf-sptse}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\linewidth]{figs/artigo-acf-SP-TSE}
-	\caption{ACF dos retornos observados e seus quadrados, e ACF dos resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra, S\&P TSE 01/01/2013 a 31/12/2008.}
-	\label{fig:artigo-acf-sptse}
+	\includegraphics[width=0.9\linewidth]{figs/artigo-acf-SP500}
+	\caption{S\&P500. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
+	\label{fig:artigo-acf-sp500}
 \end{figure}
+
+A tabela \ref{tab:garchstats} apresenta novamente as estatísticas Jarque-Bera e Ljung-Box (Q e $Q^2$) desta vez para os resíduos padronizados resultantes da filtragem das perdas no primeiro estágio do modelo eGARCH-POT. Enquanto que os resíduos padronizados, assim como os retornos (e as perdas), de fato não são normais como já se esperava, as estatísticas de autocorrelação agora estão todas em favor da ausência desta. Para todos os índices analisados, não é possível rejeitar $H_0$ nos testes de autocorrelação, tanto para os resíduos ($Q(10)$) como para os seus quadrados ($Q^2(10)$) em evidente contraste com os valores apresentados na tabela \ref{tab:descritivas} quando foram analisados os retornos destes índices.
+
+\input{tables/artigo-tab-garchstats}
+
+Sendo assim, com retornos padronizados que não são normalmente distribuídos e possuem cauda longas com excesso de curtose, mas que após filtragem não apresentam mais autocorrelação ou heterocedasticidade, pode-se passar ao segundo estágio do model eGARCH-POT, ou seja, aplicar a teoria do valor extremo através do método \emph{peaks over treshold} para parametrizar a cauda direita das distribuições de perdas dos ativos.
+
+\subsection{Método POT}
+\label{sec:potinsample}
+
+Os resíduos padronizados são tratados como as realizações do processo de inovação no modelo eGARCH(2,1). Estas inovações serão então analisadas sob a ótica da EVT para a obtenção dos parâmetros da GPD que definem a cauda direita de sua distribuição.
+
+Para tanto, deve ser estabelecido um limiar \emph{u} adequado para cada uma das séries, de modo que seja satisfeito o teorema de Pickands-Balkema-de Haan. Este valor de limiar será diferente para cada série e sua escolha deve seguir os princípios delineados na seção \ref{sec:excess} através da função média dos excessos. Entretanto, considerando o \emph{trade-off} existente entre o viés e a variância dos parâmetros estimados da GPD com relação a escolha do valor deste limiar, pode-se abordar o problema desta escolha de outra forma.
+
+Neste artigo foi utilizado o quantil empírico a 92\% para a escolha do valor do limiar. Conforme visto anteriormente, um valor de limiar que resulte em um número de excessos observados a este limiar ($N_u$) entre 100 e 130 parece ser o limiar ótimo a ser escolhido. Considerando o tamanho da janela de dados dentro da amostra para os índices sob análise, este quantil resulta em número de excessos nesta magnitude.
+
+A escolha do limiar através de um quantil empírico fixo também é mais adequada considerando-se que para a fase de \emph{backtesting} do modelo é necessário reavaliar o valo deste limiar para cada dia dentro do período fora da amostra, o que se tornaria inviável de ser feito através da análise gráfica da função média dos excessos.
+
+Escolhido o limiar \emph{u}, trata-se de obter a série de inovações em excesso ao limiar $Z^u_t:{Z^u_t = Z_t-u |Z_t > u}$, onde $Z_t$ são as inovações, em que os resíduos padronizados encontrados são as realizações desta e $Z^u_t$ são portanto, as inovações em excesso, conforme teorizado na seção \ref{sec:var}.
+
+A esta série de inovações em excesso é aplicada a função log-verossimilhança dada em \eqref{eq:gpdloglik} que por sua vez é maximizada em relação aos parâmetros da GPD, $\xi$ e $\psi$, para a obtenção de suas estimativas.
+
+A tabela \ref{tab:evtcoef} apresenta os valores destes parâmetros e seus \emph{p} valores para cada um dos índices, com a estimação feita com os dados do período dentro da amostra. Também são apresentados o número de observações dentro da amostra para o total dos resíduos padronizados, assim como o número de excessos observados ($N_u$) para o limiar escolhido ($u$). Observa-se como o número de excessos varia de acordo com o índice (asim como o total de observações), porém todos ficam em torno de 120 excessos, que é considerado um valor ideal. 
+
+\input{tables/artigo-tab-evtcoef}	
+
+
+\section{Resultados empíricos}
+
+
+\todo{Teste de sign-bias não deu nenhuma rejeicao de H0. Esquecer ou implementar modelos diferentes para cada ativo?}
+
+\input{tables/artigo-tab-varviol}
+
+\input{tables/artigo-tab-vartest}
+
+
 
 
 

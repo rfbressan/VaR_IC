@@ -23,9 +23,7 @@ if(length(new.packages)) install.packages(new.packages)
 #library(timeSeries)
 library(tidyverse)
 library(broom)
-library(purrr)
 library(gridExtra)
-library(ggplot2)
 library(xtable)
 library(WeightedPortTest)
 #library(CADFtest) # Teste Dickey-Fuller
@@ -66,7 +64,8 @@ rm(lista)
 
 # Estatisticas descritivas retornos-----------------------------------------
 df.descritivas <- assets.tbl %>% 
-  transmute(media = map_dbl(ts, ~ mean(.x)),
+  transmute(id_name = id_name,
+            media = map_dbl(ts, ~ mean(.x)),
             mediana = map_dbl(ts, ~median(.x)),
             maximo = map_dbl(ts, ~max(.x)),
             minimo = map_dbl(ts, ~min(.x)),
@@ -80,12 +79,12 @@ df.descritivas <- assets.tbl %>%
             q2_10stat = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box", sqrd.res = TRUE)$statistic),
             q2_10pvalue = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box", sqrd.res = TRUE)$p.value),
             nobs = map_int(ts, ~as.integer(length(.x)))) %>% 
-  t() %>% 
-  as.data.frame()
-param <- c("Média", "Mediana", "Máximo", "Mínimo", "Desvp", "Assimetria", "Curtose",
-                               "Jarque-Bera", "", "Q(10)", "", "$Q^2(10)$", "", "N.obs")
-df.descritivas <- cbind(param, df.descritivas)
-colnames(df.descritivas) <- c("Descritivas", assets.tbl$id_name)
+  gather(key = stat_name, value = stat_value, -id_name, factor_key = TRUE) %>% 
+  spread(key = id_name, value = stat_value)
+
+df.descritivas$stat_name <- c("Média", "Mediana", "Máximo", "Mínimo", "Desvp", "Assimetria", "Curtose exc.",
+                              "Jarque-Bera", "", "Q(10)", "", "$Q^2(10)$", "", "N.obs")
+colnames(df.descritivas)[1] <- "Descritivas"
 
 # Cria o xtable
 cap <- paste("Estatísticas descritivas dos retornos (amostra completa de",
@@ -178,7 +177,8 @@ garch.models <- assets.tbl[,1:3] %>%
 
 ## Construindo a tabela com os parametros estimados do eGARCH in sample
 garch.models.par <- garch.models %>% 
-  transmute(mu = map(.$garch_fit, ~.x@fit$robust.matcoef["mu", c(1, 4)]), # Estimativa e P-valor
+  transmute(id_name = id_name,
+            mu = map(.$garch_fit, ~.x@fit$robust.matcoef["mu", c(1, 4)]), # Estimativa e P-valor
             ar1 = map(.$garch_fit, ~.x@fit$robust.matcoef["ar1", c(1, 4)]),
             omega = map(.$garch_fit, ~.x@fit$robust.matcoef["omega", c(1, 4)]),
             alpha1 = map(.$garch_fit, ~.x@fit$robust.matcoef["alpha1", c(1, 4)]),
@@ -186,43 +186,43 @@ garch.models.par <- garch.models %>%
             beta1 = map(.$garch_fit, ~.x@fit$robust.matcoef["beta1", c(1, 4)]),
             gamma1 = map(.$garch_fit, ~.x@fit$robust.matcoef["gamma1", c(1, 4)]),
             gamma2 = map(.$garch_fit, ~.x@fit$robust.matcoef["gamma2", c(1, 4)])) %>% 
-  t() %>% 
-  as.data.frame() %>% 
+  gather(key = stat_name, value = stat_value, -id_name, factor_key = TRUE) %>% 
+  spread(key = id_name, value = stat_value) %>% 
   unnest() 
-  colnames(garch.models.par) <- garch.models$id_name
-  param <- c("$\\mu$", "",
-             "$\\phi_1$", "",
-             "$\\omega$", "",
-             "$\\alpha_1$", "",
-             "$\\alpha_2$", "",
-             "$\\beta_1$", "",
-             "$\\gamma_1$", "",
-             "$\\gamma_2$", "")
-  garchcoef <- cbind(par = param, garch.models.par)
-  colnames(garchcoef)[1] <- "Parâmetros"
-  rm(garch.models.par) # Nao utilizado mais
-  # Xtable
-  cap <- paste("Par\\^ametros estimados do modelo eGARCH. Valores p apresentados de acordo 
-com erros padrão robustos. (amostra de trabalho entre",
-               format(start+1, "%d/%m/%Y"), "a",
-               format(end, "%d/%m/%Y"), ").")
-  tab2 <- xtable(garchcoef, 
-                 caption = cap,
-                 digits = 5,
-                 label = "tab:garchcoef",
-                 auto = TRUE)
-  print.xtable(tab2, 
-               file = "./tables/artigo-tab-garchcoef.tex",
-               caption.placement = "top",
-               table.placement = "H",
-               sanitize.colnames.function = NULL,
-               sanitize.text.function = function(x) {x},
-               include.rownames = FALSE)
+
+  #colnames(garch.models.par) <- garch.models$id_name
+garch.models.par$stat_name <- c("$\\mu$", "",
+                                "$\\phi_1$", "",
+                                "$\\omega$", "",
+                                "$\\alpha_1$", "",
+                                "$\\alpha_2$", "",
+                                "$\\beta_1$", "",
+                                "$\\gamma_1$", "",
+                                "$\\gamma_2$", "")
+
+colnames(garch.models.par)[1] <- "Parâmetros"
+# Xtable
+cap <- paste("Par\\^ametros estimados do modelo eGARCH. Valores p apresentados de acordo 
+com erros padrão robustos. (Período dentro da amostra entre",
+             format(start+1, "%d/%m/%Y"), "a",
+             format(end, "%d/%m/%Y"), ").")
+tab2 <- xtable(garch.models.par, 
+               caption = cap,
+               digits = 5,
+               label = "tab:garchcoef",
+               auto = TRUE)
+print.xtable(tab2, 
+             file = "./tables/artigo-tab-garchcoef.tex",
+             caption.placement = "top",
+             table.placement = "H",
+             sanitize.colnames.function = NULL,
+             sanitize.text.function = function(x) {x},
+             include.rownames = FALSE)
 
 # Gerar 6 figuras com estes 4 graficos ACF
 for(i in 1:dim(garch.models)[1]) {
-  jpeg(filename = paste0("./figs/artigo-acf-", garch.models$id_name[i], ".jpeg"),
-       width = 800, height = 800, quality = 100)
+  pdf(file = paste0("./figs/artigo-acf-", garch.models$id_name[i], ".pdf"),
+       width = 7, height = 7, colormodel = "grey")
   op <- par(mfrow=c(2,2))
   plot(garch.models$garch_fit[[i]], which = 4)
   plot(garch.models$garch_fit[[i]], which = 5)
@@ -231,12 +231,14 @@ for(i in 1:dim(garch.models)[1]) {
   par(op)
   dev.off()
 }
-file.rename(c("./figs/artigo-acf-S&P500.jpeg", "./figs/artigo-acf-S&P TSE.jpeg"), 
-            c("./figs/artigo-acf-SP500.jpeg", "./figs/artigo-acf-SP-TSE.jpeg"))
+file.rename(c("./figs/artigo-acf-S&P500.pdf", "./figs/artigo-acf-S&P TSE.pdf"), 
+            c("./figs/artigo-acf-SP500.pdf", "./figs/artigo-acf-SP-TSE.pdf"))
 ## Estatisticas modelo eGARCH in sample
-# JB, Q e Q^2 para os residuos padronizados
+# JB, Q, Q^2 e Sign bias para os residuos padronizados
 garch.models.stats <- garch.models %>%
-  transmute(resid_z = map(.$garch_fit, ~residuals(.x, standardize = TRUE)),
+  transmute(id_name = id_name,
+            resid_z = map(.$garch_fit, ~residuals(.x, standardize = TRUE)),
+            curtose = map_dbl(resid_z, ~kurtosis(.x)),
             jbstat = map_dbl(resid_z, ~jarqueberaTest(as.timeSeries(.x))@test$statistic),
             jbpvalue = map_dbl(resid_z, ~jarqueberaTest(as.timeSeries(.x))@test$p.value),
             q10stat = map_dbl(resid_z, ~Weighted.Box.test(.x, lag = 10, 
@@ -248,18 +250,22 @@ garch.models.stats <- garch.models %>%
                                                             sqrd.res = TRUE)$statistic),
             q2_10pvalue = map_dbl(resid_z, ~Weighted.Box.test(.x, lag = 10, 
                                                             type = "Ljung-Box", 
-                                                            sqrd.res = TRUE)$p.value)) %>% 
+                                                            sqrd.res = TRUE)$p.value),
+            sign_bias = map_dbl(.$garch_fit, ~signbias(.x)[1,1]),
+            sign_pvalue = map_dbl(.$garch_fit, ~signbias(.x)[1,2])) %>% 
   mutate(resid_z = NULL) %>% 
-  t() %>% 
-  as.data.frame()
-param <- c("Jarque-Bera", "",
-           "Q(10)", "",
-           "$Q^2(10)$", "")
-garch.models.stats <- cbind(param, garch.models.stats)
-colnames(garch.models.stats) <- c("Estatística", garch.models$id_name)
+  gather(key = stat_name, value = stat_value, -id_name, factor_key = TRUE) %>% 
+  spread(key = id_name, value = stat_value)
+
+garch.models.stats$stat_name <- c("Curtose exc.",
+                                  "Jarque-Bera", "",
+                                  "Q(10)", "",
+                                  "$Q^2(10)$", "",
+                                  "Sign-bias", "")
+colnames(garch.models.stats)[1] <- "Estatística"
 # Xtable
 cap <- paste("Estatísticas de diagnóstico para o modelo eGARCH. 
-               (amostra de trabalho entre",
+               (Período dentro da amostra entre",
              format(start+1, "%d/%m/%Y"), "a",
              format(end, "%d/%m/%Y"), ").")
 
@@ -310,7 +316,8 @@ evt.models <- garch.models %>%
 # std.errors(teste_evd)  # Iguais ao fExtremes e evir
 # mrlplot(testez)
 evtcoef <- evt.models %>% 
-  transmute(insample = insample,
+  transmute(id_name = id_name,
+            insample = insample,
             u = u,
             Nu = Nu,
             xi = xi,
@@ -319,15 +326,15 @@ evtcoef <- evt.models %>%
             beta_se = beta_se,
             zq975 = zq975,
             zq990 = zq990) %>% 
-  t() %>% 
-  as.data.frame()
-param <- c("Obs. dentro amostra", "Limiar", "Número de excessos", "Parâmetro forma GPD", "Erro padrão",
-           "Parâmetro escala GPD", "Erro padrão", "Quantil 97.5\\%", "Quantil 99.0\\%")
-evtcoef <- cbind(param, evtcoef)
-colnames(evtcoef) <- c("", evt.models$id_name)
+  gather(key = stat_name, value = stat_value, -id_name, factor_key = TRUE) %>% 
+  spread(key = id_name, value = stat_value)
+
+evtcoef$stat_name <- c("Obs. dentro amostra", "Limiar", "Número de excessos", "Parâmetro forma GPD", "Erro padrão",
+                       "Parâmetro escala GPD", "Erro padrão", "Quantil 97.5\\%", "Quantil 99.0\\%")
+colnames(evtcoef)[1] <- ""
 # Xtable
 cap <- paste("Parâmetros estimados para o modelo EVT dos resíduos padronizados. 
-               (amostra de trabalho entre",
+               (Período dentro da amostra entre",
              format(start+1, "%d/%m/%Y"), "a",
              format(end, "%d/%m/%Y"), ").")
 
@@ -441,22 +448,22 @@ models <- c("cevt", "cnorm", "ct", "uevt", "unorm", "ut", "riskmetrics")
 
 ## ATENCAO! Aqui eh a rotina de estimacao do backtesting!! Rodar somente na AWS!!
 
-f <- file("log.txt", open = "wt")
-sink(f) # Inicia o log no arquivo
-sink(f, type = "message") # Inclusive mensagens de erro e avisos
-cat("\nInicio do map roll_fit:", as.character(Sys.time()))
-os_roll.tbl <- assets_os.tbl %>%
-  transmute(indice = indice,
-            id_name = id_name,
-            roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
-cat("\nFim do map roll_fit:", as.character(Sys.time()))
-saveRDS(os_roll.tbl,
-        file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "os_roll_tbl.rds"))
-sink(type = "message")
-sink() # Finaliza o log
+# f <- file("log.txt", open = "wt")
+# sink(f) # Inicia o log no arquivo
+# sink(f, type = "message") # Inclusive mensagens de erro e avisos
+# cat("\nInicio do map roll_fit:", as.character(Sys.time()))
+# os_roll.tbl <- assets_os.tbl %>%
+#   transmute(indice = indice,
+#             id_name = id_name,
+#             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
+# cat("\nFim do map roll_fit:", as.character(Sys.time()))
+# saveRDS(os_roll.tbl,
+#         file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "os_roll_tbl.rds"))
+# sink(type = "message")
+# sink() # Finaliza o log
 
-# os_roll.tbl <- readRDS(file = "./output/2017-12-22os_roll_tbl.rds")
-# realized <- readRDS(file = "./output/2018-01-02realized.rds")
+os_roll.tbl <- readRDS(file = "./output/2018-01-02os_roll_tbl.rds")
+realized <- readRDS(file = "./output/2018-01-01realized.rds")
 
 os_roll_unnest <- os_roll.tbl %>% 
   unnest() %>% 
@@ -502,7 +509,7 @@ varviolations.tbl <- add_row(varviolations.tbl, Modelo = "Cobertura = 2.5\\%",
 varviolations.tbl$cov <- NULL # Retira a coluna cov, que nao eh mais necessaria
 
 # Xtable
-cap <- paste("Percentual de violações. (fora da amostra, dados entre",
+cap <- paste("Percentual de violações. (Período fora da amostra entre",
              format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
 
 tab5 <- xtable(varviolations.tbl, 
@@ -539,11 +546,11 @@ vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura = 1\\%",
 vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura = 2.5\\%",
                        .after = ceiling(dim(vartest.tbl)[1]/2))
 vartest.tbl$coverage <- NULL # Retira a coluna cov, que nao eh mais necessaria
+colnames(vartest.tbl)[2] <- "Estatística"
 # Xtable
 cap <- paste("Testes estatísticos para o VaR. Teste incondicional de Kupiec e teste de
-             independência por duração de Christoffersen e Pelletier (fora da amostra, 
-             dados entre",
-             format(backstart+1, "%d/%m/%Y"), "e 30/08/2017")
+             independência por duração de Christoffersen e Pelletier (Período fora da 
+             amostra entre", format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
 
 tab6 <- xtable(vartest.tbl, 
                caption = cap,
