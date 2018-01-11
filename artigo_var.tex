@@ -1,4 +1,4 @@
-\documentclass[review]{elsarticle}
+\documentclass[1p]{elsarticle}
 
 \usepackage{lineno,hyperref}
 \modulolinenumbers[5]
@@ -464,7 +464,7 @@ A tabela \ref{tab:garchstats} apresenta novamente as estatísticas Jarque-Bera e
 Sendo assim, com retornos padronizados que não são normalmente distribuídos e possuem cauda longas com excesso de curtose, mas que após filtragem não apresentam mais autocorrelação ou heterocedasticidade, pode-se passar ao segundo estágio do model eGARCH-POT, ou seja, aplicar a teoria do valor extremo através do método \emph{peaks over treshold} para parametrizar a cauda direita das distribuições de perdas dos ativos.
 
 \subsection{Método POT}
-\label{sec:potinsample}
+\label{sec:metpot}
 
 Os resíduos padronizados são tratados como as realizações do processo de inovação no modelo eGARCH(2,1). Estas inovações serão então analisadas sob a ótica da EVT para a obtenção dos parâmetros da GPD que definem a cauda direita de sua distribuição.
 
@@ -478,17 +478,56 @@ Escolhido o limiar \emph{u}, trata-se de obter a série de inovações em excess
 
 A esta série de inovações em excesso é aplicada a função log-verossimilhança dada em \eqref{eq:gpdloglik} que por sua vez é maximizada em relação aos parâmetros da GPD, $\xi$ e $\psi$, para a obtenção de suas estimativas.
 
-A tabela \ref{tab:evtcoef} apresenta os valores destes parâmetros e seus \emph{p} valores para cada um dos índices, com a estimação feita com os dados do período dentro da amostra. Também são apresentados o número de observações dentro da amostra para o total dos resíduos padronizados, assim como o número de excessos observados ($N_u$) para o limiar escolhido ($u$). Observa-se como o número de excessos varia de acordo com o índice (asim como o total de observações), porém todos ficam em torno de 120 excessos, que é considerado um valor ideal. 
+A tabela \ref{tab:evtcoef} apresenta os valores destes parâmetros e seus erros padrão para cada um dos índices, com a estimação feita com os dados do período dentro da amostra. Também são apresentados o número de observações dentro da amostra para o total dos resíduos padronizados, assim como o número de excessos observados ($N_u$) para o limiar escolhido ($u$). Observa-se como o número de excessos varia de acordo com o índice (asim como o total de observações), porém todos ficam em torno de 120 excessos, que é considerado um valor ideal. 
 
 \input{tables/artigo-tab-evtcoef}	
 
+Na figura \ref{fig:artigo-gpdfit} é possível visualizar os gráficos de ajuste das inovações em excesso de cada um dos índices contra suas distribuições GPD de referência, ou seja, aquelas com os parâmetros de forma e escala estimados para os respectivos índices. Verifica-se que a distribuição destes excessos pouco se desvia com relação a curva de referência, denotando um bom ajuste dos dados ao modelo teórico. Em contraste, quando modelados diretamente através de uma distribuição normal, as séries de retornos se afastavam consideravelmente de suas referências como já apresentado na figura \ref{fig:artigo-qqplots}. Ao se utilizar um método semi-paramétrico como o proposto, modelando apenas uma parte da cauda da distribuição, a parte que interessa para a modelagem de risco, obtém-se uma estimação muito mais próxima da realidade que os dados apresentam.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\linewidth]{figs/artigo-gpdfit}
+	\caption{Qualidade do ajuste dos dados de inovações em excesso contra uma GPD de referência. Período dentro da amostra.}
+	\label{fig:artigo-gpdfit}
+\end{figure}
 
 \section{Resultados empíricos}
+\label{sec:empiricos}
 
+Os resultados empíricos aqui referidos concentram-se em testar através de \emph{backtest} o modelo EVT condicional apresentado, o qual utiliza a metodologia em dois estágios proposta por \cite{McNeil2000} com um filtro eGARCH(2,1) e o método POT, assim como outros modelos para a estimação do \emph{VaR}, como a Normal e t-Student condicionais, Normal e t-Student incondicionais, o modelo proposto por \cite{RiskMetrics1995} e o próprio modelo EVT incondicional, em um total de sete modelos sendo testados e comparados para fins de estimação da medida de risco.
 
-\todo{Teste de sign-bias não deu nenhuma rejeicao de H0. Esquecer ou implementar modelos diferentes para cada ativo?}
+Para fazer o \emph{backtest}, considere a série $x_1, x_2, \ldots, x_m$, com $m\gg n$ e o conjunto de dias $T = \{n, \ldots, m-1\}$. Uma janela da dados de tamanho fixo $n$ é utilizada e para cada dia $t \in T$ é reestimado o valor de $VaR^t_\alpha$. O período de teste fora da amostra vai de 01/01/2009 a 30/08/2017, com dados diários para as perdas dos índices sob análise. O número de observações ($n$) dentro da janela de dados utilizada para fazer a estimação dos modelos para cada um dos índices é aquele apresentado na tabela \ref{tab:evtcoef} (N.obs.), esse valor é fixo para cada série. Portanto, a partir do início do período de teste, esta janela fixa avança um dia e o modelo é estimado, resultando, com auxílio da equação \eqref{eq:varcond}, no valor estimado de $VaR_\alpha^t$, ou seja, a medida de risco calculada ao final do dia $t$ que deverá ser comparada a perda incorrida no dia a frente, $t+1$.
+
+O quantil para a definição do limiar \emph{u} é fixo em 0,92, o que resultará em valores distintos de limiar para cada rodada do teste, e possivelmente um número diferente de excessos observados. Entretanto essas diferenças, considerando o tamanho fixo da janela de dados, será muito pequeno em torno de uma unidade apenas. Mantém-se assim, um número de excessos em torno de 120 observações, valor adequado para se fazer as estimativas dos parâmetros da GPD.
+
+A figura \ref{fig:artigo-sp500backtest} apresenta o resultado do \emph{backtest} para dois modelos, EVT condicional e normal incondicional. Entende-se por modelos incondicionais aqueles em que a volatilidade histórica de toda a janela de dados é utilizada para calcular as medias de risco. Claramente se percebe como o modelo condicional, que utiliza a última estimação para a volatilidade dos resíduos padronizados e então escalá-los para obter a medida de risco, é muito mais responsivo a alterações no regime de volatilidade do ativo. Um modelo incondicional, por sua vez, não responde de forma acentuada a variações de curto-prazo na volatilidade do ativo, pois estas observações mais extremas são atenuadas em meio a todas as outras observações utilizadas da janela de dados.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\linewidth]{figs/artigo-sp500backtest}
+	\caption{Teste fora da amostra para o S\&P500. O modelo EVT condicional (linha pontilhada) é muito mais reativo a mudanças na volatilidade que um modelo normal incondicional (linha tracejada).}
+	\label{fig:artigo-sp500backtest}
+\end{figure}
+
+Uma violação é dita ocorrida quando a perda observada é maior que a medida de risco estimada no dia anterior, $x_{t+1}>VaR^t_\alpha$ para um $\alpha$ dentro do conjunto de níveis de significância, neste artigo $\alpha \in \{0,975; 0,990\}$. A tabela \ref{tab:varviol} apresenta em termos percentuais as violações ocorridas para cada um dos modelos para os níveis de cobertura dados.
+
+Pode ser realizado um teste estatístico para verificar se o modelo para $VaR^t_\alpha$ foi corretamente especificado, levando-se em consideração o seu nível de cobertura, $1-\alpha$. Em \cite{Kupiec1995}, este tipo de teste é apresentado. Este permite que seja testado se a frequência de violações ao $VaR$ é consistente com o valor esperado destas violações, o nível de cobertura. Sob a hipótese nula de um modelo corretamente especificado o número de violações segue uma distribuição binomial e o teste toma a forma de razão de verossimilhança com a seguinte estatística:
+
+\begin{equation}
+	LR_{uc}=-2\ln\left(\frac{(1-p)^{n-X}p^X}{(1-\frac{X}{n})^{n-X}(\frac{X}{n})^X}\right)
+\end{equation}
+onde $p$ é o nível de cobertura, $n$ é o número de observações do período fora da amostra e $X$ neste caso é o número de violações ocorridas.
+
+Este teste não faz nenhum tipo de assunção, e por conseguinte não testa, a hipótese de independência entre as violações, sendo considerado um teste \emph{incondicional} para o $VaR$.
 
 \input{tables/artigo-tab-varviol}
+
+Um teste condicional é aquele proposto, entre outros, por \cite{Christoffersen2004}. A hipótese de independência entre as violações está relacionada a duração entre as observações destas. O tempo que se passa entre uma violação e outra deve ser independente e não formar agrupamentos (\emph{clusters}). Sob a hipótese nula de um modelo corretamente especificado, esta duração não deve possuir memória. Como a única distribuição contínua que não possui memória é a distribuição exponencial, os autores propõe ajustar os dados a uma distribuição Weibull da qual a exponencial é um caso particular quando o parâmetro $b=1$ e, portanto, o teste é feito sobre este parâmetro.
+
+\todo{Verificar codigo VaRDurTest. Esse teste é conjunto ou somente sobre a hipotese de independência?}
+\todo{Ler Christoffersen2004 e escrever a equacao da estatística}
+
+\todo{Teste de sign-bias não deu nenhuma rejeicao de H0. Esquecer ou implementar modelos diferentes para cada ativo?}
 
 \input{tables/artigo-tab-vartest}
 

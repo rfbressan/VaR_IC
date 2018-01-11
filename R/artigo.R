@@ -294,17 +294,18 @@ evt.models <- garch.models %>%
             resid_z = map(garch_fit, ~coredata(residuals(.x, standardize = TRUE))),
             mut = map(garch_fit, ~coredata(fitted(.x))),
             sigmat = map(garch_fit, ~coredata(sigma(.x))),
-            Nu = map_int(resid_z, ~sum(.x > quantile(.x, u_quant))),
-            gpdfit = map(resid_z, ~gpdFit(.x, u = quantile(.x, u_quant))),
-            u = map_dbl(gpdfit, ~.x@parameter$u),
-            xi = map_dbl(gpdfit, ~.x@fit$par.ests[1]),
-            beta = map_dbl(gpdfit, ~.x@fit$par.ests[2]),
-            xi_se = map_dbl(gpdfit, ~.x@fit$par.ses[1]),
-            beta_se = map_dbl(gpdfit, ~.x@fit$par.ses[2]),
-            zq975= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.975)$quantile),
-            zq990= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.990)$quantile),
-            sq975= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.975)$shortfall),
-            sq990= map_dbl(gpdfit, ~gpdRiskMeasures(.x, prob = 0.990)$shortfall))
+            gpdfit = map(resid_z, ~gpd(.x, threshold = quantile(.x, u_quant))),
+            Nu = map_int(gpdfit, ~.x$n.exceed),
+            u = map_dbl(gpdfit, ~.x$threshold),
+            xi = map_dbl(gpdfit, ~.x$par.ests[1]),
+            beta = map_dbl(gpdfit, ~.x$par.ests[2]),
+            xi_se = map_dbl(gpdfit, ~.x$par.ses[1]),
+            beta_se = map_dbl(gpdfit, ~.x$par.ses[2]),
+            risk = map(gpdfit, ~riskmeasures(.x, c(0.975, 0.990))),
+            zq975= map_dbl(risk, ~.x[1, "quantile"]),
+            zq990= map_dbl(risk, ~.x[2, "quantile"]),
+            sq975= map_dbl(risk, ~.x[1, "sfall"]),
+            sq990= map_dbl(risk, ~.x[2, "sfall"]))
 # ## Teste com o pacote evir
 # testez <- coredata(residuals(garch.models$garch_fit[[1]], standardize = TRUE))
 # teste_evir <- gpd(testez, threshold = quantile(testez, 0.925)) # Mesmos valores do fExtremes
@@ -329,8 +330,8 @@ evtcoef <- evt.models %>%
   gather(key = stat_name, value = stat_value, -id_name, factor_key = TRUE) %>% 
   spread(key = id_name, value = stat_value)
 
-evtcoef$stat_name <- c("Obs. dentro amostra", "Limiar", "Número de excessos", "Parâmetro forma GPD", "Erro padrão",
-                       "Parâmetro escala GPD", "Erro padrão", "Quantil 97.5\\%", "Quantil 99.0\\%")
+evtcoef$stat_name <- c("N.obs.", "Limiar $u$", "Num.exc. $N_u$", "Par. forma $\\xi$", "Erro padrão",
+                       "Par. escala $\\psi$", "Erro padrão", "Quantil $z_{0.975}$", "Quantil $z_{0.990}$")
 colnames(evtcoef)[1] <- ""
 # Xtable
 cap <- paste("Parâmetros estimados para o modelo EVT dos resíduos padronizados. 
@@ -352,14 +353,24 @@ print.xtable(tab4,
              include.rownames = FALSE)
 
 ## Gráficos para analisar a qualidade do gpdFit
-for(i in seq_len(dim(garch.models)[1])) {
-  jpeg(filename = paste0("./figs/artigo-evtgof-", garch.models$indice[i], ".jpeg"),
-       width = 800, height = 800, quality = 100)
-  op <- par(mfrow=c(2,2))
-  plot(evt.models$gpdfit[[i]], which='all')
+pdf(file = "./figs/artigo-gpdfit.pdf",
+    width = 7, height = 8,
+    colormodel = "grey")
+  op <- par(mfrow=c(3,2))
+  for(i in seq_len(dim(evt.models)[1])){
+    plot(evt.models$gpdfit[[i]], main = evt.models$id_name[i])
+  }
   par(op)
-  dev.off()
-}
+dev.off()
+
+# for(i in seq_len(dim(garch.models)[1])) {
+#   jpeg(filename = paste0("./figs/artigo-evtgof-", garch.models$indice[i], ".jpeg"),
+#        width = 800, height = 800, quality = 100)
+#   op <- par(mfrow=c(2,2))
+#   plot(evt.models$gpdfit[[i]], which='all')
+#   par(op)
+#   dev.off()
+# }
 
 # Reconstruindo o VaR e o ES condicionais in Sample ---------------------------------
 
@@ -485,6 +496,35 @@ os_risk.tbl <- os_roll_unnest %>%
   unnest()
 format(object.size(os_risk.tbl), units = "Kb") # Verifica o tamanho do objeto
 
+# Plota um grafico da evolucao do VaR e das perdas realizadas
+cevt99 <- subset(os_risk.tbl, 
+              subset = (indice == "GSPC" & model_type == "cevt" & coverage == 0.01),
+              select = VaR.xts)$VaR.xts[[1]]
+unorm99 <- subset(os_risk.tbl, 
+                  subset = (indice == "GSPC" & model_type == "unorm" & coverage == 0.01),
+                  select = VaR.xts)$VaR.xts[[1]]
+real <- subset(realized,
+               subset = indice == "GSPC",
+               select = real)$real[[1]]
+
+plot(real, 
+     ylim = c(-0.1, 0.1),
+     lwd = 1,
+     grid.ticks.on = "years",
+     main = "S&P500 backtest")
+lines(cevt99, 
+      col = "red",
+      lty = "dotted")
+# Abre o arquivo PDF
+pdf(file = "./figs/artigo-sp500backtest.pdf",
+    width = 7,
+    height = 7,
+    colormodel = "grey")
+lines(unorm99,
+      col = "darkgreen",
+      lty = "dashed")
+dev.off() # fecha o arquivo pdf
+
 ## Tabela com os percentuais de violacoes
 varviolations.tbl <- os_risk.tbl %>% 
   left_join(realized, by = "indice") %>% 
@@ -540,6 +580,7 @@ vartest.tbl <- os_risk.tbl %>%
   select(id_name, coverage, model_type, uc.LRstat, uc.LRp, uLL, rLL, LRp) %>% 
   gather(key = stat_name, value = stat_value, -c(id_name, coverage, model_type), factor_key = TRUE) %>% 
   spread(key = id_name, value = stat_value)
+levels(vartest.tbl$stat_name) <- c("LRuc", "LRuc p-valor", "uLL", "rLL", "LRc p-valor")
 colnames(vartest.tbl)[2] <- "Modelo"
 vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura = 1\\%", 
                        .before = 1)
