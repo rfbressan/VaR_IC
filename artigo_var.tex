@@ -491,10 +491,10 @@ Na figura \ref{fig:artigo-gpdfit} é possível visualizar os gráficos de ajuste
 	\label{fig:artigo-gpdfit}
 \end{figure}
 
-\section{Resultados empíricos}
-\label{sec:empiricos}
+\section{Avaliação dos modelos}
+\label{sec:avaliacao}
 
-Os resultados empíricos aqui referidos concentram-se em testar através de \emph{backtest} o modelo EVT condicional apresentado, o qual utiliza a metodologia em dois estágios proposta por \cite{McNeil2000} com um filtro eGARCH(2,1) e o método POT, assim como outros modelos para a estimação do \emph{VaR}, como a Normal e t-Student condicionais, Normal e t-Student incondicionais, o modelo proposto por \cite{RiskMetrics1995} e o próprio modelo EVT incondicional, em um total de sete modelos sendo testados e comparados para fins de estimação da medida de risco.
+A avaliação dos modelos aqui referidos concentra-se em testar através de \emph{backtest} o modelo EVT condicional apresentado, o qual utiliza a metodologia em dois estágios proposta por \cite{McNeil2000} com um filtro eGARCH(2,1) e o método POT, assim como outros modelos para a estimação do \emph{VaR}, como o Normal e t-Student condicionais, Normal e t-Student incondicionais, o modelo proposto por \cite{RiskMetrics1995} e o próprio modelo EVT incondicional, em um total de sete modelos sendo testados e comparados para fins de estimação da medida de risco. As definições destes modelos e suas formas de implementação estão descritas no \ref{apendice}.
 
 Para fazer o \emph{backtest}, considere a série $x_1, x_2, \ldots, x_m$, com $m\gg n$ e o conjunto de dias $T = \{n, \ldots, m-1\}$. Uma janela da dados de tamanho fixo $n$ é utilizada e para cada dia $t \in T$ é reestimado o valor de $VaR^t_\alpha$. O período de teste fora da amostra vai de 01/01/2009 a 30/08/2017, com dados diários para as perdas dos índices sob análise. O número de observações ($n$) dentro da janela de dados utilizada para fazer a estimação dos modelos para cada um dos índices é aquele apresentado na tabela \ref{tab:evtcoef} (N.obs.), esse valor é fixo para cada série. Portanto, a partir do início do período de teste, esta janela fixa avança um dia e o modelo é estimado, resultando, com auxílio da equação \eqref{eq:varcond}, no valor estimado de $VaR_\alpha^t$, ou seja, a medida de risco calculada ao final do dia $t$ que deverá ser comparada a perda incorrida no dia a frente, $t+1$.
 
@@ -511,6 +511,9 @@ A figura \ref{fig:artigo-sp500backtest} apresenta o resultado do \emph{backtest}
 
 Uma violação é dita ocorrida quando a perda observada é maior que a medida de risco estimada no dia anterior, $x_{t+1}>VaR^t_\alpha$ para um $\alpha$ dentro do conjunto de níveis de significância, neste artigo $\alpha \in \{0,975; 0,990\}$. A tabela \ref{tab:varviol} apresenta em termos percentuais as violações ocorridas para cada um dos modelos para os níveis de cobertura dados.
 
+\subsection{Testes estatísticos}
+\label{sec:testes}
+
 Pode ser realizado um teste estatístico para verificar se o modelo para $VaR^t_\alpha$ foi corretamente especificado, levando-se em consideração o seu nível de cobertura, $1-\alpha$. Em \cite{Kupiec1995}, este tipo de teste é apresentado. Este permite que seja testado se a frequência de violações ao $VaR$ é consistente com o valor esperado destas violações, o nível de cobertura. Sob a hipótese nula de um modelo corretamente especificado o número de violações segue uma distribuição binomial e o teste toma a forma de razão de verossimilhança com a seguinte estatística:
 
 \begin{equation}
@@ -522,20 +525,60 @@ Este teste não faz nenhum tipo de assunção, e por conseguinte não testa, a h
 
 \input{tables/artigo-tab-varviol}
 
-Um teste condicional é aquele proposto, entre outros, por \cite{Christoffersen2004}. A hipótese de independência entre as violações está relacionada a duração entre as observações destas. O tempo que se passa entre uma violação e outra deve ser independente e não formar agrupamentos (\emph{clusters}). Sob a hipótese nula de um modelo corretamente especificado, esta duração não deve possuir memória. Como a única distribuição contínua que não possui memória é a distribuição exponencial, os autores propõe ajustar os dados a uma distribuição Weibull da qual a exponencial é um caso particular quando o parâmetro $b=1$ e, portanto, o teste é feito sobre este parâmetro.
+Um teste condicional é aquele proposto, entre outros, por \cite{Christoffersen2004}. A hipótese de independência entre as violações está relacionada a duração entre as observações destas. O tempo que se passa entre uma violação e outra deve ser independente e não formar agrupamentos (\emph{clusters}). Sob a hipótese nula de um modelo corretamente especificado, esta duração não deve possuir memória. Como a única distribuição contínua que não possui memória é a distribuição exponencial, os autores propõe ajustar os dados a uma distribuição Weibull da qual a exponencial é um caso particular quando o parâmetro $b=1$ e, portanto, o teste é feito sobre este parâmetro. O teste de duração de Christoffersen é feito sob a forma de razão de verossimilhança, sendo a função densidade de uma Weibull:
 
-\todo{Verificar codigo VaRDurTest. Esse teste é conjunto ou somente sobre a hipotese de independência?}
-\todo{Ler Christoffersen2004 e escrever a equacao da estatística}
+\begin{equation}
+	f_W(D; a, b) = \begin{cases}
+	a^b b D^{b-1}e^{-(aD)^b}, &D \geq 0\\
+	0,&D<0.
+	\end{cases} 
+\end{equation}
+onde $D$ é a duração entre as violações e $a$ e $b$ são os parâmetros da distribuição.
 
-\todo{Teste de sign-bias não deu nenhuma rejeicao de H0. Esquecer ou implementar modelos diferentes para cada ativo?}
+Nota-se que este teste é destinado apenas a verificação da hipótese de independência das violações. Em conjunto com o teste de Kupiec, a tabela \ref{tab:vartest} fornece um panorama completo sobre a adequação das especificações de modelos $VaR$.
 
 \input{tables/artigo-tab-vartest}
 
+Inspecionando a tabela \ref{tab:vartest} verifica-se como o modelo EVT condicional, especialmente para o nível de cobertura a 1\% é superior aos demais, prevalecendo como o único modelo a não rejeitar a hipótese nula a 5\% de confiança para o teste de cobertura incondicional e apenas para o índice S\&P500 este modelo obteve resultado no limiar da rejeição da hipótese nula a 5\% para o teste de independência.
 
+A tabela \ref{tab:vartest_suma} apresenta um sumário contendo a quantidade de rejeições da hipótese nula de um modelo corretamente especificado para os valores de cobertura. Realizados dois testes, cobertura incondicional e independência, para cada um dos seis índices investigados, tem-se um total de doze testes por modelo. Verifica-se que, de fato, o modelo \emph{cevt} - EVT condicional é aquele que apresenta o menor número de rejeições.
 
+\input{tables/artigo-tab-vartest_suma}
 
+\subsection{Teste MCS de Hansen}
+
+Outra forma de avaliar os modelos e buscar identificar aqueles superiores para um determinado nível de confiança e uma dada função de perda, é o \emph{Model Confidence Set} - MCS de \cite{Hansen2011}. O MCS é um conjunto de modelos construído de tal forma que contenha apenas os melhores modelos dado um nível de confiança. O MCS é, de certa forma, o análogo do intervalo de confiança para um parâmetro escalar. O "melhor" modelo é avaliado através de uma função de perda a ser definida pelo pesquisador.
+
+A função perda adotada neste trabalho é aquela definida em \cite{Gonzalez-Rivera2004} como uma medida de ajuste para um modelo de $VaR$. A função \emph{\~{Q}} ajustada para suavidade é definida no citado artigo como sendo:
+
+\begin{equation}
+	\tilde{Q} = N_o^{-1}\sum_{t=n}^{m-1}((1-\alpha)-m_\delta(x_{t+1}, VaR^t_\alpha))(x_{t+1}, VaR^t_\alpha)
+\end{equation}
+onde $N_o = (m-1)-n$ é o número de observações fora da amostra menos uma observação. Garantindo que o teste é feito para as estimativas de $VaR^t_\alpha$ apenas no período fora da amostra. A função $m_\delta(a, b)=\{1+\exp[\delta(a-b)]\}^{-1}$ toma o lugar da função indicador quando ocorre uma violação e o parâmetro $\delta$ controla a suavidade da curva. Esta é uma função assimétrica que penaliza mais fortemente as violações ao $VaR$, um valores mais baixos de \emph{\~{Q}} sinalizam um melhor ajuste.
 
 \section{Conclusão}
+
+\todo{Teste de sign-bias não deu nenhuma rejeicao de H0. Esquecer ou implementar modelos diferentes para cada ativo?}
+
+\appendix
+\section{}
+\label{apendice}
+
+Apêndice descrevendo os modelos de estimação do $VaR$.
+
+\subsection{EVT condicional}
+
+\subsection{Normal condicional}
+
+\subsection{t-Student condicional}
+
+\subsection{Riskmetrics}
+
+\subsection{EVT incondicional}
+
+\subsection{Normal condicional}
+
+\subsection{t-Student incondicional}
 
 \section*{Referências}
 

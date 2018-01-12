@@ -569,6 +569,7 @@ print.xtable(tab5,
 ## VaRTest(alpha = 0.05, actual, VaR, conf.level = 0.95)
 ## var_test(cover = 0.025, loss, var, conf.level = 0.95) Com bootstrap para cc
 ## vartest(cover = 0.025, loss, var, conf.level = 0.95) engloba uc e DurTest
+## LRdur = 2*(uLL-rLL)
 vartest.tbl <- os_risk.tbl %>% 
   left_join(realized, by = "indice") %>% 
   transmute(indice = indice,
@@ -577,23 +578,36 @@ vartest.tbl <- os_risk.tbl %>%
             coverage = coverage,
             VaRtest = pmap(., ~vartest(..4, -coredata(..7), -coredata(..5)))) %>% 
   unnest() %>% 
-  select(id_name, coverage, model_type, uc.LRstat, uc.LRp, uLL, rLL, LRp) %>% 
+  mutate(dur.LR = 2*(uLL - rLL)) %>% 
+  select(id_name, coverage, model_type, uc.LRstat, uc.LRp, dur.LR, LRp) %>% 
   gather(key = stat_name, value = stat_value, -c(id_name, coverage, model_type), factor_key = TRUE) %>% 
   spread(key = id_name, value = stat_value)
-levels(vartest.tbl$stat_name) <- c("LRuc", "LRuc p-valor", "uLL", "rLL", "LRc p-valor")
-colnames(vartest.tbl)[2] <- "Modelo"
-vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura = 1\\%", 
-                       .before = 1)
-vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura = 2.5\\%",
-                       .after = ceiling(dim(vartest.tbl)[1]/2))
-vartest.tbl$coverage <- NULL # Retira a coluna cov, que nao eh mais necessaria
-colnames(vartest.tbl)[2] <- "Estatística"
-# Xtable
-cap <- paste("Testes estatísticos para o VaR. Teste incondicional de Kupiec e teste de
-             independência por duração de Christoffersen e Pelletier (Período fora da 
-             amostra entre", format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+levels(vartest.tbl$stat_name) <- c("LRuc", "LRuc p-valor", "LRdur", "LRdur p-valor")
+# Tabela sumarizando os p-valores significativos a 5%
+vartest_suma <- vartest.tbl %>% 
+  dplyr::filter(str_detect(stat_name, "p-valor")) %>% 
+  gather(key = indice, value = p_valor, -c(coverage, model_type, stat_name)) %>% 
+  group_by(coverage, model_type) %>% 
+  summarise(n = sum(p_valor <= 0.05)) %>% 
+  spread(key = coverage, value = n)
 
-tab6 <- xtable(vartest.tbl, 
+colnames(vartest_suma) <- c("Modelo", "Cobertura 1\\%", "Cobertura 2.5\\%")
+colnames(vartest.tbl)[2:3] <- c("Modelo", "Estatística")
+  
+# Monta as tabelas para o Xtable
+vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura 1\\%", 
+                       .before = 1)
+vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura 2.5\\%",
+                       .after = ceiling(dim(vartest.tbl)[1]/2))
+
+# Xtable
+cap <- paste("Testes estatísticos para o VaR. Teste incondicional de Kupiec, \\emph{LRuc}, e teste de
+             independência por duração de Christoffersen e Pelletier, \\emph{LRdur}. Os modelos testados
+são: EVT condicional (cevt), Normal condicional (cnorm), t-Student condicional (ct), Riskmetrics 
+(riskmetrics), EVT incondicioanl (uevt), Normal incondicional (unorm) e t-Student incondicional (ut). 
+(Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+
+tab6 <- xtable(vartest.tbl[,-1], 
                caption = cap,
                digits = 2,
                label = "tab:vartest",
@@ -606,6 +620,25 @@ print.xtable(tab6,
              sanitize.text.function = function(x) {x},
              include.rownames = FALSE,
              tabular.environment="longtable")
+
+# Xtable vartest_suma
+cap <- paste("Sumário para o número de rejeições das hipóteses nulas de um modelo 
+corretamente especificado. De seis índices com dois testes, resulta em um total 
+de doze rejeições possíveis. (Período fora da amostra entre", 
+             format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+
+tab7 <- xtable(vartest_suma, 
+               caption = cap,
+               digits = 2,
+               label = "tab:vartest_suma",
+               auto = TRUE)
+print.xtable(tab7, 
+             file = "./tables/artigo-tab-vartest_suma.tex",
+             caption.placement = "top",
+             table.placement = "H",
+             sanitize.colnames.function = function(x) {x},
+             sanitize.text.function = function(x) {x},
+             include.rownames = FALSE)
 ###### Teste da funcao var_test
 # teste_risk <- os_risk.tbl %>% 
 #   subset(subset = (indice == "IPSA" & model_type == "cevt" & coverage == 0.01)) %>% 
