@@ -87,11 +87,19 @@ df.descritivas$stat_name <- c("Média", "Mediana", "Máximo", "Mínimo", "Desvp"
 colnames(df.descritivas)[1] <- "Descritivas"
 
 # Cria o xtable
+ncol_x <- ncol(df.descritivas) + 1
+m5 <- matrix(rep(5, ncol_x*7), nrow = 7)
+jb <- rep(2, ncol_x)
+p <- rep(5, ncol_x)
+q <- rep(4, ncol_x)
+q2 <- jb
+obs <- rep(0, ncol_x)
+digits <- rbind(m5, jb, p, q, p, q2, p, obs)
 cap <- paste("Estatísticas descritivas dos retornos (amostra completa de",
            format(start+1, "%d/%m/%Y"), "a 30/08/2017).")
 tab1 <- xtable(df.descritivas, 
                caption = cap,
-               digits = 5,
+               digits = digits,
                label = "tab:descritivas",
                auto = TRUE)
 print.xtable(tab1, 
@@ -203,7 +211,8 @@ garch.models.par$stat_name <- c("$\\mu$", "",
 colnames(garch.models.par)[1] <- "Parâmetros"
 # Xtable
 cap <- paste("Par\\^ametros estimados do modelo eGARCH. Valores p apresentados de acordo 
-com erros padrão robustos. (Período dentro da amostra entre",
+com erros padrão robustos e valores menores que 0,01 não são mostrados. (Período 
+             dentro da amostra entre",
              format(start+1, "%d/%m/%Y"), "a",
              format(end, "%d/%m/%Y"), ").")
 tab2 <- xtable(garch.models.par, 
@@ -580,6 +589,8 @@ vartest.tbl <- os_risk.tbl %>%
   unnest() %>% 
   mutate(dur.LR = 2*(uLL - rLL)) %>% 
   select(id_name, coverage, model_type, uc.LRstat, uc.LRp, dur.LR, LRp) %>% 
+  mutate(uc.LRp = ifelse(uc.LRp > 0.05, NA_real_, uc.LRp),
+         LRp = ifelse(LRp > 0.05, NA_real_, LRp)) %>% 
   gather(key = stat_name, value = stat_value, -c(id_name, coverage, model_type), factor_key = TRUE) %>% 
   spread(key = id_name, value = stat_value)
 levels(vartest.tbl$stat_name) <- c("LRuc", "LRuc p-valor", "LRdur", "LRdur p-valor")
@@ -588,7 +599,7 @@ vartest_suma <- vartest.tbl %>%
   dplyr::filter(str_detect(stat_name, "p-valor")) %>% 
   gather(key = indice, value = p_valor, -c(coverage, model_type, stat_name)) %>% 
   group_by(coverage, model_type) %>% 
-  summarise(n = sum(p_valor <= 0.05)) %>% 
+  summarise(n = sum(p_valor <= 0.05, na.rm = TRUE)) %>% 
   spread(key = coverage, value = n)
 
 colnames(vartest_suma) <- c("Modelo", "Cobertura 1\\%", "Cobertura 2.5\\%")
@@ -604,8 +615,8 @@ vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura 2.5\\%",
 cap <- paste("Testes estatísticos para o VaR. Teste incondicional de Kupiec, \\emph{LRuc}, e teste de
              independência por duração de Christoffersen e Pelletier, \\emph{LRdur}. Os modelos testados
 são: EVT condicional (cevt), Normal condicional (cnorm), t-Student condicional (ct), Riskmetrics 
-(riskmetrics), EVT incondicioanl (uevt), Normal incondicional (unorm) e t-Student incondicional (ut). 
-(Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+(riskmetrics), EVT incondicioanl (uevt), Normal incondicional (unorm) e t-Student incondicional (ut).
+Valores p maiores que 0,05 foram omitidos. (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
 
 tab6 <- xtable(vartest.tbl[,-1], 
                caption = cap,
@@ -654,15 +665,84 @@ teste_varplot <- os_risk.tbl %>%
 VaRplot(teste_varplot$coverage, -teste_varplot$real[[1]], -teste_varplot$VaR.xts[[1]])
 
 ## MCS para os VaR atraves da funcao VaRLoss
-mcs.tbl <- os_risk.tbl %>% 
+# significancia a 5% 
+# a sequencia dos modelos eh igual a variavel "models"
+mcs_test <- os_risk.tbl %>% 
   left_join(realized, by = "indice") %>% 
   transmute(indice = indice,
+            id_name = id_name,
             model_type = model_type,
             coverage = coverage,
             VaRloss = pmap(., ~VaRloss(..4, -coredata(..7), -coredata(..5)))) %>% # Troca o sinal!!
-  group_by(indice, coverage) %>% 
+  group_by(indice, id_name, coverage) %>% 
   summarise(loss_matrix = list(do.call(cbind, VaRloss))) %>% 
-  mutate(mcs_test = map2(loss_matrix, coverage, ~mcsTest(.x, .y)))
+  mutate(mcs_test = map(loss_matrix, ~mcsTest(.x, alpha = 0.05, nboot = 1000))) %>% 
+  ungroup()
+
+models_look <- tibble(num = as.numeric(1:7), models = models)
+mcs.tbl <- mcs_test %>%
+  transmute(id_name = id_name,
+            coverage = coverage,
+            mcs_test = mcs_test) %>% 
+  mutate(pvals = map(mcs_test, ~.x$pvalsR),
+         num = map(mcs_test, ~c(.x$excludedR, .x$includedR)),
+         mcs_test = NULL) %>% 
+  unnest() %>% 
+  left_join(models_look, by = "num") %>% 
+  select(coverage, models, id_name, pvals) %>% 
+  spread(key = id_name, value = pvals)
+colnames(mcs.tbl)[2] <- "Modelo"
+
+# Sumario de exclusoes
+mcs_suma <- mcs.tbl %>%
+  gather(key = id_name, value = pvals, -c(coverage, Modelo)) %>% 
+  group_by(Modelo, coverage) %>% 
+  summarise(excl = sum(pvals < 0.05)) %>% 
+  spread(key = coverage, value = excl)
+colnames(mcs_suma) <- c("Modelo", "Cobertura 1\\%", "Cobertura 2.5\\%")
+
+# Monta as tabelas para o Xtable
+mcs.tbl <- add_row(mcs.tbl, Modelo = "Cobertura 1\\%", 
+                       .before = 1)
+mcs.tbl <- add_row(mcs.tbl, Modelo = "Cobertura 2.5\\%",
+                       .after = ceiling(dim(mcs.tbl)[1]/2))
+
+# Xtable mcs.tbl
+cap <- paste("Teste MCS de Hansen et al. Apresentados os valores p para cada um dos modelos
+             dado um nível de cobertura do VaR e índices. Um valor p abaixo do nível de significância
+             exclui o modelo do conjunto superior. (Período fora da amostra entre", 
+             format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+
+tab8 <- xtable(mcs.tbl[,-1], 
+               caption = cap,
+               digits = 2,
+               label = "tab:mcs",
+               auto = TRUE)
+print.xtable(tab8, 
+             file = "./tables/artigo-tab-mcs.tex",
+             caption.placement = "top",
+             table.placement = "H",
+             sanitize.colnames.function = NULL,
+             sanitize.text.function = function(x) {x},
+             include.rownames = FALSE)
+
+# Xtable mcs_suma
+cap <- paste("Sumário com as exclusões do conjunto de modelos superiores no teste MCS.
+             Os modelos condicionais se revelam aqueles com o menor número de exclusões. 
+             (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+
+tab9 <- xtable(mcs_suma, 
+               caption = cap,
+               digits = 2,
+               label = "tab:mcs_suma",
+               auto = TRUE)
+print.xtable(tab9, 
+             file = "./tables/artigo-tab-mcs_suma.tex",
+             caption.placement = "top",
+             table.placement = "H",
+             sanitize.colnames.function = function(x) {x},
+             sanitize.text.function = function(x) {x},
+             include.rownames = FALSE)
 
 # Testes estatisticos para o ES -------------------------------------------
 # ATENCAO!! Este teste so faz sentido ser realizados apos os teste de VaR

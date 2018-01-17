@@ -742,14 +742,13 @@
 }
 
 @Book{McNeil2015,
-  Title                    = {{Quantitative risk management: concepts, techniques and tool}},
-  Author                   = {McNeil, Alexander J and Frey, R{\"{u}}diger and Embrechts, Paul},
-  Publisher                = {Princeton University Press},
-  Year                     = {2015},
-  Edition                  = {Revised Ed},
-
-  Keywords                 = {TCC,livro-texto},
-  Mendeley-tags            = {TCC,livro-texto}
+  title         = {{Quantitative risk management: concepts, techniques and tools}},
+  publisher     = {Princeton University Press},
+  year          = {2015},
+  author        = {McNeil, Alexander J and Frey, R{\"{u}}diger and Embrechts, Paul},
+  edition       = {Revised Ed},
+  keywords      = {TCC,livro-texto},
+  mendeley-tags = {TCC,livro-texto},
 }
 
 @Book{Mishkin2013,
@@ -1253,16 +1252,6 @@
   owner     = {rafael},
   publisher = {Taylor \& Francis},
   timestamp = {2017.11.03},
-}
-
-@Book{McNeil2015a,
-  title     = {Quantitative risk management: concepts, techniques and tools},
-  publisher = {Princeton University Press},
-  year      = {2015},
-  author    = {McNeil, Alexander J. and Frey, Rudiger and Embrechts, Paul},
-  edition   = {Revised Edition},
-  owner     = {rafael},
-  timestamp = {2017.11.04},
 }
 
 @Article{Nadarajah2014,

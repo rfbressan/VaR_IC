@@ -3,46 +3,51 @@ Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: projeto_artigo.aux
 The style file: model5-names.bst
 Database file #1: library.bib
+Warning--I didn't find a database entry for "BCBS2011"
+Warning--I didn't find a database entry for "BCBS2013"
+Warning--I didn't find a database entry for "BCBS2014"
+Warning--I didn't find a database entry for "BCBS2013a"
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
-You've used 20 entries,
+You've used 16 entries,
             3390 wiz_defined-function locations,
-            831 strings with 8424 characters,
-and the built_in function-call counts, 11806 in all, are:
-= -- 929
-> -- 357
-< -- 19
-+ -- 249
-- -- 102
-* -- 1197
-:= -- 1648
-add.period$ -- 71
-call.type$ -- 20
-change.case$ -- 134
-chr.to.int$ -- 28
-cite$ -- 20
-duplicate$ -- 921
-empty$ -- 932
-format.name$ -- 146
-if$ -- 2225
-int.to.chr$ -- 2
+            817 strings with 7911 characters,
+and the built_in function-call counts, 10166 in all, are:
+= -- 797
+> -- 317
+< -- 15
++ -- 232
+- -- 90
+* -- 1065
+:= -- 1384
+add.period$ -- 59
+call.type$ -- 16
+change.case$ -- 110
+chr.to.int$ -- 25
+cite$ -- 16
+duplicate$ -- 781
+empty$ -- 800
+format.name$ -- 130
+if$ -- 1921
+int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 164
-newline$ -- 119
-num.names$ -- 80
-pop$ -- 375
+missing$ -- 144
+newline$ -- 99
+num.names$ -- 64
+pop$ -- 315
 preamble$ -- 1
-purify$ -- 114
+purify$ -- 94
 quote$ -- 0
-skip$ -- 327
+skip$ -- 274
 stack$ -- 0
-substring$ -- 472
-swap$ -- 601
+substring$ -- 428
+swap$ -- 535
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 168
+type$ -- 132
 warning$ -- 0
-while$ -- 83
+while$ -- 71
 width$ -- 0
-write$ -- 301
+write$ -- 249
+(There were 4 warnings)

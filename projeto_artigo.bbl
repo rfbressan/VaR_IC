@@ -1,4 +1,4 @@
-\begin{thebibliography}{20}
+\begin{thebibliography}{16}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -43,31 +43,6 @@
 \newblock {\it \bibinfo{journal}{The Annals of Probability}\/},  {\it
   \bibinfo{volume}{2}\/}, \bibinfo{pages}{792--804}.
   \DOIprefix\doi{10.1214/aop/1176996548}.
-%Type = Misc
-\bibitem[{on~Banking~Supervision(2011)}]{BCBS2011}
-\bibinfo{author}{on~Banking~Supervision, B.~C.} (\bibinfo{year}{2011}).
-\newblock \bibinfo{title}{{Basel III: A global regulatory framework for more
-  resilient banks and banking systems}}.
-\newblock \URLprefix \url{http://www.bis.org/publ/bcbs189.pdf}.
-%Type = Misc
-\bibitem[{on~Banking~Supervision(2013{\natexlab{a}})}]{BCBS2013}
-\bibinfo{author}{on~Banking~Supervision, B.~C.}
-  (\bibinfo{year}{2013}{\natexlab{a}}).
-\newblock \bibinfo{title}{{Basel III: The liquidity coverage ratio and
-  liquidity risk monitoring tools}}.
-\newblock \URLprefix \url{http://www.bis.org/publ/bcbs238.pdf}.
-%Type = Misc
-\bibitem[{on~Banking~Supervision(2013{\natexlab{b}})}]{BCBS2013a}
-\bibinfo{author}{on~Banking~Supervision, B.~C.}
-  (\bibinfo{year}{2013}{\natexlab{b}}).
-\newblock \bibinfo{title}{{Fundamental review of the trading book: A revised
-  market risk framework}}.
-\newblock \URLprefix \url{http://www.bis.org/publ/bcbs265.pdf}.
-%Type = Misc
-\bibitem[{on~Banking~Supervision(2014)}]{BCBS2014}
-\bibinfo{author}{on~Banking~Supervision, B.~C.} (\bibinfo{year}{2014}).
-\newblock \bibinfo{title}{{Basel III: The net stable funding ratio}}.
-\newblock \URLprefix \url{http://www.bis.org/bcbs/publ/d295.pdf}.
 %Type = Article
 \bibitem[{Bollerslev(1986)}]{Bollerslev1986}
 \bibinfo{author}{Bollerslev, T.} (\bibinfo{year}{1986}).
@@ -138,7 +113,7 @@
 \bibinfo{author}{McNeil, A.~J.}, \bibinfo{author}{Frey, R.}, \&
   \bibinfo{author}{Embrechts, P.} (\bibinfo{year}{2015}).
 \newblock {\it \bibinfo{title}{{Quantitative risk management: concepts,
-  techniques and tool}}\/}.
+  techniques and tools}}\/}.
 \newblock (\bibinfo{edition}{Revised ed} ed.).
 \newblock \bibinfo{publisher}{Princeton University Press}.
 %Type = Article
