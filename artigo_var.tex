@@ -1,4 +1,4 @@
-\documentclass[1p]{elsarticle}
+\documentclass[review]{elsarticle}
 
 \usepackage{lineno,hyperref}
 \modulolinenumbers[5]
@@ -61,10 +61,11 @@
 \usepackage{tabularx} 					% Para poder ter tabelas com colunas de largura auto-ajustável
 \usepackage{afterpage} 					% Para executar um comando depois do fim da página corrente
 \usepackage{url} 						% Para formatar URLs (endereços da Web)
-\usepackage{todonotes}  		% Lista de afazeres To-dos
+\usepackage{todonotes}  				% Lista de afazeres To-dos
 \usepackage{enumitem}					% Fazer enumerações por letras ou números nos itens
 \usepackage{float}
 \usepackage{longtable}					% Tabelas que se estendem por mais de uma página
+\usepackage{booktabs}					% Tabelas com multicolunas
 
 % Configura o ambiente de teoremas, definições etc.
 
@@ -83,7 +84,9 @@
 
 \begin{frontmatter}
 
-\title{Medidas condicionais de risco através da teoria do valor extremo}%\tnoteref{mytitlenote}}
+\title{Medida de valor em risco através da teoria do valor extremo:\\comparativo contra outras abordagens}
+
+%\title{Medidas condicionais de risco através da teoria do valor extremo}%\tnoteref{mytitlenote}}
 %\tnotetext[mytitlenote]{Fully documented templates are available in the elsarticle package on \href{http://www.ctan.org/tex-archive/macros/latex/contrib/elsarticle}{CTAN}.}
 
 %% Group authors per affiliation:
@@ -100,7 +103,7 @@
 
 \author[mymainaddress]{Rafael Felipe Bressan\corref{mycorrespondingauthor}\fnref{myfootnote}}
 \cortext[mycorrespondingauthor]{Autor para correspondência}
-\ead{rafael.bressan@edu.udesc.br}
+\ead{rfbressan@gmail.com}
 \fntext[myfootnote]{Depto. de Economia/Esag/UDESC}
 %
 \author[mymainaddress]{Daniel Augusto de Souza\fnref{myfootnote}}
@@ -109,7 +112,7 @@
 %\address[mysecondaryaddress]{360 Park Avenue South, New York}
 
 \begin{abstract}
-This template helps you to create a properly formatted \LaTeX\ manuscript.
+	Este trabalho avalia sete modelos univariados de estimação de Valor em Risco - VaR para seis índices de ações das Américas. Modelos condicionais e incondicionais são testados em um período fora da amostra abrigando mais de noves anos de observações diárias. A partir de três procedimentos de avaliação, cobertura incondicional, teste de independência de violações e conjunto de confiança de modelos, os melhores resultados são apresentados pelo modelo EVT condicional, o qual leva em conta o regime variável nas volatilidades das perdas assim como a cauda mais longa, através da teoria do valor extremo.
 \end{abstract}
 
 \begin{keyword}
@@ -123,7 +126,7 @@ This template helps you to create a properly formatted \LaTeX\ manuscript.
 
 \section{Introdução}
 
-A medição do risco de mercado ao qual os portfólios dos investidores está sujeito é objeto de devoção de esforços tanto por parte das instituições e investidores em geral como por parte dos reguladores. Instituições financeiras em todo o mundo, de acordo com suas regulações locais e com os princípios de Basileia (\emph{Basel Comittee on Banking Supervision} - BCBS do Banco de Compensações Internacionais - BIS\footnote{http://www.bis.org/bcbs/index.htm?m=3\%7C14}) para aquelas que o seguem,o Brasil é um desses países, são obrigadas a reservar uma parcela de seu capital como provisionamento contra flutuações adversas do mercado em seus portfólios de investimento, como forma de mitigar seu risco de insolvência.
+A medição do risco de mercado ao qual os portfólios dos investidores está sujeito é objeto de devoção de esforços tanto por parte das instituições e investidores em geral como por parte dos reguladores. Instituições financeiras em todo o mundo, de acordo com suas regulações locais e com os princípios de Basileia (\emph{Basel Comittee on Banking Supervision} - BCBS do Banco de Compensações Internacionais - BIS) para aquelas que o seguem, o Brasil é um desses países, são obrigadas a reservar uma parcela de seu capital como provisionamento contra flutuações adversas do mercado em seus portfólios de investimento, como forma de mitigar seu risco de insolvência.
 
 Instituições financeiras - IF - devem manter seu risco de insolvência controlado, e a percepção externa deve ser tal que não haja desconfiança do público em geral com a habilidade da instituição em controlar este risco. Confiança é a palavra chave destas instituições e portanto, também aos reguladores. Se a confiança se esvai e a percepção de risco é elevada, rapidamente uma crise de liquidez pode surgir, com depositantes sacando seus recursos e outras fontes de \emph{funding} também sendo limitadas. Em tal situação, é natural o banco ou IF em geral, buscar o mercado para vender seus ativos e levantar os recursos necessários. É nesse momento que uma crise de liquidez pode levar a uma crise de solvência, não há garantias que no mercado aberto, os ativos do banco serão justamente avaliados e arrematados. A crise financeira de 2008 e 2009 ainda está na memória dos agentes.
 
@@ -505,7 +508,7 @@ Na figura \ref{fig:artigo-gpdfit} é possível visualizar os gráficos de ajuste
 
 A avaliação dos modelos aqui referidos concentra-se em testar através de \emph{backtest} o modelo EVT condicional apresentado, o qual utiliza a metodologia em dois estágios proposta por \cite{McNeil2000} com um filtro eGARCH(2,1) e o método POT, assim como outros modelos para a estimação do VaR, como o Normal e t-Student condicionais, Normal e t-Student incondicionais, o modelo proposto por \cite{RiskMetrics1995} e o próprio modelo EVT incondicional, em um total de sete modelos sendo testados e comparados para fins de estimação da medida de risco. As definições destes modelos e suas formas de implementação estão descritas no \ref{apendice}.
 
-Para fazer o \emph{backtest}, considere a série $x_1, x_2, \ldots, x_m$, com $m\gg n$ e o conjunto de dias $T = \{n, \ldots, m-1\}$. Uma janela da dados de tamanho fixo $n$ é utilizada e para cada dia $t \in T$ é reestimado o valor de $VaR^t_\alpha$. O período de teste fora da amostra vai de 01/01/2009 a 30/08/2017, com dados diários para as perdas dos índices sob análise. O número de observações ($n$) dentro da janela de dados utilizada para fazer a estimação dos modelos para cada um dos índices é aquele apresentado na tabela \ref{tab:evtcoef} (N.obs.), esse valor é fixo para cada série. Portanto, a partir do início do período de teste, esta janela fixa avança um dia e o modelo é estimado, resultando, com auxílio da equação \eqref{eq:varcond}, no valor estimado de $VaR_\alpha^t$, ou seja, a medida de risco calculada ao final do dia $t$ que deverá ser comparada a perda incorrida no dia a frente, $t+1$.
+Para fazer o \emph{backtest}, considere a série $x_1, x_2, \ldots, x_m$, com $m\gg n$ e o conjunto de dias $T = \{n, \ldots, m-1\}$. Uma janela da dados de tamanho fixo contendo as últimas $n$ observações é utilizada e para cada dia $t \in T$ é reestimado o valor de $VaR^t_\alpha$. O período de teste fora da amostra vai de 01/01/2009 a 30/08/2017, com dados diários para as perdas dos índices sob análise. O número de observações ($n$) dentro da janela de dados utilizada para fazer a estimação dos modelos para cada um dos índices é aquele apresentado na tabela \ref{tab:evtcoef} (N.obs.), esse valor é fixo para cada série. Portanto, a partir do início do período de teste, esta janela fixa avança um dia e o modelo é estimado, resultando, com auxílio da equação \eqref{eq:varcond}, no valor estimado de $VaR_\alpha^t$, ou seja, a medida de risco calculada ao final do dia $t$ que deverá ser comparada a perda incorrida no dia a frente, $t+1$.
 
 O quantil para a definição do limiar \emph{u} é fixo em 0,92, o que resultará em valores distintos de limiar para cada rodada do teste, e possivelmente um número diferente de excessos observados. Entretanto essas diferenças, considerando o tamanho fixo da janela de dados, será muito pequeno em torno de uma unidade apenas. Mantém-se assim, um número de excessos em torno de 120 observações, valor adequado para se fazer as estimativas dos parâmetros da GPD.
 
@@ -518,7 +521,9 @@ A figura \ref{fig:artigo-sp500backtest} apresenta o resultado do \emph{backtest}
 	\label{fig:artigo-sp500backtest}
 \end{figure}
 
-Uma violação é dita ocorrida quando a perda observada é maior que a medida de risco estimada no dia anterior, $x_{t+1}>VaR^t_\alpha$ para um $\alpha$ dentro do conjunto de níveis de significância, neste artigo $\alpha \in \{0,975; 0,990\}$. A tabela \ref{tab:varviol} apresenta em termos percentuais as violações ocorridas para cada um dos modelos para os níveis de cobertura dados.
+Uma violação é dita ocorrida quando a perda observada é maior que a medida de risco estimada no dia anterior, $x_{t+1}>VaR^t_\alpha$ para um $\alpha$ dentro do conjunto de níveis de significância, neste artigo $\alpha \in \{0,975; 0,990\}$. A tabela \ref{tab:varviol} apresenta em termos percentuais as violações ocorridas para cada um dos modelos para os níveis de cobertura dados. Os modelos condicionais apresentaram uma tendência a subestimação do risco, com um número superior de violações ao esperado. Os modelos incondicionais, ao contrário, superestimam o risco e apresentam tendência a um número menor de violações. Dentre os modelos estimados o EVT condicional apresentou os percentuais de violações mais próximos ao valor esperado.
+
+\input{tables/artigo-tab-varviol}
 
 \subsection{Testes estatísticos}
 \label{sec:testes}
@@ -526,13 +531,11 @@ Uma violação é dita ocorrida quando a perda observada é maior que a medida d
 Pode ser realizado um teste estatístico para verificar se o modelo para $VaR_\alpha$ foi corretamente especificado, levando-se em consideração o seu nível de cobertura, $1-\alpha$. Em \cite{Kupiec1995}, este tipo de teste é apresentado. Este permite que seja testado se a frequência de violações ao VaR é consistente com o valor esperado destas violações, o nível de cobertura. Sob a hipótese nula de um modelo corretamente especificado o número de violações segue uma distribuição binomial e o teste toma a forma de razão de verossimilhança com a seguinte estatística:
 
 \begin{equation}
-	LR_{uc}=-2\ln\left(\frac{(1-p)^{n-X}p^X}{(1-\frac{X}{n})^{n-X}(\frac{X}{n})^X}\right)
+	LR_{uc}=-2\ln\left(\frac{(1-p)^{N-X}p^X}{(1-\frac{X}{N})^{N-X}(\frac{X}{N})^X}\right)
 \end{equation}
-onde $p$ é o nível de cobertura, $n$ é o número de observações do período fora da amostra e $X$ neste caso é o número de violações ocorridas.
+onde $p$ é o nível de cobertura, $N$ é o número de observações do período fora da amostra e $X$ neste caso é o número de violações ocorridas.
 
-Este teste não faz nenhum tipo de assunção, e por conseguinte não testa, a hipótese de independência entre as violações, sendo considerado um teste \emph{incondicional} para o VaR.
-
-\input{tables/artigo-tab-varviol}
+Este teste não faz nenhum tipo de assunção, e por conseguinte não testa, a hipótese de independência entre as violações, sendo considerado um teste de cobertura \emph{incondicional} para o VaR.
 
 Um teste condicional é aquele proposto, entre outros, por \cite{Christoffersen2004}. A hipótese de independência entre as violações está relacionada a duração entre as observações destas. O tempo que se passa entre uma violação e outra deve ser independente e não formar agrupamentos (\emph{clusters}). Sob a hipótese nula de um modelo corretamente especificado, esta duração não deve possuir memória. Como a única distribuição contínua que não possui memória é a distribuição exponencial, os autores propõe ajustar os dados a uma distribuição Weibull da qual a exponencial é um caso particular quando o parâmetro $b=1$ e, portanto, o teste é feito sobre este parâmetro. O teste de duração de Christoffersen é feito sob a forma de razão de verossimilhança, sendo a função densidade de uma Weibull:
 
@@ -550,7 +553,7 @@ Nota-se que este teste é destinado apenas a verificação da hipótese de indep
 
 Inspecionando a tabela \ref{tab:vartest} verifica-se como o modelo EVT condicional, especialmente para o nível de cobertura a 1\% é superior aos demais, prevalecendo como o único modelo a não rejeitar a hipótese nula a 95\% de confiança para o teste de cobertura incondicional e apenas para o índice S\&P500 este modelo obteve resultado no limiar da rejeição da hipótese nula para o teste de independência.
 
-A tabela \ref{tab:vartest_suma} apresenta um sumário contendo a quantidade de rejeições da hipótese nula de um modelo corretamente especificado para os valores de cobertura. Realizados dois testes, cobertura incondicional e independência, para cada um dos seis índices investigados, tem-se um total de doze testes por modelo. Verifica-se que, de fato, o modelo \emph{cevt} - EVT condicional é aquele que apresenta o menor número de rejeições.
+A tabela \ref{tab:vartest_suma} apresenta um sumário contendo a quantidade de rejeições da hipótese nula de um modelo corretamente especificado para os valores de cobertura de cada um dos testes. Verifica-se que, de fato, o modelo EVT condicional (\emph{cevt}) é aquele que apresenta o menor número de rejeições. Os modelos condicionais apresentam bons resultados no teste de independência (LRdur) em claro contraste com os modelos incondicionais. Para o teste de cobertura incondicional (LRuc), os resultados são menos evidentes, entretanto o modelo EVT condicional novamente se sobressai.
 
 \input{tables/artigo-tab-vartest_suma}
 
@@ -577,9 +580,13 @@ Os valores p, que podem ser utilizados para o ranqueamento dos modelos, com o me
 Já a tabela \ref{tab:mcs_suma} apresenta um sumário com a contagem das exclusões do conjunto superior para cada um dos modelos. Percebe-se claramente que os modelos condicionais são aqueles que são excluídos do conjunto um menor número de vezes, entendo-se portanto, serem modelos mais adequados para a estimação de valor em risco.
 
 \section{Conclusão}
-\todo{Conclusão}
 
-\todo{Padronizar notação para série de retorno $x_t$.}
+Este artigo tratou de estimar e comparar sete modelos de VaR para seis índices de ações em mercados das Américas. Modelos condicionais e incondicionais foram estudados e comparados com base em três tipos de diferentes teste. Especial ênfase foi dada ao modelo EVT condicional o qual se utiliza da teoria do valor extremo para chegar ao resultado da medida de risco. Ao confrontar o número de violações ao VaR contra seus níveis de cobertura, encontrou-se que os modelos condicionais apresentaram uma tendência a subestimação do risco, com um número superior de violações ao esperado. Os modelos incondicionais, ao contrário, superestimam o risco e apresentam tendência a um número menor de violações. Dentre os modelos estimados o EVT condicional apresentou os percentuais de violações mais próximos ao valor esperado.
+
+Nos testes estatísticos de cobertura incondicional e independência, a superioridade do modelo EVT condicional se apresenta de forma mais concreta. Este modelo apresentou apenas uma rejeição a hipótese nula da correta especificação para o teste de Kupiec para o índice S\&P500 ao nível de confiança de 95\%. Modelos condicionais, como esperado, apresentam um comportamento que levam a uma melhor performance no teste de independência, não apresentando agrupamentos de violações, porém esta performance não se repete ao teste de cobertura incondicional, salvo o modelo EVT condicional.
+
+Aplicando a metodologia de conjunto de confiança de modelos, este modelo se mostra novamente de forma destacada. Ao nível de cobertura de 1\% é o melhor modelo (no sentido que é aquele com p-valor igual a 1) para todos os índices analisados. Quando verificado o número de exclusões do conjunto superior, apenas os modelos EVT e normal condicionais não foram excluídos em nenhuma ocasião.
+\todo{Conclusão. Analisar as implicações de o melhor modelo ser condicional}
 
 \todo{Descrever os modelos utilizados no apêndice}
 

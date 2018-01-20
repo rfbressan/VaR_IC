@@ -24,6 +24,7 @@ if(length(new.packages)) install.packages(new.packages)
 library(tidyverse)
 library(broom)
 library(gridExtra)
+library(kableExtra)
 library(xtable)
 library(WeightedPortTest)
 #library(CADFtest) # Teste Dickey-Fuller
@@ -39,6 +40,9 @@ start <- as.Date("2002-12-31")
 end <- as.Date("2008-12-31")
 backstart <- end + 1
 u_quant <- 0.92 # quantile for treshold u
+options(xtable.booktabs = TRUE) # utilizar o pacote booktabs no Latex
+options(xtable.tabular.environment = "longtable") # Utiliza o pacote longtable no Latex
+options(xtable.floating = FALSE) # Nao pode ser utilizado em conjunto com longtable
 
 list.returns <- function(asset, start) {
   tb <- read_csv(paste0("./input/artigo-", asset, ".csv"), 
@@ -598,11 +602,14 @@ levels(vartest.tbl$stat_name) <- c("LRuc", "LRuc p-valor", "LRdur", "LRdur p-val
 vartest_suma <- vartest.tbl %>% 
   dplyr::filter(str_detect(stat_name, "p-valor")) %>% 
   gather(key = indice, value = p_valor, -c(coverage, model_type, stat_name)) %>% 
-  group_by(coverage, model_type) %>% 
+  group_by(coverage, model_type, stat_name) %>% 
   summarise(n = sum(p_valor <= 0.05, na.rm = TRUE)) %>% 
-  spread(key = coverage, value = n)
+  ungroup() %>% 
+  mutate(cov_test = paste0(as.character(coverage), stat_name)) %>% 
+  select(-c(coverage, stat_name)) %>% 
+  spread(key = cov_test, value = n)
 
-colnames(vartest_suma) <- c("Modelo", "Cobertura 1\\%", "Cobertura 2.5\\%")
+colnames(vartest_suma) <- c("Modelo", "LRdur", "LRuc", "LRdur", "LRuc")
 colnames(vartest.tbl)[2:3] <- c("Modelo", "Estatística")
   
 # Monta as tabelas para o Xtable
@@ -634,22 +641,31 @@ print.xtable(tab6,
 
 # Xtable vartest_suma
 cap <- paste("Sumário para o número de rejeições das hipóteses nulas de um modelo 
-corretamente especificado. De seis índices com dois testes, resulta em um total 
-de doze rejeições possíveis. (Período fora da amostra entre", 
-             format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+corretamente especificado. Nível de confiança a 95\\%. De seis índices com 
+dois testes, resulta em um total de doze rejeições possíveis. 
+(Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
 
-tab7 <- xtable(vartest_suma, 
-               caption = cap,
-               digits = 2,
-               label = "tab:vartest_suma",
-               auto = TRUE)
-print.xtable(tab7, 
-             file = "./tables/artigo-tab-vartest_suma.tex",
-             caption.placement = "top",
-             table.placement = "H",
-             sanitize.colnames.function = function(x) {x},
-             sanitize.text.function = function(x) {x},
-             include.rownames = FALSE)
+suma_tex <- knitr::kable(vartest_suma, 
+                         format = "latex", 
+                         booktabs = TRUE, 
+                         caption = cap, 
+                         align = "c") %>% 
+  add_header_above(c("", "Cobertura 1%" = 2, "Cobertura 2.5%" = 2)) %>% 
+  kable_styling(latex_options = "HOLD_position")
+write(suma_tex, "./tables/artigo-tab-vartest_suma.tex")
+
+# tab7 <- xtable(vartest_suma, 
+#                caption = cap,
+#                digits = 2,
+#                label = "tab:vartest_suma",
+#                auto = TRUE)
+# print.xtable(tab7, 
+#              file = "./tables/artigo-tab-vartest_suma.tex",
+#              caption.placement = "top",
+#              table.placement = "H",
+#              sanitize.colnames.function = function(x) {x},
+#              sanitize.text.function = function(x) {x},
+#              include.rownames = FALSE)
 ###### Teste da funcao var_test
 # teste_risk <- os_risk.tbl %>% 
 #   subset(subset = (indice == "IPSA" & model_type == "cevt" & coverage == 0.01)) %>% 

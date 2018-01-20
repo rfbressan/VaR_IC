@@ -1,22 +1,24 @@
-% latex table generated in R 3.4.3 by xtable 1.8-2 package
-% Wed Jan 17 17:18:48 2018
 \begin{table}[H]
+
+\caption{\label{tab:vartest_suma}Sumário para o número de rejeições das hipóteses nulas de um modelo 
+corretamente especificado. Nível de confiança a 95\%. De seis índices com 
+dois testes, resulta em um total de doze rejeições possíveis. 
+(Período fora da amostra entre 02/01/2009 e 30/08/2017).}
 \centering
-\caption{Sumário para o número de rejeições das hipóteses nulas de um modelo 
-corretamente especificado. De seis índices com dois testes, resulta em um total 
-de doze rejeições possíveis. (Período fora da amostra entre 02/01/2009 e 30/08/2017).} 
-\label{tab:vartest_suma}
-\begin{tabular}{lrr}
-  \hline
-Modelo & Cobertura 1\% & Cobertura 2.5\% \\ 
-  \hline
-cevt &   1 &   0 \\ 
-  cnorm &   5 &   4 \\ 
-  ct &   5 &   4 \\ 
-  riskmetrics &   7 &   7 \\ 
-  uevt &   5 &   8 \\ 
-  unorm &   7 &   9 \\ 
-  ut &   9 &  10 \\ 
-   \hline
+\begin{tabular}[t]{ccccc}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{2}{c}{Cobertura 1\%} & \multicolumn{2}{c}{Cobertura 2.5\%} \\
+\cmidrule(l{2pt}r{2pt}){2-3} \cmidrule(l{2pt}r{2pt}){4-5}
+Modelo & LRdur & LRuc & LRdur & LRuc\\
+\midrule
+cevt & 1 & 0 & 0 & 0\\
+cnorm & 0 & 5 & 0 & 4\\
+ct & 0 & 5 & 0 & 4\\
+riskmetrics & 1 & 6 & 1 & 6\\
+uevt & 4 & 1 & 6 & 2\\
+\addlinespace
+unorm & 5 & 2 & 6 & 3\\
+ut & 4 & 5 & 6 & 4\\
+\bottomrule
 \end{tabular}
 \end{table}
