@@ -513,8 +513,8 @@ format(object.size(os_risk.tbl), units = "Kb") # Verifica o tamanho do objeto
 cevt99 <- subset(os_risk.tbl, 
               subset = (indice == "GSPC" & model_type == "cevt" & coverage == 0.01),
               select = VaR.xts)$VaR.xts[[1]]
-unorm99 <- subset(os_risk.tbl, 
-                  subset = (indice == "GSPC" & model_type == "unorm" & coverage == 0.01),
+uevt99 <- subset(os_risk.tbl, 
+                  subset = (indice == "GSPC" & model_type == "uevt" & coverage == 0.01),
                   select = VaR.xts)$VaR.xts[[1]]
 real <- subset(realized,
                subset = indice == "GSPC",
@@ -524,16 +524,16 @@ plot(real,
      ylim = c(-0.1, 0.1),
      lwd = 1,
      grid.ticks.on = "years",
-     main = "S&P500 backtest")
+     main = "S&P500 EVT condicional vs incondicional")
 lines(cevt99, 
       col = "red",
       lty = "dotted")
 # Abre o arquivo PDF
-pdf(file = "./figs/artigo-sp500backtest.pdf",
+pdf(file = "./figs/artigo-sp500evt.pdf",
     width = 7,
     height = 7,
     colormodel = "grey")
-lines(unorm99,
+lines(uevt99,
       col = "darkgreen",
       lty = "dashed")
 dev.off() # fecha o arquivo pdf
