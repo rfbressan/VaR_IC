@@ -1,4 +1,4 @@
-\documentclass[review]{elsarticle}
+\documentclass[1p]{elsarticle}
 
 \usepackage{lineno,hyperref}
 \modulolinenumbers[5]
@@ -116,8 +116,7 @@
 \end{abstract}
 
 \begin{keyword}
-\texttt{elsarticle.cls}\sep \LaTeX\sep Elsevier \sep template
-\MSC[2010] 00-01\sep  99-00
+Value-at-Risk \sep Extreme Value Theory \sep Peaks over Threshold \sep Conditional EVT \sep GARCH models
 \end{keyword}
 
 \end{frontmatter}
@@ -599,8 +598,6 @@ O modelo EVT incondicional aqui proposto une estas duas abordagens, tornando-se 
 \end{figure}
 \todo{Encontrar um lugar para a figura do modelo EVT cond. vs incond.}
 
-\todo{Descrever os modelos utilizados no apêndice}
-
 \appendix
 \section{}
 \label{apendice}
@@ -608,38 +605,82 @@ O modelo EVT incondicional aqui proposto une estas duas abordagens, tornando-se 
 Apêndice descrevendo os modelos de estimação da medida de risco $VaR^t_\alpha$ utilizados neste artigo.
 
 \subsection{EVT condicional}
+\label{sec:appendix_cevt}
 
-O modelo EVT condicional (cevt) é o principal modelo analisado e descrito em detalhe na seção \ref{sec:caudas}. A medida de risco é calcula diariamente utilizando-se o método POT após a filtragem dos dados através de um modelo AR(1)-eGARCH(2,1). As previsões de média condicional, $\mu_{t+1}$ e desvio padrão condicional, $\sigma_{t+1}$ do modelo eGARCH são utilizados para calcular $VaR^t_\alpha$, conforme a equação \ref{eq:varcond}. O quantil $z_\alpha$ é aquele determinado pelo valor de $\alpha$ após a aplicação do método POT para parametrização da cauda da distribuição das inovações.
+O modelo EVT condicional (cevt) é o principal modelo analisado e descrito em detalhe na seção \ref{sec:caudas}. A medida de risco é calcula diariamente utilizando-se o método POT após a filtragem dos dados através de um modelo AR(1)-eGARCH(2,1). As previsões de média, $\mu_{t+1}$ e desvio padrão condicional, $\sigma_{t+1}$ do modelo eGARCH são utilizados para calcular $VaR^t_\alpha$, conforme a equação \ref{eq:varcond}. O quantil $z_\alpha$ é aquele determinado pelo valor de $\alpha$ após a aplicação do método POT para parametrização da cauda da distribuição das inovações e é calculado conforme a equação \eqref{eq:VaRGPD}, onde $z_\alpha$ toma o lugar de $VaR_\alpha$. O algoritmo deste modelo é o seguinte:
 
-\begin{equation*}
-VaR_\alpha^t=\mu_{t+1}+\sigma_{t+1}z_\alpha 
-\end{equation*}
+\begin{enumerate}
+	\item Filtro eGARCH
+	\begin{enumerate}[label*=\arabic*.]
+		\item Dada uma amostra de \emph{n} observações \{t-n+1, \ldots, t\}, estimar um modelo AR(1)-eGARCH(2,1);
+		\item salvar os valores previstos para $\mu_{t+1}$ e $\sigma_{t+1}$ e a série de resíduos padronizados, $\hat{Z}$;
+	\end{enumerate}
+
+	\item Aplicação da EVT
+	\begin{enumerate}[label*=\arabic*.]
+		\item Aplicar a equação \eqref{eq:VaRGPD} aos resíduos padronizados salvos e obter o valor estimado de $z_\alpha$;
+		\item Calcular $VaR^t_\alpha$ de acordo com a equação \eqref{eq:varcond}, $VaR_\alpha^t=\mu_{t+1}+\sigma_{t+1}z_\alpha$;
+	\end{enumerate}
+	\item Repetir os dois passos anteriores para cada $t \in T = \{n, \ldots, m-1\}$
+\end{enumerate}
 
 \subsection{Normal condicional}
 
-Neste modelo, Normal condicional (cnorm), o mesmo filtro AR(1)-eGARCH(2,1) é utilizado para obtenção das previsões $\mu_{t+1}$ e $\sigma_{t+1}$, porém o quantil $z_\alpha$ da equação \ref{eq:varcond} é substituído pelo valor adequado a uma distribuição normal com parâmetros de média e desvio padrão estimados a partir dos resíduos padronizados do filtro.
+Neste modelo, Normal condicional (cnorm), o mesmo filtro AR(1)-eGARCH(2,1) é utilizado para obtenção das previsões $\mu_{t+1}$ e $\sigma_{t+1}$, porém o quantil $z_\alpha$ da equação \ref{eq:varcond} é substituído pelo valor adequado de uma distribuição normal padrão, por exemplo para $\alpha = 99\%$, $z_\alpha = 2,326$. O restante do algoritmo segue conforme \ref{sec:appendix_cevt}.
 
 \subsection{t-Student condicional}
 
-Semelhante ao Normal condicional, o modelo t-Student condicional (ct) utiliza um quantil $z_\alpha$ oriundo de uma distribuição t-Student. O parâmetro de forma, além dá média e desvio padrão, são calculados a partir dos resíduos padronizados do filtro.
+Semelhante ao Normal condicional, o modelo t-Student condicional (ct) utiliza um quantil $z_\alpha$ oriundo de uma distribuição t-Student. O parâmetro de forma é calculado por máxima verossimilhança a partir dos resíduos padronizados do filtro. O restante do algoritmo segue conforme \ref{sec:appendix_cevt}.
 
 \subsection{Riskmetrics}
+\label{sec:appendix_riskmetrics}
 
-O modelo Riskmetrics (riskmetrics) é aquele encontrado em \cite{RiskMetrics1995}, com o parâmetro $\mu = 0$ e $\lambda = 0,94$, pois utiliza-se dados diários.
+O modelo Riskmetrics (riskmetrics) é aquele encontrado em \cite{RiskMetrics1995}, com o parâmetro $\mu = 0$ e $\lambda = 0,94$, pois utiliza-se dados diários. O modelo completo para média e desvio padrão condicionais é:
+
+\begin{align}
+	x_t=&\ \epsilon_t, \quad \epsilon_t|\mathcal{H}_{t-1} \sim N(0, \sigma^2_t)\\
+	\sigma^2_t=&\ (1-\lambda)\epsilon^2_{t-1}+\lambda \sigma^2_{t-1}
+\end{align}
+
+O algoritmo para seu cálculo, portanto, é direto. 
+
+\begin{enumerate}
+	\item Dada uma amostra de \emph{n} observações \{t-n+1, \ldots, t\}, estima-se um modelo GARCH(1,1) com parâmetros fixos, $\alpha=0,06$ e $\beta = 0,94$;
+	\item os valores $\mu_{t+1} = 0$ e $\sigma_{t+1}=\sqrt{(1-\lambda)\epsilon^2_{t}+\lambda \sigma^2_{t}}$, são salvos;
+	\item o valor de $z_\alpha$ vem da normal padrão para o valor de $\alpha$ sendo utilizado, por exemplo para $\alpha = 99\%$, $z_\alpha = 2,326$;
+	\item Calcular $VaR^t_\alpha$ de acordo com a equação \eqref{eq:varcond}, $VaR_\alpha^t=\mu_{t+1}+\sigma_{t+1}z_\alpha$;
+	\item Repetir os passos anteriores para cada $t \in T = \{n, \ldots, m-1\}$.
+\end{enumerate}
 
 \subsection{EVT incondicional}
+\label{sec:appendix_uevt}
 
 O modelo EVT incondicional (uevt) continua a fazer uso da metodologia POT para a parametrização da cauda da  distribuição dos resíduos padronizados oriundos do filtro. Entretanto, ao invés de utilizar a previsão mais recente para os valores de média e desvio padrão, ou seja, seus valores condicionais, são calculados a média e desvio padrão \textbf{incondicionais} do modelo AR(1)-eGARCH(2,1) e imputados na equação \ref{eq:varcond}.
 
-Este modelo também é chamado de EVT incondicional filtrada, pois, diferentemente de outras abordagens incondicionais para o método POT, ainda se faz uso do filtro em primeiro estágio, como uma forma de minimizar os problemas decorrentes de aplicar o dito método a dados que não sejam \emph{iid}. 
+Este modelo também é chamado de EVT incondicional filtrada, pois, diferentemente de outras abordagens incondicionais para o método POT, ainda se faz uso do filtro em primeiro estágio, como uma forma de minimizar os problemas decorrentes de aplicar o dito método a dados que não sejam \emph{iid}. O algoritmo de cálculo desta abordagem segue:
+
+\begin{enumerate}
+	\item Filtro eGARCH
+	\begin{enumerate}[label*=\arabic*.]
+		\item Dada uma amostra de \emph{n} observações \{t-n+1, \ldots, t\}, estimar um modelo AR(1)-eGARCH(2,1);
+		\item salvar os valores incondicionais de média e desvio padrão calculados como $\bar{\mu}$ e $\bar{\sigma}$ e a série de resíduos padronizados, $\hat{Z}$;
+	\end{enumerate}
+	
+	\item Aplicação da EVT
+	\begin{enumerate}[label*=\arabic*.]
+		\item Aplicar a equação \eqref{eq:VaRGPD} aos resíduos padronizados salvos e obter o valor estimado de $z_\alpha$;
+		\item Calcular $VaR^t_\alpha$ de acordo com a equação \eqref{eq:varcond}, $VaR_\alpha^t=\mu_{t+1}+\sigma_{t+1}z_\alpha$, onde $\mu_{t+1} = \bar{\mu}$ e $\sigma_{t+1} = \bar{\sigma}$;
+	\end{enumerate}
+	\item Repetir os dois passos anteriores para cada $t \in T = \{n, \ldots, m-1\}$.
+\end{enumerate}
 
 \subsection{Normal incondicional}
 
-O modelo Normal incondicional (unorm) não faz uso da filtragem em primeiro estágio, simplesmente ajustando a amostra de dados a uma distribuição normal da qual resultarão os valores de $\mu$ e $\sigma$ para o cálculo de $VaR^t_\alpha$. O quantil $z_\alpha$ é aquele previsto por uma normal padrão para o nível de cobertura desejado. 
+O modelo Normal incondicional (unorm) não faz uso da filtragem em primeiro estágio. Dada uma amostra de \emph{n} observações \{t-n+1, \ldots, t\}, simplesmente ajusta-se esta amostra de dados a uma distribuição normal através de máxima verossimilhança da qual resultarão os valores de $\mu$ e $\sigma$ para o cálculo de $VaR^t_\alpha=\mu+\sigma z_\alpha$. O quantil $z_\alpha$ é aquele previsto por uma normal padrão para o nível de cobertura desejado. 
 
 \subsection{t-Student incondicional}
 
-O modelo t-Student incondicional (ut) segue o mesmo procedimento que o modelo anterior, Normal incondicional. Apenas que os dados são ajustados a uma distribuição t-Student onde inclusive o parâmetro de forma é estimado.
+O modelo t-Student incondicional (ut) segue o mesmo procedimento que o modelo anterior, Normal incondicional. A única diferença é que os dados são ajustados a uma distribuição t-Student onde inclusive o parâmetro de forma é estimado e utilizado para obtenção do quantil $z_\alpha$.
 
 \section*{Referências}
 
