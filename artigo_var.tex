@@ -107,12 +107,13 @@
 \fntext[myfootnote]{Depto. de Economia/Esag/UDESC}
 %
 \author[mymainaddress]{Daniel Augusto de Souza\fnref{myfootnote}}
+\author[mymainaddress]{Adriano de Amarante\fnref{myfootnote}}
 
 \address[mymainaddress]{Avenida Madre Benvenuta, 2007 - Santa Mônica Florianópolis - SC 88035-901}
 %\address[mysecondaryaddress]{360 Park Avenue South, New York}
 
 \begin{abstract}
-	Este trabalho avalia sete modelos univariados de estimação de Valor em Risco - VaR para seis índices de ações das Américas. Modelos condicionais e incondicionais são testados em um período fora da amostra abrigando mais de noves anos de observações diárias. A partir de três procedimentos de avaliação, cobertura incondicional, teste de independência de violações e conjunto de confiança de modelos, os melhores resultados são apresentados pelo modelo EVT condicional, o qual leva em conta o regime variável nas volatilidades das perdas assim como a cauda mais longa, através da teoria do valor extremo.
+	Este trabalho avalia sete modelos univariados de estimação de valor em risco para seis índices de ações das Américas. Modelos condicionais e incondicionais são testados em um período fora da amostra abrigando mais de noves anos de observações diárias. A partir de três procedimentos de avaliação, cobertura incondicional, teste de independência de violações e conjunto de confiança de modelos, os melhores resultados são apresentados pelo modelo que une a teoria do valor extremo e modelagem condicional de variâncias heterocedásticas, o qual leva em conta o regime variável nas volatilidades das perdas assim como excesso de curtose.
 \end{abstract}
 
 \begin{keyword}
@@ -125,40 +126,40 @@ Value-at-Risk \sep Extreme Value Theory \sep Peaks over Threshold \sep Condition
 
 \section{Introdução}
 
-A medição do risco de mercado ao qual os portfólios dos investidores está sujeito é objeto de devoção de esforços tanto por parte das instituições e investidores em geral como por parte dos reguladores. Instituições financeiras em todo o mundo, de acordo com suas regulações locais e com os princípios de Basileia (\emph{Basel Comittee on Banking Supervision} - BCBS do Banco de Compensações Internacionais - BIS) para aquelas que o seguem, o Brasil é um desses países, são obrigadas a reservar uma parcela de seu capital como provisionamento contra flutuações adversas do mercado em seus portfólios de investimento, como forma de mitigar seu risco de insolvência.
+A medição do risco de mercado ao qual os portfólios dos investidores está sujeito é objeto de devoção de esforços tanto por parte das instituições e investidores em geral como por parte dos reguladores. Instituições financeiras - IF em todo o mundo, de acordo com suas regulações locais e com os princípios de Basileia (\emph{Basel Comittee on Banking Supervision} - BCBS do Banco de Compensações Internacionais - BIS) são obrigadas a reservar uma parcela de seu capital como provisionamento contra flutuações adversas do mercado, como forma de mitigar seu risco de insolvência.
 
-Instituições financeiras - IF - devem manter seu risco de insolvência controlado, e a percepção externa deve ser tal que não haja desconfiança do público em geral com a habilidade da instituição em controlar este risco. Confiança é a palavra chave destas instituições e portanto, também dos reguladores. Se a confiança se esvai e a percepção de risco é elevada, rapidamente uma crise de liquidez pode surgir, com depositantes sacando seus recursos e outras fontes de \emph{funding} também sendo limitadas. Em tal situação, é natural o banco ou IF em geral, buscar o mercado para vender seus ativos e levantar os recursos necessários. É nesse momento que uma crise de liquidez pode levar a uma crise de solvência, não há garantias que no mercado aberto, os ativos do banco serão justamente avaliados e arrematados.
+Estas instituições devem manter seu risco de insolvência controlado, e a percepção externa deve ser tal que não haja desconfiança do público com sua habilidade em controlar este risco. Se a confiança na instituição se esvai e a percepção de risco é elevada, rapidamente uma crise de liquidez pode surgir, com depositantes sacando seus recursos ao mesmo tempo em que outras fontes de \emph{funding} também se tornam escassas. Em tal situação, é natural o banco ou IF, ir ao mercado para vender seus ativos e levantar os recursos necessários. Neste momento uma crise de liquidez no mercado pode levar a uma possível insolvência da IF pois, não há garantias que no mercado aberto, os ativos do banco serão justamente avaliados e arrematados.
 
-Uma importante característica das séries de retornos financeiros é sua alta volatilidade, não constante e tampouco seguindo a distribuição Normal. Assim, eventos extremos, e neste caso estamos interessados em perdas de grande magnitude, acontecem com uma frequência alta demais para serem descartadas como apenas \emph{outliers}, e portanto passaram a atrair a atenção dos participantes do mercado, entre eles os investidores e também os reguladores. Estas observações induziram uma gama de estudos, empíricos e teóricos, voltados a explicar o comportamento dos retornos de séries financeiras e modelar de forma adequada as caudas da distribuição destes retornos. Não somente estes estudos são de grande relevância para o gerenciamento de risco nas instituições financeiras, como também são obrigatórios segundo o acordo de Basileia, uma vez que este requer o cálculo do Valor em Risco - VaR, para então a instituição poder projetar o seu nível requerido de capital. 
+Uma importante característica das séries de retornos financeiros é sua alta volatilidade, não constante e tampouco seguindo uma distribuição Normal. Assim, eventos extremos, e neste caso estamos interessados em perdas de grande magnitude, acontecem com uma frequência alta demais para serem descartadas como apenas \emph{outliers}, e portanto passaram a atrair a atenção dos participantes do mercado, entre eles os investidores e reguladores. Estas observações induziram uma gama de estudos, empíricos e teóricos, voltados a explicar o comportamento dos retornos de séries financeiras e modelar de forma adequada as caudas da distribuição destes retornos. Não somente estes estudos são de grande relevância para o gerenciamento de risco nas instituições financeiras, como também são obrigatórios segundo o acordo de Basileia, uma vez que este requer o cálculo do Valor em Risco - VaR, para então a instituição poder projetar o seu nível requerido de capital. 
 
-De acordo com os princípios de Basileia III, \cite{BankingSupervision2011, BankingSupervision2013, BankingSupervision2014}, as instituições financeiras supervisionadas pelos Bancos Centrais devem manter \emph{buffers} de capital contra riscos de mercado, crédito, liquidez, entre outros. Dentro dos riscos de mercado, as duas formas mais usuais de fazer a quantificação destes são os métodos de Valor em Risco - VaR e o \emph{Expected Shortfall} - ES. Este último relacionado ao primeiro, sendo definido como o valor esperado das perdas que excedem o valor VaR calculado para um determinado nível de confiança.
+De acordo com os princípios de Basileia III, \cite{BankingSupervision2011, BankingSupervision2013, BankingSupervision2014}, \todo{arrumar a referencia ao BCBS para na citação não aparecer on Banking Sup.} as instituições financeiras supervisionadas pelos Bancos Centrais devem manter \emph{buffers} de capital contra riscos de mercado, crédito, liquidez, entre outros. Dentro dos riscos de mercado, as duas formas mais usuais de fazer a quantificação destes são os métodos de Valor em Risco - VaR e o \emph{Expected Shortfall} - ES. Este último relacionado ao primeiro, sendo definido como o valor esperado das perdas que excedem o VaR calculado para um determinado nível de confiança.
 
-VaR é um quantil alto $\alpha$ da distribuição de perdas de um ativo ou portfólio em um determinado período de tempo, ao passo que ES é o valor esperado das perdas que excedem VaR, para um mesmo nível de confiança $\alpha$ e período.
+VaR é um quantil alto $\alpha$ da distribuição de perdas de um ativo ou portfólio em um determinado período de tempo, ao passo que ES é o valor esperado das perdas que excedem VaR, para um mesmo período e nível de confiança $\alpha$.
 
 O método VaR para cálculo de risco de mercado ao qual um portfólio está sujeito foi primeiramente introduzido através de \cite{RiskMetrics1995}, uma metodologia adotada pelo banco J. P. Morgan. Vem desde então sendo amplamente adotado pela indústria financeira e largamente estudado pela academia. Inúmeras variantes do modelo foram propostas e continuam sendo utilizadas com o passar dos anos. Para o cálculo do VaR é necessária uma suposição acerca da distribuição dos retornos, e por conseguinte do comportamento da cauda desta.
 
-As variações na metodologia original de estimação do VaR surgem principalmente em função de críticas a abordagem proposta, a qual inclui a suposição de retornos independentes e igualmente distribuídos, covariâncias constantes entre os ativos de um portfólio e a distribuição normal dos retornos. Todas estas suposições são criticadas na literatura, como por exemplo em, \cite{Campbell1997}.
+As variações na metodologia original de estimação do VaR surgem principalmente em função de críticas a abordagem proposta, a qual inclui a suposição de retornos independentes e igualmente distribuídos, covariâncias constantes entre os ativos de um portfólio e a distribuição normal dos retornos. 
 
-Por meio de dois artigos \cite{Artzner1997} e \cite{Artzner1999}, foi introduzido na literatura o conceito de medida coerente de risco. Para uma medida ser considerada coerente, primeiramente foram introduzidas quatro propriedades cunhadas através de axiomas, as quais estas medidas deveriam possuir, invariância translacional,	sub-aditividade, homogeneidade positiva, e monotonicidade.
+Por meio de dois artigos \cite{Artzner1997} e \cite{Artzner1999}, foi introduzido na literatura o conceito de medida coerente de risco. Para uma medida ser considerada coerente, primeiramente foram introduzidas quatro propriedades cunhadas através de axiomas, as quais estas medidas deveriam possuir, invariância translacional, sub-aditividade, homogeneidade positiva, e monotonicidade.
 
-VaR especificamente não possui a propriedade da sub-aditividade para alguns casos, sendo esta uma das grandes críticas ao VaR. Desta forma, em casos específicos, é possível uma carteira diversificada em que sejam computados o VaR de cada um de seus ativos, ser agregada e possuir um VaR do portfólio maior que o maior VaR de seus componentes, algo que não condiz com uma medida coerente de risco. Para contornar este fato, \cite{Acerbi2002} propuseram o \emph{Expected Shortfall} e comprovam que este é uma medida coerente de risco. Além de ser coerente, o ES possui uma segunda vantagem com relação ao VaR, considerando que o ES nos informa uma medida de tendência central do tamanho das perdas que excedem o valor do quantil VaR. Ou seja, o VaR nos informa apenas que uma proporção $\alpha$ das perdas serão menores que a medida, mas nada nos informa se esta perda extraordinária de fato ocorrer. Mesmo sendo criticado e demonstradamente uma medida não coerente de risco, o VaR continua a ser amplamente utilizado, mesmo que agora em conjunto com o ES. 
+VaR especificamente não possui a propriedade da sub-aditividade para alguns casos, sendo esta uma das grandes críticas ao VaR. Desta forma, em casos específicos, é possível uma carteira diversificada em que sejam computados o VaR de cada um de seus ativos, ser agregada e possuir um VaR do portfólio maior que o maior VaR de seus componentes, algo que não condiz com uma medida coerente de risco. Para contornar este fato, \cite{Acerbi2002} propuseram o \emph{Expected Shortfall} e comprovam que este é uma medida coerente de risco. Além de ser coerente, o ES possui uma segunda vantagem com relação ao VaR, considerando que o ES nos informa uma medida de tendência central do tamanho das perdas que excedem o valor do quantil VaR. Ou seja, o VaR nos informa apenas que uma proporção $\alpha$ das perdas serão menores que a medida, mas nada nos informa se esta perda extraordinária de fato ocorrer. Mesmo sendo criticado como uma medida não coerente de risco, o VaR continua a ser amplamente utilizado, mesmo que agora em conjunto com o ES. 
 
 %Mais recentemente o Comitê de Supervisão Bancária de Basileia tem se proposto a adotar o \emph{Expected Shortfall} como medida de risco de mercado. \cite{BankingSupervision2013a}. O Comitê cita a grande importância da escolha da medida de risco e sua calibração, e portanto estas são relevantes para as decisões de política do Banco. Entre as dificuldades encontradas pelo VaR estão mais notadamente sua inabilidade em estimar o "risco de cauda" da distribuição de perdas, uma vez que VaR não leva em conta a distribuição das perdas acima do valor de corte.
 
 %Desta forma, foi decidido que o ES seria a medida de risco favorita para a abordagem pelo banco chamada de modelos internos. Ou seja, os bancos supervisionados devem utilizar o ES para o cálculo do risco de mercado a que estão sujeitos em seus modelos internos. O comitê também se decidiu por um nível de confiança de 97,5\% para o ES, em contraposição a 99\% para o VaR. O comitê espera que esta abordagem para o cálculo da medida de risco de mercado trará benefícios se comparada a antiga abordagem pelo Var, entre elas um modelo com resultados mais estáveis e menor sensibilidade a observações extremas (\emph{outliers}).
 
-Teoria do valor extremo, EVT da sigla em inglês, é um ramo da estatística que lida diretamente com eventos raros, extremos. Seu objetivo é modelar o comportamento assintótico de eventos que se distanciam muito da mediana de uma distribuição. Justamente por esta característica, a EVT está sendo utilizada para modelar riscos que possuem distribuição com caudas longas, um dos fatos estilizados bem conhecidos sobre retornos de ativos financeiros.
+Teoria do valor extremo - EVT, é um ramo da estatística que lida diretamente com eventos raros, extremos. Seu objetivo é modelar o comportamento assintótico de eventos que se distanciam muito da mediana de uma distribuição. Justamente por esta característica, a EVT está sendo utilizada para modelar riscos que possuem distribuição com caudas longas, um dos fatos estilizados bem conhecidos sobre retornos de ativos financeiros.
 
-Ao utilizar a EVT, e mais especificamente o método conhecido como \emph{peaks over treshold} – POT, se está interessado em modelar apenas a parte da cauda da distribuição das perdas de um ativo financeiro maiores que um determinado valor de limiar \emph{u}. É da modelagem desta cauda, portanto, que se calculam as estimativas de risco VaR.
+Ao utilizar a EVT, e mais especificamente o método conhecido como \emph{peaks over treshold} – POT, se está interessado em modelar apenas a parte da cauda da distribuição das perdas de um ativo financeiro maiores que um determinado valor de limiar \emph{u}. É da modelagem desta cauda, portanto, que se calcula a estimativa de VaR.
 
-A teoria do valor extremo vem sendo utilizada nas finanças a algum tempo. Devido as características das séries financeiras, como a leptocurtose, a distribuição normal para os retornos vem sendo rechaçada, enquanto outras distribuições mais adequadas assumem o posto para descrever o comportamento das perdas e retornos de séries financeiras. A EVT, ao modelar distribuições com caudas longas, pode ser utilizada para esta finalidade. A introdução da EVT em dois estágios para a estimação de medidas condicionais de risco pode ser atribuída a \cite{McNeil2000}. Neste artigo os autores propuseram um modelo para a estimação do VaR e ES de forma condicional, tanto para período de um dia como para dez dias a frente, de acordo com o normativo de Basileia vigente a época. Seu modelo, que leva em conta as longas caudas e a natureza estocástica da volatilidade, se ajustam de forma mais fidedigna aos dados.
+A teoria do valor extremo vem sendo utilizada nas finanças a algum tempo. Devido as características das séries financeiras, por exemplo a leptocurtose, a distribuição normal para os retornos vem sendo rechaçada, enquanto outras distribuições mais adequadas assumem o posto para descrever o comportamento das perdas e retornos de séries financeiras. A EVT, ao modelar distribuições com caudas longas, pode ser utilizada para esta finalidade. A introdução da EVT em dois estágios para a estimação de medidas condicionais de risco pode ser atribuída a \cite{McNeil2000}. Neste artigo os autores propuseram um modelo para a estimação do VaR e ES de forma condicional, tanto para período de um dia como para dez dias a frente, de acordo com o normativo de Basileia vigente a época. Seu modelo, que leva em conta as longas caudas e a natureza estocástica da volatilidade, se ajustam de forma mais fidedigna aos dados.
 
 \cite{Bystroem2004} encontrou que ambas abordagens da EVT, máximos em bloco como POT, combinadas com análise de séries temporais tradicional (ARIMA e GARCH), no que se configura uma abordagem condicional para a estimação do VaR, têm os melhores resultados tanto em períodos ditos tranquilos como em épocas de alta volatilidade. Voltando a aplicação da EVT para mercados emergentes, \cite{Gencay2004} utilizaram a teoria de valor extremo para o cálculo de VaR e teste de estresse. Seus resultados apontam que a EVT se torna melhor a medida que o quantil utilizado para o cálculo se eleva. Além disso, encontraram que as caudas da distribuição de retornos se comportam de maneira diferente entre ganhos e perdas. Uma comparação entre diversos modelos de previsão de VaR foi realizada por \cite{Kuester2006}. Encontraram que a grande maioria dos modelos subestima o risco, mesmo sendo aceitáveis do ponto de vista regulatório, sendo que o modelo condicional GARCH-EVT está entre as melhores estimações.
 
 
 \cite{Karmakar2014} retomam o modelo em dois estágios e fizeram uma comparação entre o modelo EVT condicional e outros modelos já consagrados no cálculo de VaR em 3 mercados desenvolvidos (EUA, Reino Unido e Japão) e 3 mercados emergentes asiáticos (Índia, Hong Kong e Corea do Sul). O modelo GARCH adotado no primeiro estágio é diferente para cada mercado, porém com uma particularidade comum, todos são modelos assimétricos. Novamente encontram que o modelo EVT condicional é superior aos demais através de testes de cobertura incondicional e condicional.
 
-\cite{Chavez-Demoulin2005} e \cite{Herrera2013} tomam um caminho diferente para modelar a EVT. Enquanto o primeiro adota o método de processos pontuais de auto-excitação \todo{Muito difícil explicar em uma sentença apenas. É toda uma outra forma de modelar séries temporais que no final chega aos mesmos resultados da EVT. É utilizada, por exemplo, para modelar abalos sísmicos.}, que dadas algumas condições, converge para o método POT, o segundo modela explicitamente as durações de tempo entre as observações de extremos, ou seja, as perdas em excesso ao limiar escolhido. A magnitude destas perdas continua a ser modelada através da GPD. Seu modelo é então chamado de \emph{autoregressive conditional duration peaks over threshold model} - ACD-POT.
+\cite{Chavez-Demoulin2005} e \cite{Herrera2013} tomam um caminho diferente para modelar a EVT. Enquanto o primeiro adota o método de processos pontuais de auto-excitação\footnote{Para maiores detalhes sobre processos pontuais de auto-excitação, \cite{Hawkes1971} é a referência original.}, que dadas algumas condições, converge para o método POT, o segundo modela explicitamente as durações de tempo entre as observações de extremos, ou seja, as perdas em excesso ao limiar escolhido. A magnitude destas perdas continua a ser modelada através da distribuição generalizada de Pareto - GPD. Seu modelo é então chamado de \emph{autoregressive conditional duration peaks over threshold model} - ACD-POT.
 
 \cite{Rocco2014} fez uma grande revisão sobre o uso da EVT em finanças. As principais aplicações encontradas  foram o teste de suposições para diferentes distribuições dos dados, cálculo de medidas de risco como o VaR e ES, alocação de ativos sob restrições e otimização de portfólios, e no estudo de contágio e dependência entre mercados sob condições de alto estresse.
 
@@ -174,8 +175,7 @@ O restante deste artigo está assim organizado, na seção \ref{sec:caudas} é a
 Considere uma amostra de uma variável aleatória - \emph{va} - cujas observações sejam independentes e igualmente distribuídas - \emph{iid}, $X_i$, com $i\in \mathbb{N}$, que representem as perdas financeiras de um determinado ativo, com uma função de distribuição - \emph{df} - desconhecida $F(x) = P(X_i \leq x)$.
 Seja \emph{u} um valor de limiar a partir do qual perdas acima deste valor sejam consideradas extremas. Os valores de excesso serão, portanto, $X_i - \emph{u}$.
 
-A EVT está interessada em investigar o comportamento da distribuição dos máximos desta \emph{va} dados por $M_n = \max (X_1, \ldots , X_n)$ para vários valores de $n$ e a medida que $n\rightarrow \infty$. A sequência $M_n$ é chamada de máximos em bloco e foi demonstrado através do conhecido teorema de Fisher-Tippett-Gnedenko, \cite{Fisher1928}, \cite{Gnedenko1941, Gnedenko1943}, que a única distribuição para a qual $M_n$ converge com $n\rightarrow \infty$ é a distribuição de valores extremos generalizada. Se esta distribuição de valores extremos generalizada - GEV - for denotada por $H_\xi$, com $\xi$ um parâmetro da distribuição, então se diz que $F \in MDA(H_\xi)$, $F$ pertence ao domínio de máxima atração de $H_\xi$.
-
+A EVT está interessada em investigar o comportamento da distribuição dos máximos desta \emph{va} dados por $M_n = \max (X_1, \ldots , X_n)$ para valores de $n$ a medida que $n\rightarrow \infty$. A sequência $M_n$ é chamada de máximos em bloco e foi demonstrado através do conhecido teorema de Fisher-Tippett-Gnedenko\footnote{Os três artigos que fundamentam este teorema são: \cite{Fisher1928}, \cite{Gnedenko1941, Gnedenko1943}.}, que a única distribuição para a qual $M_n$ converge com $n\rightarrow \infty$ é a distribuição de valores extremos generalizada - GEV. Se esta distribuição for denotada por $H_\xi$, com $\xi$ um parâmetro da distribuição, então se diz que $F \in MDA(H_\xi)$, $F$ pertence ao domínio de máxima atração de $H_\xi$.
 
 \begin{defi}[GEV] \label{defi:GEV}
 	Distribuição de valores extremos generalizada, é definida por sua função densidade de probabilidade - pdf - a qual é dada por:
@@ -212,7 +212,7 @@ O método POT para calcular a função de distribuição dos valores que excedem
 Uma importante distribuição que surge na modelagem dos excessos sobre um limiar é a distribuição gereralizada de Pareto – GPD, que segue.
 
 \begin{defi}[GPD] \label{defi:GPD}
-	Distribuição de Pareto Generalizada é definida por sua função de distribuição:
+	A função de distribuição de Pareto Generalizada é definida como:
 	\begin{equation}
 	\label{eq:GPD}
 	G_{\xi,\psi}(x) = 
@@ -224,24 +224,24 @@ Uma importante distribuição que surge na modelagem dos excessos sobre um limia
 	onde $\psi > 0$, e $x\geq 0$ quando $\xi  \geq 0$ ou $0 \leq x \leq -\psi / \xi$ quando $\xi < 0$.
 \end{defi}
 
-Os parâmetros $\xi$ e $\psi$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. A GPD tem papel fundamental na teoria de valor extremo em função do teorema de Pickands-Balkema-de Haan, \cite{Pickands1975} e \cite{Balkema1974}, pois estes demonstram que, para um valor suficientemente alto do limiar \emph{u}, a distribuição dos excessos $F_u(x)$ pode ser aproximada por uma GPD $G_{\xi,\psi}(x)$.
+Os parâmetros $\xi$ e $\psi$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. A GPD tem papel fundamental na teoria de valor extremo em função do teorema de Pickands-Balkema-de Haan\footnote{As referências originais são: \cite{Pickands1975} e \cite{Balkema1974}.}, onde é demonstrado que, para um valor suficientemente alto do limiar \emph{u}, a distribuição dos excessos $F_u(x)$ pode ser aproximada por uma GPD, $G_{\xi,\psi}(x)$.
 
-O que este teorema prova é que para distribuições as quais os máximos em bloco normalizados convergem para uma GEV na forma da equação \eqref{eq:GEV}, então a distribuição dos excessos acima de um limiar destas mesmas distribuições convergem para uma GPD, dado um valor de limiar \emph{u} adequado. Como para fins práticos basicamente todas as distribuições contínuas de fato estão no $MDA(H_\xi)$ para algum valor de $\xi$, temos que a GPD é a distribuição a ser escolhida para modelar excessos acima de um limiar.
+O que este teorema prova é que para distribuições as quais os máximos em bloco normalizados convergem para uma GEV na forma da equação \eqref{eq:GEV}, então a distribuição dos excessos acima de um limiar destas mesmas distribuições convergem para \eqref{eq:GPD}, dado um valor de limiar \emph{u} adequado. Como para fins práticos basicamente todas as distribuições contínuas de fato estão no $MDA(H_\xi)$ para algum valor de $\xi$, temos que a GPD é a distribuição a ser escolhida para modelar excessos acima de um limiar.
 
-Ao se fazer esta suposição que a distribuição dos excessos \emph{é igual} a uma GPD, pode-se então, a partir dos dados de perdas, estimar os parâmetros de forma e escala e, portanto, modelar a cauda direita da distribuição de perdas de forma parametrizada com o auxílio da equação \eqref{eq:excessdist}. 
+Ao se fazer esta suposição que a distribuição dos excessos \emph{é igual} a \eqref{eq:GPD}, pode-se então a partir dos dados estimar os parâmetros de forma e escala e, portanto, modelar a cauda direita da distribuição de perdas de forma parametrizada com o auxílio da equação \eqref{eq:excessdist}. 
 
 
 Dada a parametrização de uma GPD, é interessante saber o valor esperado desta distribuição, uma vez que esta medida de valor central fornece importante informação sobre a quantidade de risco que se está medindo, assim como a informação de que a própria distribuição foi ajustada aos dados de forma satisfatória.
 
-O valor esperado de uma variável aleatória não negativa pode ser computado através da integral de sua cauda, $P(X>x) = 1-P(X \leq x)$. A cauda da GPD é, para $\xi \neq 0$, $\left(1+\xi x / \psi \right)^{-1/ \xi}$.
+O valor esperado de uma variável aleatória não negativa pode ser computado através da integral de sua cauda, $P(X>x) = 1-P(X \leq x)$. A cauda de \eqref{eq:GPD} é, para $\xi \neq 0$, $\left(1+\xi x / \psi \right)^{-1/ \xi}$.
 
-Desta forma, o valor esperado de uma GPD, $G_{\xi,\psi}(x)$, converge para valores de $\xi<1$ e é dado pela seguinte equação:
+Desta forma, o valor esperado de $G_{\xi,\psi}(x)$, converge para:
 
 \begin{equation}
 \label{eq:meanGPD}
 E\left[G_{\xi,\psi} (X) \right]=\frac{\psi}{1-\xi}
 \end{equation}
-
+desde que $\xi<1$.
 
 \begin{defi}[função média dos excessos]
 	\label{defi:meanexcess}
@@ -255,24 +255,24 @@ E\left[G_{\xi,\psi} (X) \right]=\frac{\psi}{1-\xi}
 
 Ou seja, a equação \eqref{eq:meanexcess} representa o valor esperado da função de distribuição dos excessos dada pela Definição \ref{defi:excess}. Ela representa a média de $F_u$ como uma função do limiar \emph{u}. Por vezes também é conhecida como função média de vida residual (\emph{mean residual life function}).
 
-Para uma variável distribuída na forma de uma GPD, o parâmetro de escala é uma função linear em \emph{u} dado por $\psi(u)=\psi + \xi u$, \cite[Teorema 3.4.13(e)]{Embrechts1997}. Utilizando-se deste fato e da equação \eqref{eq:meanGPD} chegamos ao cálculo da função média dos excessos para uma GPD, dada por:
+Para uma variável distribuída na forma de $G_{\xi,\psi}(x)$, o parâmetro de escala é uma função linear em \emph{u} dado por $\psi(u)=\psi + \xi u$, \cite[Teorema 3.4.13(e)]{Embrechts1997}. Utilizando-se deste fato e da equação \eqref{eq:meanGPD} chegamos ao cálculo da função média dos excessos para uma GPD, dada por:
 
 \begin{equation}
 \label{eq:eu}
 e(u)=\frac{\psi+\xi u}{1-\xi}
 \end{equation}
-onde $0 \leq u < \infty$ se $0 \leq \xi <1$ e $0 \leq u \leq -\psi / \xi$ se $\xi < 0$. É possível observar que de fato a função média dos excessos em uma GPD é linear em \emph{u}. Esta é uma característica importante de uma GPD e que pode ser utilizada para auxiliar a escolha de um valor adequado do limiar \emph{u} de tal forma que a suposição de convergência $F_u(x) \rightarrow G_{\xi, \psi}(x)$ seja válida.
+onde $0 \leq u < \infty$ se $0 \leq \xi <1$ e $0 \leq u \leq -\psi / \xi$ se $\xi < 0$. É possível observar que de fato a função média dos excessos é linear em \emph{u}. Esta é uma característica importante de uma distribuição de Pareto generalizada e que pode ser utilizada para auxiliar a escolha de um valor adequado do limiar \emph{u} de tal forma que a suposição de convergência $F_u(x) \rightarrow G_{\xi, \psi}(x)$ seja válida.
 
-Assim, quando da análise de uma determinada distribuição de perdas \emph{F} e deseja-se ajustar a cauda desta, ou seja, ajustar as perdas acima de um dado valor limiar \emph{u} a uma GPD $G_{\xi, \psi}(x)$ é necessário primeiramente determinar um valor adequado de \emph{u} que garanta a suposição de convergência. Um método frequentemente utilizado é o gráfico da função média dos excessos com relação a \emph{u}. Analisando este gráfico, escolhe-se o menor valor de \emph{u} para o qual a partir deste ponto a relação $e(u) \text{ vs } u$ torna-se linear.
+Assim, quando da análise de uma determinada distribuição de perdas \emph{F} e se deseja ajustar a cauda desta para perdas acima de um valor limiar \emph{u} a uma GPD, é necessário primeiramente determinar um valor adequado de \emph{u} que garanta a suposição de convergência. Um método frequentemente utilizado é o gráfico da função média dos excessos com relação a \emph{u}. Analisando este gráfico, escolhe-se o menor valor de \emph{u} para o qual a partir deste ponto a relação $e(u) \text{ vs } u$ torna-se linear.
 
 Deseja-se o menor valor de \emph{u} para o qual a relação é linear pois, mesmo o método POT implica em grande perda de observações da série temporal, já que apenas os valores acima deste limiar são utilizados para fazer a estimação dos parâmetros $\xi$ e $\psi$ da GPD. Portanto, existe um \emph{trade-off} na escolha do valor limiar \emph{u}, escolhendo um valor muito baixo obtém-se uma boa quantidade de dados para estimar os parâmetros da GPD, mas a própria distribuição resultante não será GPD, uma vez que não estaremos trabalhando na região onde a relação $e(u) \text{ vs } u$ é linear, e portanto os parâmetros estimados serão viesados. Por outro lado, um valor limiar muito alto impõe o custo de trabalhar com poucos dados para fazer a estimação dos parâmetros da distribuição e por conseguinte, os erros padrões dessas estimativas serão elevados.
 
-Considerando este \emph{trade-off}, uma saída é buscar minimizar o erro quadrado médio - MSE (\emph{mean squared error}) do parâmetro estimado. A medida MSE pode ser decomposta entre a soma do quadrado do viés com a variância do estimador, idealmente deseja-se ter viés zero e variância mínima. Na impossibilidade de tal realização, um estimador relativamente eficiente é aquele que possui o menor MSE. Em \cite[seção 5.2.5, p. ~139]{McNeil2015} é explorada, através de simulação de Monte Carlo, esta relação entre a escolha do limiar \emph{u} e o MSE do parâmetro $\xi$ obtido através do método POT e também da própria medida de risco $VaR_{99\%}$. Chegam a conclusão que uma escolha de limiar tal que o número de excessos a este fique em torno de 100 observações é o ideal, e mais importante, a partir destas 100 observações o MSE é relativamente robusto, se elevando lentamente a partir de seu valor mínimo.
+Considerando este \emph{trade-off}, uma saída é buscar minimizar o erro quadrado médio - MSE do parâmetro estimado. Idealmente deseja-se ter viés zero e variância mínima para um estimador entretanto, na impossibilidade de tal realização, um estimador relativamente eficiente é aquele que possui o menor MSE. Em \cite[seção 5.2.5, p. ~161-162]{McNeil2015} é explorada, através de simulação de Monte Carlo, esta relação entre a escolha do limiar \emph{u} e o MSE do parâmetro $\xi$ obtido através do método POT e também da própria medida de risco $VaR_{99\%}$. Chegam a conclusão que uma escolha de limiar tal que o número de excessos a este fique acima de 100 observações é adequado, e mais importante, a partir destas 100 observações o MSE é relativamente robusto, se elevando lentamente a partir de seu valor mínimo.
 
 \subsection{Estimando o VaR}
 \label{sec:var}
 
-Através da modelagem da cauda da distribuição \emph{F} de perdas por uma GPD, é possível calcular a medida de risco VaR em função dos parâmetros estimados da GPD e também fazendo uso da distribuição empírica de \emph{F}.
+Através da modelagem da cauda da distribuição \emph{F} de perdas por uma GPD, é possível calcular de forma semi-paramétrica a medida de risco VaR em função dos parâmetros estimados de \eqref{eq:GPD} e da distribuição empírica de \emph{F}.
 
 Sob a suposição de convergência a cauda da distribuição \emph{F}, $\bar{F}(x)$, para $x \geq u$ é dada por:
 
@@ -290,16 +290,14 @@ A equação \eqref{eq:Ftail} efetivamente separou a distribuição \emph{F}, ou 
 
 A segunda parte é justamente a modelagem através de uma GPD com parâmetros $\xi$ e $\psi$ dado o limiar \emph{u}. Por esta modelagem paramétrica pode-se conhecer as probabilidades de cauda para valores de \emph{x} maiores que \emph{u}.
 
-O quantil $\alpha$ é a inversa da função distribuição e retorna o valor para o qual um percentual $\alpha$ de observações da amostra é menor ou igual. Como se está trabalhando com a distribuição de perdas, $VaR_\alpha$ nada mais é que um quantil alto para o qual $\alpha \%$ das perdas devem ser menores ou iguais a este valor.
-
-Como a equação \eqref{eq:Ftail} fornece a probabilidade de cauda, então esta é igual a $1- \alpha$ para um valor de $\alpha  \geq 1-\bar{F}(u)$. O valor $1- \alpha$ é conhecido como a cobertura da medida de risco. Fazendo $\bar{F}(x)=1-\alpha$ na equação \eqref{eq:Ftail} o valor de \emph{x} representará $VaR_\alpha$ e basta manipular esta equação para encontrá-lo como função de $\bar{F}(u)$, $\alpha$ e dos parâmetros da GPD, $\xi$ e $\psi$. O que garante a equação abaixo:
+Como a equação \eqref{eq:Ftail} fornece a probabilidade de cauda, então esta é igual a $1- \alpha$\footnote{O percentil $\alpha$ na medida $VaR_\alpha$ representa um percentual desejado de perdas que sejam menores ou iguais ao valor de $VaR_\alpha$. Portanto, a medida de risco VaR nada mais é que um quantil alto para o qual $\alpha \%$ das perdas devem ser menores ou iguais a este valor.} para um valor de $\alpha  \geq 1-\bar{F}(u)$. O valor $1- \alpha$ é conhecido como a cobertura da medida de risco. Fazendo $\bar{F}(x)=1-\alpha$ na equação \eqref{eq:Ftail} o valor de \emph{x} representará $VaR_\alpha$ e basta manipular esta equação para encontrá-lo como função de $\bar{F}(u)$, $\alpha$ e dos parâmetros $\xi$ e $\psi$. O que garante a equação abaixo:
 
 \begin{equation}
 \label{eq:VaRGPD}
 VaR_\alpha = q_\alpha(F) = u+\frac{\psi}{\xi}\left[ \left( \frac{1-\alpha}{\bar{F}(u)}\right)^{-\xi}-1 \right]
 \end{equation}
 
-Portanto, a medida de risco $VaR_\alpha$, para distribuições de perdas que tiveram suas caudas modeladas através de uma GPD da forma $G_{\xi, \psi}$ com $\xi <1 \text{ e } \psi > 0$, pode ser calculada através da equação dada em \eqref{eq:VaRGPD}. A estimativa desta medida de risco será encontrada através das estimativas dos parâmetros da GPD, assim como do limiar utilizado e de uma medida empírica de $\bar{F}(u)$ que será o número de excessos verificados sobre o total de amostras. É claro que, ao se adotar esta estimativa para $\bar{F}(u)$ se está implicitamente supondo que o número de amostras na série de perdas é significativa, assim como o número de excessos verificados. Daí a importância de se utilizar um valor \emph{u} adequado, conforme explicitado na seção \ref{sec:excess}.
+Portanto, a medida de risco $VaR_\alpha$, para distribuições de perdas que tiveram suas caudas modeladas através de $G_{\xi, \psi}$ com $\xi <1 \text{ e } \psi > 0$, pode ser calculada através da equação dada em \eqref{eq:VaRGPD}. A estimativa desta medida de risco será encontrada através das estimativas dos parâmetros da GPD, assim como do limiar utilizado e de uma medida empírica de $\bar{F}(u)$ que será o número de excessos verificados sobre o total de amostras. É claro que, ao se adotar esta estimativa para $\bar{F}(u)$ se está implicitamente supondo que o número de amostras na série de perdas é significativa, assim como o número de excessos verificados. Daí a importância de se utilizar um valor \emph{u} adequado, conforme explicitado na seção \ref{sec:excess}.
 
 A estimativa de medida de risco desenvolvida nesta seção se qualifica como uma medida incondicional, no sentido que ela não depende do estado atual das coisas, mas sim de todo o histórico de eventos de forma uniforme. Em outras palavras, $VaR_\alpha$ derivado a partir da equação \eqref{eq:VaRGPD} é uma medida histórica de risco associado ao ativo em análise, o qual não leva em consideração se nos eventos mais recentes a volatilidade das perdas pode ser diferente do valor histórico.
 
@@ -310,11 +308,11 @@ Assim, ao passo que as estimativas de risco desenvolvidas nesta seção são val
 \subsection{Modelo eGARCH-POT}
 \label{sec:egarchpot}
 
-Ativos financeiros possuem características de autocorrelação, senão em seus retornos propriamente ditos, ao menos em suas volatilidades ou variações absolutas. Ou seja, dada uma grande variação no momento \emph{t} é de se esperar novamente uma grande variação, não necessariamente na mesma direção daquela anterior, para o momento \emph{t+1} e posteriores. Desta forma, medidas de risco incondicionais, conforme aquelas derivadas em \ref{sec:caudas} podem ser adequadas somente para horizontes temporais mais longos, pois implicitamente tomam em consideração os fatos mais recentes com o mesmo valor de predição que fatos mais longínquos.
+Ativos financeiros possuem características de autocorrelação, senão em seus retornos propriamente ditos, ao menos em suas volatilidades ou variações absolutas. Ou seja, dada uma grande variação no momento \emph{t} é de se esperar novamente uma grande variação, não necessariamente na mesma direção daquela anterior, para o momento \emph{t+1} e posteriores. Desta forma, medidas de risco incondicionais, conforme aquelas derivadas na subseção anterior \ref{sec:var} podem ser adequadas somente para horizontes temporais mais longos, pois implicitamente tomam em consideração os fatos mais recentes com o mesmo peso que fatos mais longínquos.
 
 Assim, pode-se trabalhar com um modelo semelhante ao proposto por \cite{McNeil2000} os quais fazem uma adequação dos retornos dos ativos a um modelo GARCH e posteriormente tratam os erros desta modelagem como \emph{iid} e portanto, a metodologia de POT pode ser aplicada. Este modelo pode ser entendido como um modelo condicional para medidas de risco pois, efetivamente, é levado em conta o estado atual da previsão para a média e principalmente para a volatilidade ao se calcular o VaR. Desta forma a medida responde rapidamente às variações nos humores do mercado e pode sinalizar de forma ágil uma inadequação de capital reservado pela instituição financeira.
 
-Além desta vantagem de cunho prático, a técnica possui uma atratividade teórica. O método POT deve ser aplicado a séries \emph{iid} que sabidamente não é o caso de perdas de ativos financeiros. Ao se utilizar a técnica POT nos resíduos padronizados de um modelo GARCH das perdas, o que se está realizando é uma pré-filtragem destas perdas que garante, ou chega próximo disto, que os resíduos deste modelo sejam \emph{iid} e portanto, aplicável a teoria de valor extremo. 
+Além desta vantagem de cunho prático, a técnica possui uma atratividade teórica. O método POT deve ser aplicado a séries \emph{iid} que sabidamente não é o caso de perdas de ativos financeiros. Ao se utilizar a técnica POT nos resíduos padronizados de um modelo GARCH o que se está realizando é uma pré-filtragem destas perdas, de forma a obter resíduos padronizados que sejam \emph{iid} e portanto, aplicável a teoria de valor extremo. 
 
 Primeiramente, neste artigo, diferentemente de \cite{McNeil2000} ou \cite{Karmakar2014}, foi estabelecido um mesmo modelo eGARCH para as perdas dos ativos subjacentes. Esta variação de GARCH foi proposta por \cite{Nelson1991} e busca, além de modelar a heterocedasticidade condicional da variância, também o chamado efeito alavancagem, onde retornos positivos e negativos possuem impactos diferenciados na volatilidade do ativo. O modelo adotado foi o eGARCH(2,1) e sua variância condicional é definida por:
 
@@ -398,20 +396,6 @@ Também é possível verificar alguma autocorrelação serial entre os retornos 
 
 Na figura \ref{fig:artigo-retornos} é possível visualizar as séries de retornos logarítmicos em estudo. Por inspeção visual simples é possível verificar a heterocedasticidade destes retornos, corroborando as estatísticas encontradas na tabela \ref{tab:descritivas}. A figura \ref{fig:artigo-qqplots} é mais interessante para se apreciar a normalidade destes retornos. Tratam-se de gráficos quantil-quantil feitos entre a amostra completa dos retornos e uma curva normal de referência. Caso as séries, e por conseguinte suas amostras, fossem normalmente distribuídas, os pontos deste gráfico estariam todos sobre a reta de referência, o que não é verificado em nenhuma destas. Para todas as séries é observado um desvio da normalidade nas caudas, configurando distribuições leptocúrticas em todos os casos.
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-retornos}
-	\caption{Retornos dos índices do estudo. Período completo entre 01/01/2003 a 30/08/2017.}
-	\label{fig:artigo-retornos}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-qqplots}
-	\caption{Análise de normalidade dos retornos através de gráficos quantil-quantil.}
-	\label{fig:artigo-qqplots}
-\end{figure}
-
 \subsection{Filtro eGARCH}
 \label{sec:filtro}
 
@@ -422,49 +406,6 @@ Como era de se esperar, nem todos os coeficientes estimados são significativos 
 \input{tables/artigo-tab-garchcoef}
 
 Para trabalhar com o VaR em seus quantis altos e portanto, modelar a cauda direita da distribuição, passa-se a trabalhar com a distribuição das perdas dos ativos, como alertado anteriormente. Os gráficos ACF são para as distribuições de perdas e seus quadrados na parte superior, e na parte inferior os correlogramas são apresentados para os resíduos padronizados e seus quadrados oriundos do modelo eGARCH. Através destes gráficos fica bastante evidente como a filtragem foi bem sucedida em retirar a autocorrelação encontrada originalmente nas perdas, especialmente em seus quadrados, que demonstra claramente a natureza heterocedástica das séries sob análise. 
-
-% Figuras com os gráficos ACF antes e depois da filtragem eGARCH
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-acf-IBovespa}
-	\caption{Ibovespa. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-	\label{fig:artigo-acf-ibovespa}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-acf-IPC}
-	\caption{IPC. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-	\label{fig:artigo-acf-ipc}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-acf-IPSA}
-	\caption{IPSA. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-	\label{fig:artigo-acf-ipsa}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-acf-Merval}
-	\caption{Merval. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-	\label{fig:artigo-acf-merval}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-acf-SP-TSE}
-	\caption{S\&P TSE. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-	\label{fig:artigo-acf-sptse}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-acf-SP500}
-	\caption{S\&P500. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-	\label{fig:artigo-acf-sp500}
-\end{figure}
 
 A tabela \ref{tab:garchstats} apresenta novamente as estatísticas Jarque-Bera e Ljung-Box (Q e $Q^2$) desta vez para os resíduos padronizados resultantes da filtragem das perdas no primeiro estágio do modelo eGARCH-POT. Enquanto que os resíduos padronizados, assim como os retornos (e as perdas), de fato não são normais como já se esperava, as estatísticas de autocorrelação agora estão todas em favor da ausência desta. Para todos os índices analisados, não é possível rejeitar $H_0$ nos testes de autocorrelação, tanto para os resíduos ($Q(10)$) como para os seus quadrados ($Q^2(10)$) em evidente contraste com os valores apresentados na tabela \ref{tab:descritivas} quando foram analisados os retornos destes índices.
 
@@ -495,13 +436,6 @@ A tabela \ref{tab:evtcoef} apresenta os valores destes parâmetros e seus erros 
 
 Na figura \ref{fig:artigo-gpdfit} é possível visualizar os gráficos de ajuste das inovações em excesso de cada um dos índices contra suas distribuições GPD de referência, ou seja, aquelas com os parâmetros de forma e escala estimados para os respectivos índices. Verifica-se que a distribuição destes excessos pouco se desvia com relação a curva de referência, denotando um bom ajuste dos dados ao modelo teórico. Em contraste, quando modelados diretamente através de uma distribuição normal, as séries de retornos se afastavam consideravelmente de suas referências como já apresentado na figura \ref{fig:artigo-qqplots}. Ao se utilizar um método semi-paramétrico como o proposto, modelando apenas uma parte da cauda da distribuição, a parte que interessa para a modelagem de risco, obtém-se uma estimação muito mais próxima da realidade que os dados apresentam.
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-gpdfit}
-	\caption{Qualidade do ajuste dos dados de inovações em excesso contra uma GPD de referência. Período dentro da amostra.}
-	\label{fig:artigo-gpdfit}
-\end{figure}
-
 \section{Avaliação dos modelos}
 \label{sec:avaliacao}
 
@@ -512,13 +446,6 @@ Para fazer o \emph{backtest}, considere a série $x_1, x_2, \ldots, x_m$, com $m
 O quantil para a definição do limiar \emph{u} é fixo em 0,92, o que resultará em valores distintos de limiar para cada rodada do teste, e possivelmente um número diferente de excessos observados. Entretanto essas diferenças, considerando o tamanho fixo da janela de dados, será muito pequeno em torno de uma unidade apenas. Mantém-se assim, um número de excessos em torno de 120 observações, valor adequado para se fazer as estimativas dos parâmetros da GPD.
 
 A figura \ref{fig:artigo-sp500backtest} apresenta o resultado do \emph{backtest} para dois modelos, EVT condicional e normal incondicional. Entende-se por modelos incondicionais aqueles em que a volatilidade histórica de toda a janela de dados é utilizada para calcular as medias de risco. Claramente se percebe como o modelo condicional, que utiliza a última estimação para a volatilidade dos resíduos padronizados e então escalá-los para obter a medida de risco, é muito mais responsivo a alterações no regime de volatilidade do ativo. Um modelo incondicional, por sua vez, não responde de forma acentuada a variações de curto-prazo na volatilidade do ativo, pois estas observações mais extremas são atenuadas em meio a todas as outras observações utilizadas da janela de dados.
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-sp500backtest}
-	\caption{Teste fora da amostra para o S\&P500. O modelo EVT condicional (linha pontilhada) é muito mais reativo a mudanças na volatilidade que um modelo normal incondicional (linha tracejada).}
-	\label{fig:artigo-sp500backtest}
-\end{figure}
 
 Uma violação é dita ocorrida quando a perda observada é maior que a medida de risco estimada no dia anterior, $x_{t+1}>VaR^t_\alpha$ para um $\alpha$ dentro do conjunto de níveis de significância, neste artigo $\alpha \in \{0,975; 0,990\}$. A tabela \ref{tab:varviol} apresenta em termos percentuais as violações ocorridas para cada um dos modelos para os níveis de cobertura dados. Os modelos condicionais apresentaram uma tendência a subestimação do risco, com um número superior de violações ao esperado. Os modelos incondicionais, ao contrário, superestimam o risco e apresentam tendência a um número menor de violações. Dentre os modelos estimados o EVT condicional apresentou os percentuais de violações mais próximos ao valor esperado.
 
@@ -589,14 +516,6 @@ Aplicando a metodologia de conjunto de confiança de modelos, este modelo se mos
 Apesar de os modelos condicionais se mostrarem mais adequados a estimação do VaR através dos testes estatísticos apresentados, este tipo de modelo, em virtude de sua grande variabilidade ao longo do tempo no valor estimado da medida de risco, impõe uma barreira de cunho prático a sua implementação. Para alterar o VaR tão drasticamente e em curto período de tempo, a instituição financeira deve ser capaz de rapidamente alterar a alocação de ativos de seu portfólio, o que não é a realidade da grande maioria destas instituições. O mercado pode não possuir a liquidez ou a profundidade necessária para realizar estas operações, isso sem contar os custos envolvidos nas transações. \cite{Danielsson2000} fizeram esta crítica aos modelos condicionais para o mercado japonês e chegaram a conclusão que um modelo EVT incondicional, inclusive sem a filtragem inicial, era mais adequado para fins práticos.
 
 O modelo EVT incondicional aqui proposto une estas duas abordagens, tornando-se um modelo intermediário entre condicional e incondicional. A filtragem através de um modelo eGARCH ainda é realizada e os resíduos padrão resultantes são utilizados para estimar o quantil desejado através da EVT, entretanto, ao se calcular a medida de risco são utilizados a média e o desvio padrão \emph{incondicionais} do filtro, resultando em menor volatilidade do VaR. Este procedimento ainda apresenta algum grau de agrupamento das violações ao VaR, porém possui cobertura muito melhor que os demais modelos incondicionais, conforme a tabela \ref{tab:vartest_suma}.
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-sp500evt}
-	\caption{Teste fora da amostra para o S\&P500. O modelo EVT condicional (linha pontilhada) é muito mais reativo a mudanças na volatilidade que o modelo EVT incondicional filtrado (linha tracejada).}
-	\label{fig:artigo-sp500evt}
-\end{figure}
-\todo{Encontrar um lugar para a figura do modelo EVT cond. vs incond.}
 
 \appendix
 \section{}
@@ -685,5 +604,84 @@ O modelo t-Student incondicional (ut) segue o mesmo procedimento que o modelo an
 \section*{Referências}
 
 \bibliography{library}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-retornos}
+	\caption{Retornos dos índices do estudo. Período completo entre 01/01/2003 a 30/08/2017.}
+	\label{fig:artigo-retornos}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-qqplots}
+	\caption{Análise de normalidade dos retornos através de gráficos quantil-quantil.}
+	\label{fig:artigo-qqplots}
+\end{figure}
+
+
+% Figuras com os gráficos ACF antes e depois da filtragem eGARCH
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-acf-IBovespa}
+	\caption{Ibovespa. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
+	\label{fig:artigo-acf-ibovespa}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-acf-IPC}
+	\caption{IPC. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
+	\label{fig:artigo-acf-ipc}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-acf-IPSA}
+	\caption{IPSA. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
+	\label{fig:artigo-acf-ipsa}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-acf-Merval}
+	\caption{Merval. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
+	\label{fig:artigo-acf-merval}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-acf-SP-TSE}
+	\caption{S\&P TSE. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
+	\label{fig:artigo-acf-sptse}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-acf-SP500}
+	\caption{S\&P500. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
+	\label{fig:artigo-acf-sp500}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-gpdfit}
+	\caption{Qualidade do ajuste dos dados de inovações em excesso contra uma GPD de referência. Período dentro da amostra.}
+	\label{fig:artigo-gpdfit}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-sp500backtest}
+	\caption{Teste fora da amostra para o S\&P500. O modelo EVT condicional (linha pontilhada) é muito mais reativo a mudanças na volatilidade que um modelo normal incondicional (linha tracejada).}
+	\label{fig:artigo-sp500backtest}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-sp500evt}
+	\caption{Teste fora da amostra para o S\&P500. O modelo EVT condicional (linha pontilhada) é muito mais reativo a mudanças na volatilidade que o modelo EVT incondicional filtrado (linha tracejada).}
+	\label{fig:artigo-sp500evt}
+\end{figure}
 
 \end{document}
