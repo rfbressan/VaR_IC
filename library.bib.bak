@@ -112,41 +112,41 @@
   Mendeley-tags            = {TCC}
 }
 
-@Misc{BankingSupervision2014,
+@TechReport{BankingSupervision2014,
   author        = {Basel Committee on Banking Supervision},
   title         = {{Basel III: The net stable funding ratio}},
-  year          = {2014},
   institution   = {Bank for International Settlements},
+  year          = {2014},
   keywords      = {TCC},
   mendeley-tags = {TCC},
   url           = {http://www.bis.org/bcbs/publ/d295.pdf},
 }
 
-@Misc{BankingSupervision2013,
+@TechReport{BankingSupervision2013,
   author        = {Basel Committee on Banking Supervision},
   title         = {{Basel III: The liquidity coverage ratio and liquidity risk monitoring tools}},
-  year          = {2013},
   institution   = {Bank for International Settlements},
+  year          = {2013},
   keywords      = {TCC},
   mendeley-tags = {TCC},
   url           = {http://www.bis.org/publ/bcbs238.pdf},
 }
 
-@Misc{BankingSupervision2013a,
+@TechReport{BankingSupervision2013a,
   author      = {Basel Committee on Banking Supervision},
   title       = {{Fundamental review of the trading book: A revised market risk framework}},
-  month       = {oct},
-  year        = {2013},
   institution = {Bank for International Settlements},
+  year        = {2013},
+  month       = {oct},
   url         = {http://www.bis.org/publ/bcbs265.pdf},
 }
 
-@Misc{BankingSupervision2011,
+@TechReport{BankingSupervision2011,
   author        = {Basel Committee on Banking Supervision},
   title         = {{Basel III: A global regulatory framework for more resilient banks and banking systems}},
+  institution   = {Bank for International Settlements},
   year          = {2011},
   edition       = {revised ve},
-  institution   = {Bank for International Settlements},
   keywords      = {TCC},
   mendeley-tags = {TCC},
   url           = {http://www.bis.org/publ/bcbs189.pdf},
