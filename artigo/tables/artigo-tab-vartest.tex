@@ -1,79 +1,32 @@
-% latex table generated in R 3.4.3 by xtable 1.8-2 package
-% Sat Jan 20 08:49:41 2018
-\begin{longtable}{llrrrrrr}
+% latex table generated in R 3.4.4 by xtable 1.8-2 package
+% Thu May 10 07:51:53 2018
+\begin{longtable}{llrrrrrrrr}
 \caption{Testes estatísticos para o VaR. Teste incondicional de Kupiec, \emph{LRuc}, e teste de
              independência por duração de Christoffersen e Pelletier, \emph{LRdur}. Os modelos testados
 são: EVT condicional (cevt), Normal condicional (cnorm), t-Student condicional (ct), Riskmetrics 
 (riskmetrics), EVT incondicioanl (uevt), Normal incondicional (unorm) e t-Student incondicional (ut).
-Valores p maiores que 0,05 foram omitidos. (Período fora da amostra entre 02/01/2009 e 30/08/2017).} \\ 
+Valores p maiores que 0,05 foram omitidos. (Período fora da amostra entre 02/01/2015 08/05/2018 .} \\ 
   \toprule
-Modelo & Estatística & IBovespa & IPC & IPSA & Merval & S\&P TSE & S\&P500 \\ 
+Modelo & Estatística & Bovespa & Consumo & Energia & Financeiro & Governanca & Industrial & Materiais & Utilities \\ 
   \midrule
-  \endfirsthead
-\caption{continued \ldots}\\
-  \toprule
-  Modelo & Estatística & IBovespa & IPC & IPSA & Merval & S\&P TSE & S\&P500 \\ 
-  \midrule
-  \endhead
-
-Cobertura 1\% &  &  &  &  &  &  &  \\ 
-  cevt & LRuc & 0.92 & 0.02 & 1.27 & 1.58 & 0.07 & 0.07 \\ 
-  cevt & LRuc p-valor &  &  &  &  &  &  \\ 
-  cevt & LRdur & 0.98 & 2.04 & 0.29 & 2.34 & 0.37 & 3.92 \\ 
-  cevt & LRdur p-valor &  &  &  &  &  & (0.05) \\ 
-  cnorm & LRuc & 3.78 & 15.16 & 9.15 & 24.00 & 11.22 & 20.57 \\ 
-  cnorm & LRuc p-valor &  & (0.00) & (0.00) & (0.00) & (0.00) & (0.00) \\ 
-  cnorm & LRdur & 2.46 & 0.58 & 0.02 & 1.99 & 0.02 & 0.39 \\ 
-  cnorm & LRdur p-valor &  &  &  &  &  &  \\ 
-  ct & LRuc & 3.78 & 17.94 & 9.15 & 25.66 & 12.43 & 25.32 \\ 
-  ct & LRuc p-valor &  & (0.00) & (0.00) & (0.00) & (0.00) & (0.00) \\ 
-  ct & LRdur & 2.46 & 0.66 & 0.02 & 2.94 & 0.00 & 0.19 \\ 
-  ct & LRdur p-valor &  &  &  &  &  &  \\ 
-  riskmetrics & LRuc & 4.56 & 20.91 & 19.54 & 29.10 & 34.26 & 32.22 \\ 
-  riskmetrics & LRuc p-valor & (0.03) & (0.00) & (0.00) & (0.00) & (0.00) & (0.00) \\ 
-  riskmetrics & LRdur & 1.05 & 0.07 & 4.93 & 3.16 & 0.00 & 2.11 \\ 
-  riskmetrics & LRdur p-valor &  &  & (0.03) &  &  &  \\ 
-  uevt & LRuc & 1.53 & 4.07 & 1.61 & 0.72 & 0.80 & 2.18 \\ 
-  uevt & LRuc p-valor &  & (0.04) &  &  &  &  \\ 
-  uevt & LRdur & 1.20 & 3.21 & 10.38 & 8.29 & 35.76 & 28.49 \\ 
-  uevt & LRdur p-valor &  &  & (0.00) & (0.00) & (0.00) & (0.00) \\ 
-  unorm & LRuc & 0.59 & 0.66 & 7.85 & 6.82 & 1.67 & 0.77 \\ 
-  unorm & LRuc p-valor &  &  & (0.01) & (0.01) &  &  \\ 
-  unorm & LRdur & 2.49 & 9.73 & 7.92 & 4.70 & 40.84 & 31.79 \\ 
-  unorm & LRdur p-valor &  & (0.00) & (0.00) & (0.03) & (0.00) & (0.00) \\ 
-  ut & LRuc & 9.33 & 9.57 & 13.51 & 0.41 & 6.54 & 5.32 \\ 
-  ut & LRuc p-valor & (0.00) & (0.00) & (0.00) &  & (0.01) & (0.02) \\ 
-  ut & LRdur & 0.52 & 0.66 & 16.16 & 8.62 & 11.24 & 18.50 \\ 
-  ut & LRdur p-valor &  &  & (0.00) & (0.00) & (0.00) & (0.00) \\ 
-  Cobertura 2.5\% &  &  &  &  &  &  &  \\ 
-  cevt & LRuc & 0.01 & 0.00 & 0.02 & 1.33 & 0.36 & 0.24 \\ 
-  cevt & LRuc p-valor &  &  &  &  &  &  \\ 
-  cevt & LRdur & 0.39 & 0.55 & 0.03 & 2.82 & 0.36 & 0.27 \\ 
-  cevt & LRdur p-valor &  &  &  &  &  &  \\ 
-  cnorm & LRuc & 0.11 & 4.38 & 0.67 & 8.71 & 10.10 & 13.21 \\ 
-  cnorm & LRuc p-valor &  & (0.04) &  & (0.00) & (0.00) & (0.00) \\ 
-  cnorm & LRdur & 0.43 & 0.14 & 0.37 & 0.54 & 0.86 & 0.01 \\ 
-  cnorm & LRdur p-valor &  &  &  &  &  &  \\ 
-  ct & LRuc & 0.11 & 3.86 & 0.17 & 7.99 & 10.10 & 13.21 \\ 
-  ct & LRuc p-valor &  & (0.05) &  & (0.00) & (0.00) & (0.00) \\ 
-  ct & LRdur & 0.43 & 0.10 & 0.32 & 0.51 & 0.86 & 0.01 \\ 
-  ct & LRdur p-valor &  &  &  &  &  &  \\ 
-  riskmetrics & LRuc & 4.17 & 8.79 & 5.60 & 6.63 & 21.18 & 23.10 \\ 
-  riskmetrics & LRuc p-valor & (0.04) & (0.00) & (0.02) & (0.01) & (0.00) & (0.00) \\ 
-  riskmetrics & LRdur & 7.73 & 1.55 & 3.58 & 1.00 & 0.26 & 2.50 \\ 
-  riskmetrics & LRdur p-valor & (0.01) &  &  &  &  &  \\ 
-  uevt & LRuc & 5.90 & 13.12 & 2.95 & 0.00 & 0.05 & 0.39 \\ 
-  uevt & LRuc p-valor & (0.02) & (0.00) &  &  &  &  \\ 
-  uevt & LRdur & 16.55 & 14.30 & 20.53 & 6.93 & 30.09 & 42.63 \\ 
-  uevt & LRdur p-valor & (0.00) & (0.00) & (0.00) & (0.01) & (0.00) & (0.00) \\ 
-  unorm & LRuc & 6.69 & 6.24 & 19.86 & 3.27 & 0.36 & 3.19 \\ 
-  unorm & LRuc p-valor & (0.01) & (0.01) & (0.00) &  &  &  \\ 
-  unorm & LRdur & 14.09 & 19.01 & 8.98 & 13.89 & 40.84 & 31.24 \\ 
-  unorm & LRdur p-valor & (0.00) & (0.00) & (0.00) & (0.00) & (0.00) & (0.00) \\ 
-  ut & LRuc & 9.39 & 7.91 & 15.52 & 2.40 & 0.10 & 5.01 \\ 
-  ut & LRuc p-valor & (0.00) & (0.00) & (0.00) &  &  & (0.03) \\ 
-  ut & LRdur & 13.54 & 19.03 & 6.98 & 17.92 & 42.74 & 31.96 \\ 
-  ut & LRdur p-valor & (0.00) & (0.00) & (0.01) & (0.00) & (0.00) & (0.00) \\ 
+Cobertura 1\% &  &  &  &  &  &  &  &  &  \\ 
+  cevt & LRuc & 1.51 & 0.35 & 0.35 & 0.01 & 0.20 & 0.01 & 0.20 & 0.83 \\ 
+  cevt & LRuc p-valor &  &  &  &  &  &  &  &  \\ 
+  cevt & LRdur & 1.00 & 2.32 & 2.27 & 0.20 & 0.89 & 0.82 & 0.05 & 1.66 \\ 
+  cevt & LRdur p-valor &  &  &  &  &  &  &  &  \\ 
+  cnorm & LRuc & 0.01 & 3.33 & 5.75 & 0.83 & 1.50 & 0.35 & 0.01 & 3.33 \\ 
+  cnorm & LRuc p-valor &  &  & 0.02 &  &  &  &  &  \\ 
+  cnorm & LRdur & 4.37 & 1.17 & 10.01 & 0.02 & 0.20 & 1.11 & 1.76 & 2.64 \\ 
+  cnorm & LRdur p-valor & 0.04 &  & 0.00 &  &  &  &  &  \\ 
+  Cobertura 2.5\% &  &  &  &  &  &  &  &  &  \\ 
+  cevt & LRuc & 0.02 & 0.36 & 0.36 & 0.14 & 0.14 & 0.26 & 0.01 & 0.26 \\ 
+  cevt & LRuc p-valor &  &  &  &  &  &  &  &  \\ 
+  cevt & LRdur & 1.45 & 0.23 & 6.79 & 1.37 & 0.79 & 0.83 & 1.35 & 7.77 \\ 
+  cevt & LRdur p-valor &  &  & 0.01 &  &  &  &  & 0.01 \\ 
+  cnorm & LRuc & 0.14 & 0.01 & 0.26 & 0.36 & 0.53 & 0.88 & 0.14 & 0.88 \\ 
+  cnorm & LRuc p-valor &  &  &  &  &  &  &  &  \\ 
+  cnorm & LRdur & 1.39 & 0.83 & 5.34 & 2.13 & 0.17 & 2.85 & 0.50 & 7.40 \\ 
+  cnorm & LRdur p-valor &  &  & 0.02 &  &  &  &  & 0.01 \\ 
    \bottomrule
 \label{tab:vartest}
 \end{longtable}

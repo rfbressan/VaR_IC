@@ -1,0 +1,55 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}			% Selecao de codigos de fonte.
+\usepackage[utf8]{inputenc}		% Codificacao do documento (conversão automática dos acentos)
+\usepackage{longtable}
+\usepackage{amsmath,amssymb,mathrsfs, amsthm}	% Comandos matemáticos avançados 
+\usepackage{booktabs}
+\usepackage{graphicx}	         % Inclusão de gráficos
+\usepackage{float}
+\usepackage[brazil]{babel}
+
+\begin{document}
+	\input{tables/artigo-tab-descritivas.tex}
+	
+	\input{tables/artigo-tab-garchcoef.tex}
+	
+	\input{tables/artigo-tab-garchstats.tex}
+
+	\input{tables/artigo-tab-evtcoef.tex}
+
+	\input{tables/artigo-tab-varviol.tex}
+	
+	\input{tables/artigo-tab-vartest}
+	
+	\input{tables/artigo-tab-vartest_suma}
+	
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/artigo-retornos}
+		\caption{Retornos dos índices do estudo. Período completo entre 01/01/2003 a 30/08/2017.}
+		\label{fig:artigo-retornos}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/artigo-qqplots}
+		\caption{Análise de normalidade dos retornos através de gráficos quantil-quantil.}
+		\label{fig:artigo-qqplots}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/artigo-gpdfit}
+		\caption{Qualidade do ajuste dos dados de inovações em excesso contra uma GPD de referência. Período dentro da amostra.}
+		\label{fig:artigo-gpdfit}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{figs/artigo-ibovevt}
+		\caption{Teste fora da amostra para o Ibovespa. O modelo EVT condicional (linha pontilhada) é muito mais \textbf{reativo a mudanças na volatilidade que o modelo EVT incondicional filtrado (linha tracejada)}.}
+		\label{fig:artigo-sp500evt}
+	\end{figure}
+
+\end{document}

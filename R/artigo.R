@@ -1,15 +1,19 @@
-## Artigo a ser proposto na disciplina MEFCA. Baseado no método de McNeil2000
+## Artigo a ser proposto Seminario de Iniciacao Cientifica 2018. Baseado no método 
+## de McNeil2000
 ## Filtar os retornos diários de vários índices primeiramente por um modelo 
 ## ARMA-GARCH para em seguida ajustar uma distribuição GPD aos resíduos.
 ## Com esta modelagem é possível estimar os valores de VaR e ES
-# Indices de bolsas utilizados
-# BVSP - Bovespa Brasil
-# MERV - Merval Argentina
-# IPSA - IPSA Chile
-# MXX - IPC México
-# GSPC - SP500 EUA
-# GSPTSE - SP/TSX Canada
-# Dados entre 31/08/2005 a 31/08/2017
+# Indices setoriais utilizados
+# IBOV
+# ICON
+# INDX
+# IFNC
+# IGCX
+# IMAT
+# UTIL
+# IEEX
+
+# Dados entre 01/01/2010 A 07/05/2018
 
 # Inicio ------------------------------------------------------------------
 packages <- c("fExtremes", "rugarch", "xts", "PerformanceAnalytics", "xtable", "tidyverse", 
@@ -28,36 +32,39 @@ library(kableExtra)
 library(xtable)
 library(WeightedPortTest)
 #library(CADFtest) # Teste Dickey-Fuller
+library(evir)
 library(xts)
 library(PerformanceAnalytics)
 library(fExtremes)
 library(rugarch)
 source("./R/artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
 
-# AMOSTRA COM DADOS A PARTIR DE 31-08-2000
+# AMOSTRA COM DADOS A PARTIR DE 01-01-2010
 # 
-start <- as.Date("2002-12-31")
-end <- as.Date("2008-12-31")
+start <- as.Date("2010-01-01")
+end <- as.Date("2014-12-31")
 backstart <- end + 1
 u_quant <- 0.92 # quantile for treshold u
 options(xtable.booktabs = TRUE) # utilizar o pacote booktabs no Latex
 options(xtable.tabular.environment = "longtable") # Utiliza o pacote longtable no Latex
 options(xtable.floating = FALSE) # Nao pode ser utilizado em conjunto com longtable
 
-list.returns <- function(asset, start) {
-  tb <- read_csv(paste0("./input/artigo-", asset, ".csv"), 
-                 col_types = cols_only(Date = col_date(), `Adj Close` = col_double()))
-  prices <- xts(tb$`Adj Close`, order.by = tb$Date)[paste0(start, "/")]
-  colnames(prices) <- "close"
-  return(na.omit(Return.calculate(prices, method = "log")))
+######### Leitura do arquivo setoriais.csv
+setor_df <- read_csv("./input/setoriais.csv")
+setor_xts <- xts(setor_df[, -1], order.by = setor_df$Data) %>% 
+  Return.calculate(method = "log") %>% 
+  na.omit()
+setor_xts <- setor_xts[paste0(start, "/")]
+assets <- colnames(setor_xts) # Simbolos dos indices
+last <- index(last(setor_xts)) # Ultima data na amostra
+lista <- vector(mode = "list", length = length(assets))
+for (i in seq_along(assets)) {
+  lista[[i]] <- setor_xts[, i]
 }
-# Gera um tible com uma coluna com o codigo do ativo, a serie de retornos - ts e
-# o nome do indice - id_name
-assets <- c("BVSP", "GSPC", "GSPTSE", "IPSA", "MERV", "MXX")
-lista <- lapply(assets, list.returns, start)
 names(lista) <- assets
 assets.tbl <- enframe(lista) %>% 
-  bind_cols(tibble(id_name = c("IBovespa", "S&P500", "S&P TSE", "IPSA", "Merval", "IPC")))
+  bind_cols(tibble(id_name = c("Bovespa", "Consumo", "Energia", "Financeiro", 
+                               "Governanca", "Materiais", "Industrial", "Utilities")))
 
 colnames(assets.tbl) <- c("indice", "ts", "id_name")
 # Qual o tamanho da janela in sample?
@@ -100,14 +107,14 @@ q2 <- jb
 obs <- rep(0, ncol_x)
 digits <- rbind(m5, jb, p, q, p, q2, p, obs)
 cap <- paste("Estatísticas descritivas dos retornos (amostra completa de",
-           format(start+1, "%d/%m/%Y"), "a 30/08/2017).")
+           format(start+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"),".")
 tab1 <- xtable(df.descritivas, 
                caption = cap,
                digits = digits,
                label = "tab:descritivas",
                auto = TRUE)
 print.xtable(tab1, 
-             file = "./tables/artigo-tab-descritivas.tex",
+             file = "./artigo/tables/artigo-tab-descritivas.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
@@ -115,11 +122,11 @@ print.xtable(tab1,
              include.rownames = FALSE)
 
 # Graficos retornos------------------------------------------------------
-jpeg(filename = "./figs/artigo-retornos.jpeg",
+jpeg(filename = "./artigo/figs/artigo-retornos.jpeg",
      width = 640, height = 800, quality = 100)
 list.plot <- lapply(seq_along(assets.tbl$indice), 
                     function(x) {autoplot(assets.tbl$ts[[x]])+
-                        labs(x = "", y = "", title = paste(assets.tbl$id_name[[x]], "retornos"))}) 
+                        labs(x = "", y = "", title = assets.tbl$id_name[[x]])}) 
 
 grid.arrange(grobs = list.plot)
 dev.off()
@@ -137,9 +144,9 @@ dev.off()
 # adf
 
 # Teste para graficos QQ normal
-jpeg(filename = "./figs/artigo-qqplots.jpeg",
+jpeg(filename = "./artigo/figs/artigo-qqplots.jpeg",
      width = 640, height = 800, quality = 100)
-op <- par(mfrow = c(3,2),
+op <- par(mfrow = c(4,2),
           mar = c(4, 3, 3, 2))
 for(i in 1:dim(assets.tbl)[1]){
   qqnormPlot(assets.tbl$ts[[i]], labels = FALSE, title = FALSE, mtext = FALSE,
@@ -150,17 +157,14 @@ for(i in 1:dim(assets.tbl)[1]){
 par(op)
 dev.off()
 
-# Modelo eGARCH in Sample-----------------------------------------------------------
-## Ja as distribuicoes de zt a normal e t-Student nao apresentam bom fit
-## A Johnson, GED, NIG, SkewStudent e a Ghyp sao melhores
-## Lembrando, o modelo das perdas é AR(1) e a volatilidade é eGARCH(2,1)
-## L_t=mu_t+e_t      mu_t=mu+ar1*mu_t-1+e_t
-## e_t=sigma_t*z_t   ln(sigma^2_t)=omega+alpha1*z_t-1+gamma1(|z_t-1|-E[|zt-1|])+beta1*ln(sigma^2_t-1)
+# Modelo GARCH in Sample-----------------------------------------------------------
+## Modelo GARCH(1,1) para a variancia condicional
+## Modelo AR(1) para a eq da media
 ## LEMBRAR: ts contem os retornos e não as perdas!
 
 # Uma especificacao para cada ativo
 ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
-                     variance.model = list(model = "eGARCH", garchOrder = c(2,1)),
+                     variance.model = list(model = "sGARCH", garchOrder = c(1,1)),
                      distribution.model = "norm")
 garch.specs <- replicate(length(assets), ruspec)
 names(garch.specs) <- assets
@@ -168,7 +172,7 @@ garch.specs <- enframe(garch.specs)
 colnames(garch.specs) <- c("indice", "spec")
 ## Modelando as PERDAS!! parametro eh loss para a funcao ugarchfit
 # Deixamos um numero outsample para fazer o backtesting. Diferente para cada ativo
-# garch.models vai conter o modelo eGARCH dentro da amostra. Apresentar os 
+# garch.models vai conter o modelo GARCH dentro da amostra. Apresentar os 
 # parametros e seus erros padrao robustos
 # Depois apresentar novamente estatisticas como JB, Q e Q^2 para os erros padronizados
 garch.models <- assets.tbl[,1:3] %>% 
@@ -182,22 +186,23 @@ garch.models <- assets.tbl[,1:3] %>%
          ts = NULL)
 
 # Mostra a convergencia para cada modelo
-#lapply(garch.models$garch_fit, convergence)
+lapply(garch.models$garch_fit, convergence)
 
 # Sumarios dos modelos GARCH
 #show(garch.models$garch_fit[[1]])
 
-## Construindo a tabela com os parametros estimados do eGARCH in sample
+## Construindo a tabela com os parametros estimados do GARCH in sample
 garch.models.par <- garch.models %>% 
   transmute(id_name = id_name,
             mu = map(.$garch_fit, ~.x@fit$robust.matcoef["mu", c(1, 4)]), # Estimativa e P-valor
             ar1 = map(.$garch_fit, ~.x@fit$robust.matcoef["ar1", c(1, 4)]),
             omega = map(.$garch_fit, ~.x@fit$robust.matcoef["omega", c(1, 4)]),
             alpha1 = map(.$garch_fit, ~.x@fit$robust.matcoef["alpha1", c(1, 4)]),
-            alpha2 = map(.$garch_fit, ~.x@fit$robust.matcoef["alpha2", c(1, 4)]),
-            beta1 = map(.$garch_fit, ~.x@fit$robust.matcoef["beta1", c(1, 4)]),
-            gamma1 = map(.$garch_fit, ~.x@fit$robust.matcoef["gamma1", c(1, 4)]),
-            gamma2 = map(.$garch_fit, ~.x@fit$robust.matcoef["gamma2", c(1, 4)])) %>% 
+#            alpha2 = map(.$garch_fit, ~.x@fit$robust.matcoef["alpha2", c(1, 4)]),
+            beta1 = map(.$garch_fit, ~.x@fit$robust.matcoef["beta1", c(1, 4)])) %>% 
+            # gamma1 = map(.$garch_fit, ~.x@fit$robust.matcoef["gamma1", c(1, 4)]),
+            # gamma2 = map(.$garch_fit, ~.x@fit$robust.matcoef["gamma2", c(1, 4)])) %>% 
+
   gather(key = stat_name, value = stat_value, -id_name, factor_key = TRUE) %>% 
   spread(key = id_name, value = stat_value) %>% 
   unnest() 
@@ -207,14 +212,14 @@ garch.models.par$stat_name <- c("$\\mu$", "",
                                 "$\\phi_1$", "",
                                 "$\\omega$", "",
                                 "$\\alpha_1$", "",
-                                "$\\alpha_2$", "",
-                                "$\\beta_1$", "",
-                                "$\\gamma_1$", "",
-                                "$\\gamma_2$", "")
+                                #"$\\alpha_2$", "",
+                                "$\\beta_1$", "")#,
+                                # "$\\gamma_1$", "",
+                                # "$\\gamma_2$", "")
 
 colnames(garch.models.par)[1] <- "Parâmetros"
 # Xtable
-cap <- paste("Par\\^ametros estimados do modelo eGARCH. Valores p apresentados de acordo 
+cap <- paste("Par\\^ametros estimados do modelo GARCH. Valores p apresentados de acordo 
 com erros padrão robustos e valores menores que 0,01 não são mostrados. (Período 
              dentro da amostra entre",
              format(start+1, "%d/%m/%Y"), "a",
@@ -225,29 +230,15 @@ tab2 <- xtable(garch.models.par,
                label = "tab:garchcoef",
                auto = TRUE)
 print.xtable(tab2, 
-             file = "./tables/artigo-tab-garchcoef.tex",
+             file = "./artigo/tables/artigo-tab-garchcoef.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
              sanitize.text.function = function(x) {x},
              include.rownames = FALSE)
 
-# Gerar 6 figuras com estes 4 graficos ACF
-for(i in 1:dim(garch.models)[1]) {
-  pdf(file = paste0("./figs/artigo-acf-", garch.models$id_name[i], ".pdf"),
-       width = 7, height = 7, colormodel = "grey")
-  op <- par(mfrow=c(2,2))
-  plot(garch.models$garch_fit[[i]], which = 4)
-  plot(garch.models$garch_fit[[i]], which = 5)
-  plot(garch.models$garch_fit[[i]], which = 10)
-  plot(garch.models$garch_fit[[i]], which = 11)
-  par(op)
-  dev.off()
-}
-file.rename(c("./figs/artigo-acf-S&P500.pdf", "./figs/artigo-acf-S&P TSE.pdf"), 
-            c("./figs/artigo-acf-SP500.pdf", "./figs/artigo-acf-SP-TSE.pdf"))
-## Estatisticas modelo eGARCH in sample
-# JB, Q, Q^2 e Sign bias para os residuos padronizados
+## Estatisticas modelo GARCH in sample
+# JB, Q, Q^2 para os residuos padronizados
 garch.models.stats <- garch.models %>%
   transmute(id_name = id_name,
             resid_z = map(.$garch_fit, ~residuals(.x, standardize = TRUE)),
@@ -263,9 +254,7 @@ garch.models.stats <- garch.models %>%
                                                             sqrd.res = TRUE)$statistic),
             q2_10pvalue = map_dbl(resid_z, ~Weighted.Box.test(.x, lag = 10, 
                                                             type = "Ljung-Box", 
-                                                            sqrd.res = TRUE)$p.value),
-            sign_bias = map_dbl(.$garch_fit, ~signbias(.x)[1,1]),
-            sign_pvalue = map_dbl(.$garch_fit, ~signbias(.x)[1,2])) %>% 
+                                                            sqrd.res = TRUE)$p.value)) %>% 
   mutate(resid_z = NULL) %>% 
   gather(key = stat_name, value = stat_value, -id_name, factor_key = TRUE) %>% 
   spread(key = id_name, value = stat_value)
@@ -273,11 +262,10 @@ garch.models.stats <- garch.models %>%
 garch.models.stats$stat_name <- c("Curtose exc.",
                                   "Jarque-Bera", "",
                                   "Q(10)", "",
-                                  "$Q^2(10)$", "",
-                                  "Sign-bias", "")
+                                  "$Q^2(10)$", "")
 colnames(garch.models.stats)[1] <- "Estatística"
 # Xtable
-cap <- paste("Estatísticas de diagnóstico para o modelo eGARCH. 
+cap <- paste("Estatísticas de diagnóstico para o modelo GARCH. 
                (Período dentro da amostra entre",
              format(start+1, "%d/%m/%Y"), "a",
              format(end, "%d/%m/%Y"), ").")
@@ -288,7 +276,7 @@ tab3 <- xtable(garch.models.stats,
                label = "tab:garchstats",
                auto = TRUE)
 print.xtable(tab3, 
-             file = "./tables/artigo-tab-garchstats.tex",
+             file = "./artigo/tables/artigo-tab-garchstats.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
@@ -358,7 +346,7 @@ tab4 <- xtable(evtcoef,
                label = "tab:evtcoef",
                auto = TRUE)
 print.xtable(tab4, 
-             file = "./tables/artigo-tab-evtcoef.tex",
+             file = "./artigo/tables/artigo-tab-evtcoef.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
@@ -366,64 +354,18 @@ print.xtable(tab4,
              include.rownames = FALSE)
 
 ## Gráficos para analisar a qualidade do gpdFit
-pdf(file = "./figs/artigo-gpdfit.pdf",
+## ATENCAO: rodar este bloco e a cada 2 interacoes, escolher primeiro 1
+## e depois 0. Quantas vezes forem o numero de ativos.
+## No final rodar o par(op) e entao o dev.off para liberar o arquivo
+pdf(file = "./artigo/figs/artigo-gpdfit.pdf",
     width = 7, height = 8,
     colormodel = "grey")
-  op <- par(mfrow=c(3,2))
+  op <- par(mfrow=c(4,2))
   for(i in seq_len(dim(evt.models)[1])){
     plot(evt.models$gpdfit[[i]], main = evt.models$id_name[i])
   }
   par(op)
 dev.off()
-
-# for(i in seq_len(dim(garch.models)[1])) {
-#   jpeg(filename = paste0("./figs/artigo-evtgof-", garch.models$indice[i], ".jpeg"),
-#        width = 800, height = 800, quality = 100)
-#   op <- par(mfrow=c(2,2))
-#   plot(evt.models$gpdfit[[i]], which='all')
-#   par(op)
-#   dev.off()
-# }
-
-# Reconstruindo o VaR e o ES condicionais in Sample ---------------------------------
-
-## VaR: xq_t = mu_t+1 + sigma_t+1*zq
-## ES: Sq_t = mu_t+1 + sigma_t+1*sq
-# riskmeasures <- evt.models %>%
-#   transmute(indice = indice,
-#             id_name = id_name,
-#             loss_in = loss_in,
-#             VaR975 = pmap(., ~(..6+..7*..15)), ## VaR = mu_t+1 + sigma_t+1*zq
-#             VaR990 = pmap(., ~(..6+..7*..16)),
-#             ES975 = pmap(., ~(..6+..7*..17)),  ## ES = mu_t+1 + sigma_t+1*sq
-#             ES990 = pmap(., ~(..6+..7*..18)))
-# %>% 
-#   mutate(out_VaR975 = pmap(., ~..6[c((..5+1):(..5+..4-1))]), #out_VaR = VaR[(n_old+1):(n_old+out-1)]
-#          out_VaR990 = pmap(., ~..7[c((..5+1):(..5+..4-1))]),
-#          out_ES975 = pmap(., ~..8[c((..5+1):(..5+..4-1))]),  #out_ES = ES[(n_old+1):(n_old+out-1)]
-#          out_ES990 = pmap(., ~..9[c((..5+1):(..5+..4-1))]),
-#          out_loss = map2(loss, n_old, ~coredata(.x[-c(1:(.y+1))])[, 1, drop = TRUE])) #out_los = loss[-c(1:n_old+1)]
-# Plotando os valores dentro da amostra
-# plot_risks <- function(loss, VaR, ES, id_name) {
-#   xts <- merge(loss = loss, VaR = VaR, ES = ES)
-#   plot <- ggplot(xts, aes(x = Index))+
-#     geom_line(aes(y = loss), color = "black")+
-#     geom_line(aes(y = VaR), color = "red")+
-#     geom_line(aes(y = ES), color = "darkgreen")+
-#     labs(x = "", y = "", title = id_name)
-#   return(plot)
-# }
-# VaR_plots <- riskmeasures %>% 
-#   transmute(VaR975_plot = pmap(., ~plot_risks(..3, ..4, ..6, ..2)),
-#             VaR990_plot = pmap(., ~plot_risks(..3, ..5, ..7, ..2)))
-# VaR_plots$VaR975_plot[[1]]+
-#   coord_cartesian(xlim = c(as.Date("2011-08-31"), 
-#                            as.Date("2014-08-31")))
-# # Verifica quantas violacoes
-# sum(riskmeasures$loss_in[[1]] > riskmeasures$VaR975[[1]])
-# 
-# grid.arrange(grobs = VaR_plots$VaR975_plot)
-# grid.arrange(grobs = VaR_plots$VaR990_plot)
 
 # Backtesting com refit ----------------------------------------------
 # Monta o tibble para as estimacoes out of sample
@@ -443,8 +385,8 @@ assets_os.tbl <- garch.models %>%
 realized <- assets_os.tbl %>% 
   transmute(indice = indice,
             real = pmap(., ~..3[(..4+2):(..4+..5)])) # real = loss[(window.size+2):(window.size+n.roll)]
-saveRDS(realized, 
-        file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "realized.rds"))
+# saveRDS(realized, 
+#         file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "realized.rds"))
 # Testes estatisticos para o VaR ------------------------------------------
 # Quais testes fazer?
 # VaRTest possui 2 testes, incondicional de Kupiec1995 e condicional de Christoffersen2001
@@ -462,7 +404,9 @@ saveRDS(realized,
 # 4: window.size 
 # 5: n.roll 
 # 6: spec 
-models <- c("cevt", "cnorm", "ct", "uevt", "unorm", "ut", "riskmetrics")
+
+#models <- c("cevt", "cnorm", "ct", "uevt", "unorm", "ut", "riskmetrics")
+models <- c("cevt", "cnorm")
 # teste_assets_os <- readRDS("./input/teste_assets_os.rds") # Copia dados de teste
 # teste_realized <- readRDS("./input/teste_realized.rds")
 # teste_os_roll <- teste_assets_os %>% 
@@ -472,22 +416,22 @@ models <- c("cevt", "cnorm", "ct", "uevt", "unorm", "ut", "riskmetrics")
 
 ## ATENCAO! Aqui eh a rotina de estimacao do backtesting!! Rodar somente na AWS!!
 
-# f <- file("log.txt", open = "wt")
-# sink(f) # Inicia o log no arquivo
-# sink(f, type = "message") # Inclusive mensagens de erro e avisos
-# cat("\nInicio do map roll_fit:", as.character(Sys.time()))
-# os_roll.tbl <- assets_os.tbl %>%
-#   transmute(indice = indice,
-#             id_name = id_name,
-#             roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
-# cat("\nFim do map roll_fit:", as.character(Sys.time()))
-# saveRDS(os_roll.tbl,
-#         file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "os_roll_tbl.rds"))
-# sink(type = "message")
-# sink() # Finaliza o log
+f <- file("log.txt", open = "wt")
+sink(f) # Inicia o log no arquivo
+sink(f, type = "message") # Inclusive mensagens de erro e avisos
+cat("\nInicio do map roll_fit:", as.character(Sys.time()))
+os_roll.tbl <- assets_os.tbl %>%
+  transmute(indice = indice,
+            id_name = id_name,
+            roll.fit = pmap(., ~roll_fit(..3, ..4, ..5, ..6, models)))
+cat("\nFim do map roll_fit:", as.character(Sys.time()))
+saveRDS(os_roll.tbl,
+        file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "os_roll_tbl.rds"))
+sink(type = "message")
+sink() # Finaliza o log
 
-os_roll.tbl <- readRDS(file = "./output/2018-01-02os_roll_tbl.rds")
-realized <- readRDS(file = "./output/2018-01-01realized.rds")
+# os_roll.tbl <- readRDS(file = "./output/2018-01-02os_roll_tbl.rds")
+# realized <- readRDS(file = "./output/2018-01-01realized.rds")
 
 os_roll_unnest <- os_roll.tbl %>% 
   unnest() %>% 
@@ -511,29 +455,29 @@ format(object.size(os_risk.tbl), units = "Kb") # Verifica o tamanho do objeto
 
 # Plota um grafico da evolucao do VaR e das perdas realizadas
 cevt99 <- subset(os_risk.tbl, 
-              subset = (indice == "GSPC" & model_type == "cevt" & coverage == 0.01),
+              subset = (indice == "IBOV" & model_type == "cevt" & coverage == 0.01),
               select = VaR.xts)$VaR.xts[[1]]
-uevt99 <- subset(os_risk.tbl, 
-                  subset = (indice == "GSPC" & model_type == "uevt" & coverage == 0.01),
+cnorm99 <- subset(os_risk.tbl, 
+                  subset = (indice == "IBOV" & model_type == "cnorm" & coverage == 0.01),
                   select = VaR.xts)$VaR.xts[[1]]
 real <- subset(realized,
-               subset = indice == "GSPC",
+               subset = indice == "IBOV",
                select = real)$real[[1]]
 
 plot(real, 
      ylim = c(-0.1, 0.1),
      lwd = 1,
      grid.ticks.on = "years",
-     main = "S&P500 EVT condicional vs incondicional")
+     main = "IBOV EVT vs Normal condicionais")
 lines(cevt99, 
       col = "red",
       lty = "dotted")
 # Abre o arquivo PDF
-pdf(file = "./figs/artigo-sp500evt.pdf",
+pdf(file = "./artigo/figs/artigo-ibovevt.pdf",
     width = 7,
     height = 7,
     colormodel = "grey")
-lines(uevt99,
+lines(cnorm99,
       col = "darkgreen",
       lty = "dashed")
 dev.off() # fecha o arquivo pdf
@@ -563,7 +507,7 @@ varviolations.tbl$cov <- NULL # Retira a coluna cov, que nao eh mais necessaria
 
 # Xtable
 cap <- paste("Percentual de violações. (Período fora da amostra entre",
-             format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+             format(backstart+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"), ".")
 
 tab5 <- xtable(varviolations.tbl, 
                caption = cap,
@@ -571,7 +515,7 @@ tab5 <- xtable(varviolations.tbl,
                label = "tab:varviol",
                auto = TRUE)
 print.xtable(tab5, 
-             file = "./tables/artigo-tab-varviol.tex",
+             file = "./artigo/tables/artigo-tab-varviol.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
@@ -589,7 +533,7 @@ vartest.tbl <- os_risk.tbl %>%
             id_name = id_name,
             model_type = model_type,
             coverage = coverage,
-            VaRtest = pmap(., ~vartest(..4, -coredata(..7), -coredata(..5)))) %>% 
+            VaRtest = pmap(., ~vartest(..4, -coredata(..7), -coredata(..5)))) %>%
   unnest() %>% 
   mutate(dur.LR = 2*(uLL - rLL)) %>% 
   select(id_name, coverage, model_type, uc.LRstat, uc.LRp, dur.LR, LRp) %>% 
@@ -623,7 +567,7 @@ cap <- paste("Testes estatísticos para o VaR. Teste incondicional de Kupiec, \\
              independência por duração de Christoffersen e Pelletier, \\emph{LRdur}. Os modelos testados
 são: EVT condicional (cevt), Normal condicional (cnorm), t-Student condicional (ct), Riskmetrics 
 (riskmetrics), EVT incondicioanl (uevt), Normal incondicional (unorm) e t-Student incondicional (ut).
-Valores p maiores que 0,05 foram omitidos. (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+Valores p maiores que 0,05 foram omitidos. (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"),".")
 
 tab6 <- xtable(vartest.tbl[,-1], 
                caption = cap,
@@ -631,7 +575,7 @@ tab6 <- xtable(vartest.tbl[,-1],
                label = "tab:vartest",
                auto = TRUE)
 print.xtable(tab6, 
-             file = "./tables/artigo-tab-vartest.tex",
+             file = "./artigo/tables/artigo-tab-vartest.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
@@ -643,7 +587,8 @@ print.xtable(tab6,
 cap <- paste("Sumário para o número de rejeições das hipóteses nulas de um modelo 
 corretamente especificado. Nível de confiança a 95\\%. De seis índices com 
 dois testes, resulta em um total de doze rejeições possíveis. 
-(Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+(Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e ", 
+             format(last, "%d/%m/%Y"),".")
 
 suma_tex <- knitr::kable(vartest_suma, 
                          format = "latex", 
@@ -652,7 +597,7 @@ suma_tex <- knitr::kable(vartest_suma,
                          align = "c") %>% 
   add_header_above(c("", "Cobertura 1%" = 2, "Cobertura 2.5%" = 2)) %>% 
   kable_styling(latex_options = "HOLD_position")
-write(suma_tex, "./tables/artigo-tab-vartest_suma.tex")
+write(suma_tex, "./artigo/tables/artigo-tab-vartest_suma.tex")
 
 # tab7 <- xtable(vartest_suma, 
 #                caption = cap,
@@ -676,7 +621,7 @@ write(suma_tex, "./tables/artigo-tab-vartest_suma.tex")
 
 # Plot do VaR e violacoes
 teste_varplot <- os_risk.tbl %>% 
-  subset(subset = (indice == "IPSA" & model_type == "unorm" & coverage == 0.01)) %>% 
+  subset(subset = (indice == "IGCX" & model_type == "cnorm" & coverage == 0.01)) %>% 
   left_join(realized, by = "indice")
 VaRplot(teste_varplot$coverage, -teste_varplot$real[[1]], -teste_varplot$VaR.xts[[1]])
 
@@ -727,7 +672,7 @@ mcs.tbl <- add_row(mcs.tbl, Modelo = "Cobertura 2.5\\%",
 cap <- paste("Teste MCS de Hansen et al. Apresentados os valores p para cada um dos modelos
              dado um nível de cobertura do VaR e índices. Um valor p abaixo do nível de significância
              exclui o modelo do conjunto superior. (Período fora da amostra entre", 
-             format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+             format(backstart+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"),".")
 
 tab8 <- xtable(mcs.tbl[,-1], 
                caption = cap,
@@ -735,7 +680,7 @@ tab8 <- xtable(mcs.tbl[,-1],
                label = "tab:mcs",
                auto = TRUE)
 print.xtable(tab8, 
-             file = "./tables/artigo-tab-mcs.tex",
+             file = "./artigo/tables/artigo-tab-mcs.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = NULL,
@@ -745,7 +690,7 @@ print.xtable(tab8,
 # Xtable mcs_suma
 cap <- paste("Sumário com as exclusões do conjunto de modelos superiores no teste MCS.
              Os modelos condicionais se revelam aqueles com o menor número de exclusões. 
-             (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e 30/08/2017).")
+             (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"),".")
 
 tab9 <- xtable(mcs_suma, 
                caption = cap,
@@ -753,7 +698,7 @@ tab9 <- xtable(mcs_suma,
                label = "tab:mcs_suma",
                auto = TRUE)
 print.xtable(tab9, 
-             file = "./tables/artigo-tab-mcs_suma.tex",
+             file = "./artigo/tables/artigo-tab-mcs_suma.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = function(x) {x},
