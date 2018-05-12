@@ -10,14 +10,13 @@
 # IFNC
 # IGCX
 # IMAT
-# UTIL
-# IEEX
 
 # Dados entre 01/01/2010 A 07/05/2018
 
 # Inicio ------------------------------------------------------------------
-packages <- c("fExtremes", "rugarch", "xts", "PerformanceAnalytics", "xtable", "tidyverse", 
-                      "broom", "purrr", "gridExtra", "ggplot2", "WeightedPortTest")
+packages <- c("fExtremes", "rugarch", "xts", "PerformanceAnalytics", "xtable", 
+              "tidyverse", "ggthemes", "broom", "purrr", "gridExtra", "ggplot2", 
+              "WeightedPortTest")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -26,6 +25,7 @@ if(length(new.packages)) install.packages(new.packages)
 #library(QRM)
 #library(timeSeries)
 library(tidyverse)
+library(ggthemes)
 library(broom)
 library(gridExtra)
 library(kableExtra)
@@ -41,10 +41,10 @@ source("./R/artigo_fun.R") # Carrega a funcao roll_fit para fazer o backtest
 
 # AMOSTRA COM DADOS A PARTIR DE 01-01-2010
 # 
-start <- as.Date("2010-01-01")
-end <- as.Date("2014-12-31")
+start <- as.Date("2009-01-01")
+end <- as.Date("2013-12-31")
 backstart <- end + 1
-u_quant <- 0.92 # quantile for treshold u
+u_quant <- 0.90 # quantile for treshold u
 options(xtable.booktabs = TRUE) # utilizar o pacote booktabs no Latex
 options(xtable.tabular.environment = "longtable") # Utiliza o pacote longtable no Latex
 options(xtable.floating = FALSE) # Nao pode ser utilizado em conjunto com longtable
@@ -63,8 +63,8 @@ for (i in seq_along(assets)) {
 }
 names(lista) <- assets
 assets.tbl <- enframe(lista) %>% 
-  bind_cols(tibble(id_name = c("Bovespa", "Consumo", "Energia", "Financeiro", 
-                               "Governanca", "Materiais", "Industrial", "Utilities")))
+  bind_cols(tibble(id_name = c("Bovespa", "Consumo", "Financeiro", 
+                               "Governanca", "Materiais", "Industrial")))
 
 colnames(assets.tbl) <- c("indice", "ts", "id_name")
 # Qual o tamanho da janela in sample?
@@ -77,7 +77,7 @@ rm(lista)
 df.descritivas <- assets.tbl %>% 
   transmute(id_name = id_name,
             media = map_dbl(ts, ~ mean(.x)),
-            mediana = map_dbl(ts, ~median(.x)),
+            #mediana = map_dbl(ts, ~median(.x)),
             maximo = map_dbl(ts, ~max(.x)),
             minimo = map_dbl(ts, ~min(.x)),
             desvp = map_dbl(ts, ~sd(.x)),
@@ -85,29 +85,39 @@ df.descritivas <- assets.tbl %>%
             curtose = map_dbl(ts, ~kurtosis(.x)),
             jbstat = map_dbl(ts, ~jarqueberaTest(as.timeSeries(.x))@test$statistic),
             jbpvalue = map_dbl(ts, ~jarqueberaTest(as.timeSeries(.x))@test$p.value),
-            q10stat = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box")$statistic),
-            q10pvalue = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box")$p.value),
+            #q10stat = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box")$statistic),
+            #q10pvalue = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box")$p.value),
             q2_10stat = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box", sqrd.res = TRUE)$statistic),
             q2_10pvalue = map_dbl(ts, ~Weighted.Box.test(.x, lag = 10, type = "Ljung-Box", sqrd.res = TRUE)$p.value),
             nobs = map_int(ts, ~as.integer(length(.x)))) %>% 
   gather(key = stat_name, value = stat_value, -id_name, factor_key = TRUE) %>% 
   spread(key = id_name, value = stat_value)
 
-df.descritivas$stat_name <- c("Média", "Mediana", "Máximo", "Mínimo", "Desvp", "Assimetria", "Curtose exc.",
-                              "Jarque-Bera", "", "Q(10)", "", "$Q^2(10)$", "", "N.obs")
+df.descritivas$stat_name <- c("Média", 
+                              #"Mediana", 
+                              "Máximo", 
+                              "Mínimo", 
+                              "Desvp", 
+                              "Assimetria", 
+                              "Curtose exc.",
+                              "Jarque-Bera", "", 
+                              #"Q(10)", "", 
+                              "$Q^2(10)$", "", 
+                              "N.obs")
 colnames(df.descritivas)[1] <- "Descritivas"
 
 # Cria o xtable
 ncol_x <- ncol(df.descritivas) + 1
-m5 <- matrix(rep(5, ncol_x*7), nrow = 7)
+m5 <- matrix(rep(5, ncol_x*6), nrow = 6)
 jb <- rep(2, ncol_x)
 p <- rep(5, ncol_x)
-q <- rep(4, ncol_x)
+#q <- rep(4, ncol_x)
 q2 <- jb
 obs <- rep(0, ncol_x)
-digits <- rbind(m5, jb, p, q, p, q2, p, obs)
+#digits <- rbind(m5, jb, p, q, p, q2, p, obs)
+digits <- rbind(m5, jb, p, q2, p, obs)
 cap <- paste("Estatísticas descritivas dos retornos (amostra completa de",
-           format(start+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"),".")
+           format(start+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"),").")
 tab1 <- xtable(df.descritivas, 
                caption = cap,
                digits = digits,
@@ -123,9 +133,10 @@ print.xtable(tab1,
 
 # Graficos retornos------------------------------------------------------
 jpeg(filename = "./artigo/figs/artigo-retornos.jpeg",
-     width = 640, height = 800, quality = 100)
+     width = 762, height = 1024, quality = 100)
 list.plot <- lapply(seq_along(assets.tbl$indice), 
                     function(x) {autoplot(assets.tbl$ts[[x]])+
+                        theme_economist_white() +
                         labs(x = "", y = "", title = assets.tbl$id_name[[x]])}) 
 
 grid.arrange(grobs = list.plot)
@@ -145,7 +156,7 @@ dev.off()
 
 # Teste para graficos QQ normal
 jpeg(filename = "./artigo/figs/artigo-qqplots.jpeg",
-     width = 640, height = 800, quality = 100)
+     width = 762, height = 1024, quality = 100)
 op <- par(mfrow = c(4,2),
           mar = c(4, 3, 3, 2))
 for(i in 1:dim(assets.tbl)[1]){
@@ -385,8 +396,8 @@ assets_os.tbl <- garch.models %>%
 realized <- assets_os.tbl %>% 
   transmute(indice = indice,
             real = pmap(., ~..3[(..4+2):(..4+..5)])) # real = loss[(window.size+2):(window.size+n.roll)]
-# saveRDS(realized, 
-#         file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "realized.rds"))
+saveRDS(realized, 
+       file = paste0("./output/", format(Sys.Date(), "%Y-%m-%d"), "realized.rds"))
 # Testes estatisticos para o VaR ------------------------------------------
 # Quais testes fazer?
 # VaRTest possui 2 testes, incondicional de Kupiec1995 e condicional de Christoffersen2001
@@ -406,7 +417,7 @@ realized <- assets_os.tbl %>%
 # 6: spec 
 
 #models <- c("cevt", "cnorm", "ct", "uevt", "unorm", "ut", "riskmetrics")
-models <- c("cevt", "cnorm")
+models <- c("cevt", "riskmetrics")
 # teste_assets_os <- readRDS("./input/teste_assets_os.rds") # Copia dados de teste
 # teste_realized <- readRDS("./input/teste_realized.rds")
 # teste_os_roll <- teste_assets_os %>% 
@@ -457,8 +468,8 @@ format(object.size(os_risk.tbl), units = "Kb") # Verifica o tamanho do objeto
 cevt99 <- subset(os_risk.tbl, 
               subset = (indice == "IBOV" & model_type == "cevt" & coverage == 0.01),
               select = VaR.xts)$VaR.xts[[1]]
-cnorm99 <- subset(os_risk.tbl, 
-                  subset = (indice == "IBOV" & model_type == "cnorm" & coverage == 0.01),
+risk99 <- subset(os_risk.tbl, 
+                  subset = (indice == "IBOV" & model_type == "riskmetrics" & coverage == 0.01),
                   select = VaR.xts)$VaR.xts[[1]]
 real <- subset(realized,
                subset = indice == "IBOV",
@@ -468,16 +479,16 @@ plot(real,
      ylim = c(-0.1, 0.1),
      lwd = 1,
      grid.ticks.on = "years",
-     main = "IBOV EVT vs Normal condicionais")
+     main = "IBOV EVT condicional vs Riskmetrics")
 lines(cevt99, 
       col = "red",
-      lty = "dotted")
+      lty = "solid")
 # Abre o arquivo PDF
 pdf(file = "./artigo/figs/artigo-ibovevt.pdf",
     width = 7,
     height = 7,
     colormodel = "grey")
-lines(cnorm99,
+lines(risk99,
       col = "darkgreen",
       lty = "dashed")
 dev.off() # fecha o arquivo pdf
@@ -507,7 +518,7 @@ varviolations.tbl$cov <- NULL # Retira a coluna cov, que nao eh mais necessaria
 
 # Xtable
 cap <- paste("Percentual de violações. (Período fora da amostra entre",
-             format(backstart+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"), ".")
+             format(backstart+1, "%d/%m/%Y"), "e ", format(last, "%d/%m/%Y"), ").")
 
 tab5 <- xtable(varviolations.tbl, 
                caption = cap,
@@ -565,9 +576,8 @@ vartest.tbl <- add_row(vartest.tbl, Modelo = "Cobertura 2.5\\%",
 # Xtable
 cap <- paste("Testes estatísticos para o VaR. Teste incondicional de Kupiec, \\emph{LRuc}, e teste de
              independência por duração de Christoffersen e Pelletier, \\emph{LRdur}. Os modelos testados
-são: EVT condicional (cevt), Normal condicional (cnorm), t-Student condicional (ct), Riskmetrics 
-(riskmetrics), EVT incondicioanl (uevt), Normal incondicional (unorm) e t-Student incondicional (ut).
-Valores p maiores que 0,05 foram omitidos. (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"),".")
+são: EVT condicional (cevt) e Riskmetrics (riskmetrics). Valores p maiores que 0,05 foram omitidos. 
+             (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e ", format(last, "%d/%m/%Y"),").")
 
 tab6 <- xtable(vartest.tbl[,-1], 
                caption = cap,
@@ -588,7 +598,7 @@ cap <- paste("Sumário para o número de rejeições das hipóteses nulas de um 
 corretamente especificado. Nível de confiança a 95\\%. De seis índices com 
 dois testes, resulta em um total de doze rejeições possíveis. 
 (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), "e ", 
-             format(last, "%d/%m/%Y"),".")
+             format(last, "%d/%m/%Y"),").")
 
 suma_tex <- knitr::kable(vartest_suma, 
                          format = "latex", 
@@ -621,7 +631,7 @@ write(suma_tex, "./artigo/tables/artigo-tab-vartest_suma.tex")
 
 # Plot do VaR e violacoes
 teste_varplot <- os_risk.tbl %>% 
-  subset(subset = (indice == "IGCX" & model_type == "cnorm" & coverage == 0.01)) %>% 
+  subset(subset = (indice == "IGCX" & model_type == "cevt" & coverage == 0.01)) %>% 
   left_join(realized, by = "indice")
 VaRplot(teste_varplot$coverage, -teste_varplot$real[[1]], -teste_varplot$VaR.xts[[1]])
 

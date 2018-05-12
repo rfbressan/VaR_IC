@@ -1,0 +1,33 @@
+
+Inicio do map roll_fit: 2018-05-11 20:52:57
+roll_fit do ativo inicio: 2018-05-11 20:52:57
+cevt: 11.71269 secs
+riskmetrics: 0.03243256 secs
+roll_fit do ativo fim: 2018-05-11 20:58:21 
+
+roll_fit do ativo inicio: 2018-05-11 20:58:21
+cevt: 11.79272 secs
+riskmetrics: 0.04313803 secs
+roll_fit do ativo fim: 2018-05-11 21:03:26 
+
+roll_fit do ativo inicio: 2018-05-11 21:03:26
+cevt: 11.73575 secs
+riskmetrics: 0.03239274 secs
+roll_fit do ativo fim: 2018-05-11 21:08:32 
+
+roll_fit do ativo inicio: 2018-05-11 21:08:32
+cevt: 11.48309 secs
+riskmetrics: 0.03206658 secs
+roll_fit do ativo fim: 2018-05-11 21:13:26 
+
+roll_fit do ativo inicio: 2018-05-11 21:13:26
+cevt: 12.7538 secs
+riskmetrics: 0.03207564 secs
+roll_fit do ativo fim: 2018-05-11 21:18:26 
+
+roll_fit do ativo inicio: 2018-05-11 21:18:26
+cevt: 13.19691 secs
+riskmetrics: 0.02931762 secs
+roll_fit do ativo fim: 2018-05-11 21:23:32 
+
+Fim do map roll_fit: 2018-05-11 21:23:32
