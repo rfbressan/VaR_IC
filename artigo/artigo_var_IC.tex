@@ -413,7 +413,6 @@ Voltando-se para o período dentro da amostra, o filtro proposto GARCH(1,1) foi 
 A função do modelo GARCH neste primeiro estágio é a filtragem da série de perdas, de modo que os resíduos padronizados resultantes não sejam autocorrelacionados e tampouco possuam heterocedasticidade. %Conforme demonstrado através dos gráficos de autocorrelação nas figuras \ref{fig:artigo-acf-ibovespa} a \ref{fig:artigo-acf-sptse}, este foi o resultado obtido.
 
 \input{tables/artigo-tab-garchcoef}
-\todo{Bovespa ainda apresenta autocorrelação nas variâncias}
 
 %Para trabalhar com o VaR em seus quantis altos e portanto, modelar a cauda direita da distribuição, passa-se a trabalhar com a distribuição das perdas dos ativos, como alertado anteriormente. Os gráficos ACF das figuras \ref{fig:artigo-acf-ibovespa} a \ref{fig:artigo-acf-sptse} são para as distribuições de perdas e seus quadrados na parte superior, e na parte inferior os correlogramas são apresentados para os resíduos padronizados e seus quadrados oriundos do modelo GARCH. Através destes gráficos fica bastante evidente como a filtragem foi bem sucedida em retirar a autocorrelação encontrada originalmente nas volatilidades das perdas, que demonstra claramente a natureza heterocedástica das séries sob análise. 
 
@@ -455,7 +454,7 @@ Para fazer o \emph{backtest}, considere a série $x_1, x_2, \ldots, x_m$, com $m
 
 O quantil para a definição do limiar \emph{u} é fixo em 0,90, o que resultará em valores distintos de limiar para cada rodada do teste, e possivelmente um número diferente de excessos observados. Entretanto essas diferenças, considerando o tamanho fixo da janela de dados, será muito pequeno em torno de uma unidade apenas. Mantém-se assim, um número de excessos em torno de 120 observações, valor adequado para se fazer as estimativas dos parâmetros da GPD. 
 
-A figura \ref{fig:artigo-ibovbacktest} apresenta o resultado do \emph{backtest} para os dois modelos sobre o índice IBovespa. \todo{Analisar a figura do backtest}%Entende-se por modelos incondicionais aqueles em que a volatilidade histórica de toda a janela de dados é utilizada para calcular as medias de risco. É nítido como o modelo condicional, que utiliza a previsão para a média e volatilidade das perdas e então utiliza-os para obter a medida de risco, é muito mais responsivo a alterações no regime de volatilidade do ativo. Um modelo incondicional, por sua vez, não responde de forma acentuada a variações de curto-prazo na volatilidade do ativo, pois estas observações mais extremas são atenuadas em meio a todas as outras observações utilizadas da janela de dados.
+A figura \ref{fig:artigo-backtest} apresenta o resultado do \emph{backtest} para o modelo EVT condicional para cada um dos índices analisados. É possível verificar como a medida condicional de risco oscila de valor, acompanhando a volatilidade do índice, sendo especialmente responsiva a grandes choques. Em comparação com o modelo \emph{Riskmetrics}, o EVT apresenta maior persistência em seu nível medido de risco após um choque de volatilidade, ou em outras palavras, uma menor taxa de decaimento. Através da figura \ref{fig:artigo-ibovevt} pode-se verificar esta condição para o índice IBovespa onde, após a grande perda ocorrida em 18 de maio de 2017, fica evidente que o modelo retorna aos seus níveis de risco anteriores de forma mais lenta que a medida \emph{Riskmetrics}.%Entende-se por modelos incondicionais aqueles em que a volatilidade histórica de toda a janela de dados é utilizada para calcular as medias de risco. É nítido como o modelo condicional, que utiliza a previsão para a média e volatilidade das perdas e então utiliza-os para obter a medida de risco, é muito mais responsivo a alterações no regime de volatilidade do ativo. Um modelo incondicional, por sua vez, não responde de forma acentuada a variações de curto-prazo na volatilidade do ativo, pois estas observações mais extremas são atenuadas em meio a todas as outras observações utilizadas da janela de dados.
 
 Uma violação é dita ocorrida quando a perda observada é maior que a medida de risco estimada no dia anterior, $x_{t+1}>VaR^t_\alpha$ para um $\alpha$ dentro do conjunto de níveis de significância, neste artigo $\alpha \in \{0,975; 0,990\}$. A tabela \ref{tab:varviol} apresenta em termos percentuais as violações ocorridas para cada um dos modelos para os níveis de cobertura dados. Dentre os dois modelos analisados, o EVT condicional se saiu melhor nos dois níveis de cobertura.
 %Os modelos condicionais apresentaram uma tendência a subestimação do risco, com um número superior de violações ao esperado. Os modelos incondicionais, ao contrário, superestimam o risco e apresentam tendência a um número menor de violações. Dentre os modelos estimados o EVT condicional apresentou as violações percentuais mais próximas ao valor esperado, $1-\alpha$.
@@ -689,6 +688,13 @@ O algoritmo para seu cálculo, portanto, é direto.
 	\includegraphics[width=1\linewidth]{figs/artigo-gpdfit}
 	\caption{Qualidade do ajuste dos dados de inovações em excesso contra uma GPD de referência. Período dentro da amostra.}
 	\label{fig:artigo-gpdfit}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-backtest}
+	\caption{$VaR_{99\%}$ no modelo EVT condicional para todos os índices. Violações demarcadas.}
+	\label{fig:artigo-backtest}
 \end{figure}
 
 \begin{figure}[H]

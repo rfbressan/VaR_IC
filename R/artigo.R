@@ -25,6 +25,8 @@ if(length(new.packages)) install.packages(new.packages)
 #library(QRM)
 #library(timeSeries)
 library(tidyverse)
+library(tidyquant)
+library(timetk)
 library(ggthemes)
 library(broom)
 library(gridExtra)
@@ -132,15 +134,39 @@ print.xtable(tab1,
              include.rownames = FALSE)
 
 # Graficos retornos------------------------------------------------------
-jpeg(filename = "./artigo/figs/artigo-retornos.jpeg",
-     width = 762, height = 1024, quality = 100)
-list.plot <- lapply(seq_along(assets.tbl$indice), 
-                    function(x) {autoplot(assets.tbl$ts[[x]])+
-                        theme_economist_white() +
-                        labs(x = "", y = "", title = assets.tbl$id_name[[x]])}) 
+# jpeg(filename = "./artigo/figs/artigo-retornos.jpeg",
+#      width = 762, height = 1024, quality = 100)
+# list.plot <- lapply(seq_along(assets.tbl$indice), 
+#                     function(x) {autoplot(assets.tbl$ts[[x]])+
+#                         theme_economist_white() +
+#                         labs(x = "", y = "", title = assets.tbl$id_name[[x]])}) 
+# 
+# grid.arrange(grobs = list.plot)
+# dev.off()
 
-grid.arrange(grobs = list.plot)
-dev.off()
+pdf(file = "./artigo/figs/artigo-retornos.pdf",
+    width = 7,
+    height = 9.5,
+    colormodel = "grey")
+op <- par(mfrow = c(3, 2))
+for (i in seq_len(dim(assets.tbl)[1])) {
+  print(
+    plot(assets.tbl$ts[[i]], 
+       #ylim = c(-0.1, 0.1),
+       lwd = 1,
+       grid.ticks.on = "years",
+       major.ticks = "years",
+       main = assets.tbl$indice[i],
+       yaxis.right = FALSE,
+       format.labels = "%Y")
+  )
+  # lines(-cevt99$VaR.xts[[i]],
+  #       col = "red",
+  #       lty = "solid")
+  # print(points(-realized$real[[i]][-realized$real[[i]] < -cevt99$VaR.xts[[i]]]))
+}
+par(op)
+dev.off() # fecha o arquivo pdf
 
 ## Teste de estacionariedade das series de retornos
 # Teste Dickey-Fuller encontrado no pacote CADFtest
@@ -157,7 +183,7 @@ dev.off()
 # Teste para graficos QQ normal
 jpeg(filename = "./artigo/figs/artigo-qqplots.jpeg",
      width = 762, height = 1024, quality = 100)
-op <- par(mfrow = c(4,2),
+op <- par(mfrow = c(3,2),
           mar = c(4, 3, 3, 2))
 for(i in 1:dim(assets.tbl)[1]){
   qqnormPlot(assets.tbl$ts[[i]], labels = FALSE, title = FALSE, mtext = FALSE,
@@ -371,7 +397,7 @@ print.xtable(tab4,
 pdf(file = "./artigo/figs/artigo-gpdfit.pdf",
     width = 7, height = 8,
     colormodel = "grey")
-  op <- par(mfrow=c(4,2))
+  op <- par(mfrow=c(3,2))
   for(i in seq_len(dim(evt.models)[1])){
     plot(evt.models$gpdfit[[i]], main = evt.models$id_name[i])
   }
@@ -466,8 +492,8 @@ format(object.size(os_risk.tbl), units = "Kb") # Verifica o tamanho do objeto
 
 # Plota um grafico da evolucao do VaR e das perdas realizadas
 cevt99 <- subset(os_risk.tbl, 
-              subset = (indice == "IBOV" & model_type == "cevt" & coverage == 0.01),
-              select = VaR.xts)$VaR.xts[[1]]
+              subset = (model_type == "cevt" & coverage == 0.01))#,
+              #select = VaR.xts)$VaR.xts[[1]]
 risk99 <- subset(os_risk.tbl, 
                   subset = (indice == "IBOV" & model_type == "riskmetrics" & coverage == 0.01),
                   select = VaR.xts)$VaR.xts[[1]]
@@ -475,12 +501,15 @@ real <- subset(realized,
                subset = indice == "IBOV",
                select = real)$real[[1]]
 
-plot(real, 
+plot(-real, 
      ylim = c(-0.1, 0.1),
      lwd = 1,
      grid.ticks.on = "years",
-     main = "IBOV EVT condicional vs Riskmetrics")
-lines(cevt99, 
+     major.ticks = "years",
+     main = "IBOV EVT condicional vs Riskmetrics",
+     yaxis.right = FALSE,
+     format.labels = "%Y")
+lines(-cevt99$VaR.xts[[1]], # seleciona o IBOV
       col = "red",
       lty = "solid")
 # Abre o arquivo PDF
@@ -488,9 +517,32 @@ pdf(file = "./artigo/figs/artigo-ibovevt.pdf",
     width = 7,
     height = 7,
     colormodel = "grey")
-lines(risk99,
+lines(-risk99,
       col = "darkgreen",
       lty = "dashed")
+dev.off() # fecha o arquivo pdf
+
+## Plota o VaR99% evt para cada um dos indices
+pdf(file = "./artigo/figs/artigo-backtest.pdf",
+    width = 7,
+    height = 9.5,
+    colormodel = "grey")
+op <- par(mfrow = c(3, 2))
+for (i in seq_len(dim(cevt99)[1])) {
+  plot(-realized$real[[i]], 
+       #ylim = c(-0.1, 0.1),
+       lwd = 1,
+       grid.ticks.on = "years",
+       major.ticks = "years",
+       main = cevt99$indice[i],
+       yaxis.right = FALSE,
+       format.labels = "%Y")
+  lines(-cevt99$VaR.xts[[i]],
+        col = "red",
+        lty = "solid")
+  print(points(-realized$real[[i]][-realized$real[[i]] < -cevt99$VaR.xts[[i]]]))
+}
+par(op)
 dev.off() # fecha o arquivo pdf
 
 ## Tabela com os percentuais de violacoes
@@ -709,6 +761,41 @@ tab9 <- xtable(mcs_suma,
                auto = TRUE)
 print.xtable(tab9, 
              file = "./artigo/tables/artigo-tab-mcs_suma.tex",
+             caption.placement = "top",
+             table.placement = "H",
+             sanitize.colnames.function = function(x) {x},
+             sanitize.text.function = function(x) {x},
+             include.rownames = FALSE)
+
+# Testes comparativos de VaR ----------------------------------------------
+
+os_VaR <- os_risk.tbl %>% 
+  select(-ES.xts) %>% 
+  mutate(VaR = map(VaR.xts, ~tk_tbl(data = .x)),
+         VaR.xts = NULL) %>% 
+  unnest()
+ 
+# Vamos comparar apenas o modelo cevt com cobertura de 1%
+os_cevt99 <- os_VaR %>% 
+  dplyr::filter(model_type == "cevt" & coverage == 0.01) %>% 
+  select(c(indice, Zq990))
+# Agora podemos fazer os testes t par a par
+t_test <- pairwise.t.test(os_cevt99$Zq990,
+                          os_cevt99$indice,
+                          pool.sd = FALSE,
+                          alternative = "greater")
+
+# Xtable t_test
+cap <- paste("Testes t comparativos das médias do $VaR_{99\\%}$ entre os índices para o modelo EVT condicional. 
+             (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"),").")
+
+tab10 <- xtable(t_test$p.value, 
+               caption = cap,
+               digits = 4,
+               label = "tab:t_test",
+               auto = TRUE)
+print.xtable(tab10, 
+             file = "./artigo/tables/artigo-tab-t_test.tex",
              caption.placement = "top",
              table.placement = "H",
              sanitize.colnames.function = function(x) {x},
