@@ -1,49 +1,59 @@
 ---
 title: "Aplicando a teoria do valor extremo no cálculo de risco de índices setoriais da Bovespa"
 author: "Rafael Felipe Bressan"
-date: "`r Sys.Date()`"
+date: "`r format(Sys.Date(), '%d/%m/%Y')`"
 output:
-#  ioslides_presentation:
   iosp::ioslides_plus:
     footer: "Grupo de Pesquisa em Economia Aplicada - GEA"
     widescreen: false
-    logo: ../artigo/figs/Marca_Udesc.jpeg
+    logo: ../artigo/figs/marca_udesc.png
     css: ['css/box.css', 'css/lecture.css']
-    smaller: true
+bibliography: library.bib
 ---
+
+```{css, echo=FALSE}
+.title-slide hgroup h1 {
+  font-size: 52px;
+  letter-spacing: 0;
+}
+```
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-knitr::opts_chunk$set(fig.width = 8)
-knitr::opts_chunk$set(fig.height = 6)
+knitr::opts_chunk$set(fig.width = 8.1)
+knitr::opts_chunk$set(fig.height = 5.8)
 knitr::opts_chunk$set(fig.align = 'center')
 
 library(tidyverse)
 library(ggthemes)
 ```
 
-## Agenda
+## Agenda {.build}
 
-> - Motivação
-> - Valor em Risco - VaR
-> - Teoria do Valor Extremo - EVT
-> - Modelo EGARCH
-> - Índices Utilizados
-> - Resultados
+- Motivação
+- Valor em Risco - VaR
+- Teoria do Valor Extremo - EVT
+- Modelo EGARCH
+- Índices Utilizados
+- Resultados
 
 # Introdução
 
 ## Motivação 
 
-> - Princípios de Basileia 
-> - Instituições Financeiras devem manter reservas de capital contra riscos de mercado, crédito, liquidez, entre outros
-> - Riscos de mercado,  Valor em Risco - VaR e *Expected Shortfall* - ES.
-> - Estimação excessiva do risco gera excesso de capital em reserva. Custo para a instituição.
-> - Subestimação deste risco pode levar a IF a uma crise de liquidez e eventualmente a insolvência.
+- Princípios de Basileia 
+- Instituições Financeiras devem manter reservas de capital contra riscos de mercado, crédito, liquidez, entre outros
+- Riscos de mercado,  Valor em Risco - VaR e *Expected Shortfall* - ES.
+- Estimação excessiva do risco gera excesso de capital em reserva. Custo para a instituição.
+- Subestimação deste risco pode levar a IF a uma crise de liquidez e eventualmente a insolvência.
 
-## Valor em Risco
+## Valor em Risco | definição
 
-- VaR é um quantil $\alpha$ da distribuição de perdas de um ativo ou portfólio em um determinado período de tempo.
+- VaR é uma medida de risco de mercado do portfolio
+- Maior valor de perda esperado para um determinado período e dado nível de confiança
+- VaR é um quantil $\alpha$ da distribuição de perdas que delimita a cauda.
+
+## VaR | distribuição de perdas
 
 ```{r var}
 # fig.cap = "VaR é um quantil da distribuição de perdas."
@@ -70,21 +80,80 @@ p + annotate("text", x = c(1.5, 1.6, 2.3), y = c(0.35, 0.03, 0.35),
 
 # Fundamentação Teórica
 
-## Teoria do valor extremo
+## Teoria do valor extremo | fundamentos {.build}
 
-- O método peaks-over-treshold modela a distribuição dos excessos acima de um determinado limiar.
+- EVT é um ramo da estatística que trata de eventos raros, distantes da mediana
+- Aplicações em hidrologia, geologia, seguros e finanças, entre outros
+- Distribuições de probabilidade com caudas longas
+- Se adequa aos fatos estilizados dos retornos financeiros
 
-**Definição** [Distribuição dos excessos]:
-	Seja *X* uma variável aleatória com função de distribuição $F \in MDA(H_\xi)$. A distribuição dos excessos sobre um limiar *u* tem a função de Distribuição Generalizada de Pareto - GPD:
+## Teoria do valor extremo | definições {.build}
 
-\begin{equation*}
+- Existem duas abordagens para a EVT
+    + Máximos em bloco - $M_n$
+    + Peaks-over-threshold - POT
+  
+- POT é a mais utilizada na prática
+- Desperdiça um menor número de observações
+
+## Teoria do valor extremo | definições {.build}
+
+**Definição**(Distribuição de valores extremos generalizada - GEV). Uma distribuição GEV é definida por sua função de densidade de probabilidade:
+
+$$
+	H_\xi(x) = 
+	\begin{cases}
+	exp(-(1+\xi x)^{-\frac{1}{\xi}}), & \xi \neq 0,\\
+	exp(-e^{-x}), & \xi = 0,\\
+	\end{cases}
+$$
+
+- Teorema de Fisher-Tippett-Gnedenko demonstra que a distribuição de $M_n$ quando $n \rightarrow \infty$ converge para uma GEV e diz-se que $F \in MDA(H_\xi)$
+- Nossa distribuição de perdas $F$ pertence ao domínio de atração de máximos de $H_\xi$ 
+
+## Teoria do valor extremo | definições {.build}
+
+```{r pot}
+set.seed(123)
+n <- 1:20
+loss <- rnorm(length(n), 0, 0.05)
+u <- rep(median(sqrt(loss^2)), times = length(n))
+df <- tibble(n, loss, u)
+ggplot(df, aes(x = n, y = loss)) +
+  geom_segment(aes(y = 0, yend = loss, xend = n)) +
+  geom_hline(aes(yintercept = u[1]), color = "darkgreen") +
+  labs(title = "Peaks-over-threshold",
+       x = "",
+       y = "Perda") +
+  scale_y_continuous(label = scales::percent) +
+  scale_x_discrete(breaks = n) +
+  annotate("segment", x = 16, xend = 16, y = u[1], yend = loss[16],
+           color = "red") +
+  annotate("text", x = c(0.1, 17), y = c(0.032, 0.07), label = c("Limiar", "Excesso")) +
+  theme_economist_white()
+```
+
+## Teoria do valor extremo | definições {.build}
+
+**Teorema** (Pickands-Balkema-de Haan):
+	Seja *X* uma variável aleatória com função de distribuição $F \in MDA(H_\xi)$. A distribuição dos excessos sobre um limiar *u* adequado tem a função de Distribuição Generalizada de Pareto - GPD:
+
+$$
   G_{\xi,\beta(u)}(X) = 
   \begin{cases}
     1- \left(1+ \frac{\xi x}{\beta(u)} \right)^{-\frac{1}{\xi}}, & \xi \neq 0,\\
     1-exp\left(-\frac{x}{\beta(u)}\right), & \xi = 0,\\
   \end{cases}
-\end{equation*}
-Os parâmetros $\xi$ e $\beta$ são conhecidos respectivamente como parâmetros de forma e escala da distribuição. 
+$$
+
+- Se $F \in MDA(H_\xi)$, então a distribuição dos excessos $F_u \rightarrow  G_{\xi,\beta(u)}$
+
+## Teoria do valor extremo | peaks-over-threshold
+
+- Como se deve escolher o valor **adequado** do limiar?
+    + Gráficos de vida residual média
+    + Escolher o menor valor de _u_ onde a relação é linear
+    + Na prática, número de excessos observados em torno de 100 
 
 ## Filtro EGARCH
 
@@ -158,4 +227,4 @@ onde $z_\alpha$ é o quantil $\alpha$ das inovações *Z*.
 
 <!-- \include(tables/artigo-tab-mcs) -->
 
-## Referências
+## Referências {.smaller}
