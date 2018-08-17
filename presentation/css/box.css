@@ -1,0 +1,384 @@
+/* intro colour */
+
+.slide-intro {
+  background-color: #ADEBAD;
+}
+
+.intro a {
+  color: rgb(42, 124, 223);
+  border-bottom: 1px solid rgba(42, 124, 223, 0.5);
+}
+
+.intro a:hover {
+  color: #000000 !important;
+}
+
+.box.intro {
+  background-color: #ADEBAD;
+  color: #000000;
+  border: 2px solid #1F7A1F;
+}
+
+.box.intro > h3:first-child {
+  background-color: #1F7A1F;
+  color: #FFFFFF;
+}
+
+blockquote.intro::before {
+  color : #1F7A1F;
+}
+
+blockquote.intro {
+  background-color: #ADEBAD;
+  color: #000000;
+  border-color: #1F7A1F;
+}
+
+.box.intro > h3:first-child > code {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.box.intro > h3:first-child > a {
+  color: rgb(200, 240, 250);
+  border-bottom: 1px solid rgba(200, 240, 250, 0.5);
+}
+
+.box.intro > h3:first-child > a:hover {
+  color: #FFFFFF !important;
+}
+
+slide.slide-intro > hgroup > h2 {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+slide.slide-intro > hgroup > h3 {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.intro code {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.intro .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: #f9f9f9;
+}
+
+.intro .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.intro table th {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.intro .table, .intro .table th, .intro .table td, .table thead tr div {
+  border-color: #1F7A1F !important;
+}
+/* warning colour */
+
+.slide-warning {
+  background-color: #FFAD99;
+}
+
+.warning a {
+  color: rgb(42, 124, 223);
+  border-bottom: 1px solid rgba(42, 124, 223, 0.5);
+}
+
+.warning a:hover {
+  color: #000000 !important;
+}
+
+.box.warning {
+  background-color: #FFAD99;
+  color: #000000;
+  border: 2px solid #991F00;
+}
+
+.box.warning > h3:first-child {
+  background-color: #991F00;
+  color: #FFFFFF;
+}
+
+blockquote.warning::before {
+  color : #991F00;
+}
+
+blockquote.warning {
+  background-color: #FFAD99;
+  color: #000000;
+  border-color: #991F00;
+}
+
+.box.warning > h3:first-child > code {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.box.warning > h3:first-child > a {
+  color: rgb(200, 240, 250);
+  border-bottom: 1px solid rgba(200, 240, 250, 0.5);
+}
+
+.box.warning > h3:first-child > a:hover {
+  color: #FFFFFF !important;
+}
+
+slide.slide-warning > hgroup > h2 {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+slide.slide-warning > hgroup > h3 {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.warning code {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.warning .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: #f9f9f9;
+}
+
+.warning .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.warning table th {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.warning .table, .warning .table th, .warning .table td, .table thead tr div {
+  border-color: #991F00 !important;
+}
+/* advice colour */
+
+.slide-advice {
+  background-color: #FFEC8B;
+}
+
+.advice a {
+  color: rgb(42, 124, 223);
+  border-bottom: 1px solid rgba(42, 124, 223, 0.5);
+}
+
+.advice a:hover {
+  color: #000000 !important;
+}
+
+.box.advice {
+  background-color: #FFEC8B;
+  color: #000000;
+  border: 2px solid #EEB422;
+}
+
+.box.advice > h3:first-child {
+  background-color: #EEB422;
+  color: #000000;
+}
+
+blockquote.advice::before {
+  color : #EEB422;
+}
+
+blockquote.advice {
+  background-color: #FFEC8B;
+  color: #000000;
+  border-color: #EEB422;
+}
+
+.box.advice > h3:first-child > code {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.box.advice > h3:first-child > a {
+  color: rgb(42, 124, 223);
+  border-bottom: 1px solid rgba(42, 124, 223, 0.5);
+}
+
+.box.advice > h3:first-child > a:hover {
+  color: #000000 !important;
+}
+
+slide.slide-advice > hgroup > h2 {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+slide.slide-advice > hgroup > h3 {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.advice code {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.advice .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: #f9f9f9;
+}
+
+.advice .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.advice table th {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.advice .table, .advice .table th, .advice .table td, .table thead tr div {
+  border-color: #EEB422 !important;
+}
+/* code colour */
+
+.slide-code {
+  background-color: #2B557A;
+}
+
+.code a {
+  color: rgb(200, 240, 250);
+  border-bottom: 1px solid rgba(200, 240, 250, 0.5);
+}
+
+.code a:hover {
+  color: #FFFFFF !important;
+}
+
+.box.code {
+  background-color: #2B557A;
+  color: #FFFFFF;
+  border: 2px solid #002240;
+}
+
+.box.code > h3:first-child {
+  background-color: #002240;
+  color: #FFFFFF;
+}
+
+blockquote.code::before {
+  color : #002240;
+}
+
+blockquote.code {
+  background-color: #2B557A;
+  color: #FFFFFF;
+  border-color: #002240;
+}
+
+.box.code > h3:first-child > code {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.box.code > h3:first-child > a {
+  color: rgb(200, 240, 250);
+  border-bottom: 1px solid rgba(200, 240, 250, 0.5);
+}
+
+.box.code > h3:first-child > a:hover {
+  color: #FFFFFF !important;
+}
+
+slide.slide-code > hgroup > h2 {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+slide.slide-code > hgroup > h3 {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.code code {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.code .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: #f9f9f9;
+}
+
+.code .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.code table th {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.code .table, .code .table th, .code .table td, .table thead tr div {
+  border-color: #002240 !important;
+}
+/* practical colour */
+
+.slide-practical {
+  background-color: #CAE1FF;
+}
+
+.practical a {
+  color: rgb(42, 124, 223);
+  border-bottom: 1px solid rgba(42, 124, 223, 0.5);
+}
+
+.practical a:hover {
+  color: #000000 !important;
+}
+
+.box.practical {
+  background-color: #CAE1FF;
+  color: #000000;
+  border: 2px solid #65707F;
+}
+
+.box.practical > h3:first-child {
+  background-color: #65707F;
+  color: #FFFFFF;
+}
+
+blockquote.practical::before {
+  color : #65707F;
+}
+
+blockquote.practical {
+  background-color: #CAE1FF;
+  color: #000000;
+  border-color: #65707F;
+}
+
+.box.practical > h3:first-child > code {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.box.practical > h3:first-child > a {
+  color: rgb(200, 240, 250);
+  border-bottom: 1px solid rgba(200, 240, 250, 0.5);
+}
+
+.box.practical > h3:first-child > a:hover {
+  color: #FFFFFF !important;
+}
+
+slide.slide-practical > hgroup > h2 {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+slide.slide-practical > hgroup > h3 {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.practical code {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.practical .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: #f9f9f9;
+}
+
+.practical .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.practical table th {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.practical .table, .practical .table th, .practical .table td, .table thead tr div {
+  border-color: #65707F !important;
+} 
+.box.outline {
+	background-color: white;
+	color: black;
+}

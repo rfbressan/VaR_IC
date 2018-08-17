@@ -786,7 +786,8 @@ t_test <- pairwise.t.test(os_cevt99$Zq990,
                           alternative = "greater")
 
 # Xtable t_test
-cap <- paste("Testes t comparativos das médias do $VaR_{99\\%}$ entre os índices para o modelo EVT condicional. 
+cap <- paste("Testes t comparativos das médias do $VaR_{99\\%}$ entre os índices para o modelo EVT condicional.
+São apresentados os p-valores do teste t.  
              (Período fora da amostra entre", format(backstart+1, "%d/%m/%Y"), format(last, "%d/%m/%Y"),").")
 
 tab10 <- xtable(t_test$p.value, 
@@ -800,7 +801,7 @@ print.xtable(tab10,
              table.placement = "H",
              sanitize.colnames.function = function(x) {x},
              sanitize.text.function = function(x) {x},
-             include.rownames = FALSE)
+             include.rownames = TRUE)
 
 # Testes estatisticos para o ES -------------------------------------------
 # ATENCAO!! Este teste so faz sentido ser realizados apos os teste de VaR

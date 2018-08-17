@@ -1,0 +1,15 @@
+\BOOKMARK [1][-]{section.1}{Introdu\347\343o}{}% 1
+\BOOKMARK [1][-]{section.2}{Modelando caudas e medidas de risco associadas com EVT}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Excessos acima de um limiar}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Estimando o VaR}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Modelo GARCH-POT}{section.2}% 5
+\BOOKMARK [1][-]{section.3}{Dados utilizados e estat\355sticas descritivas}{}% 6
+\BOOKMARK [2][-]{subsection.3.1}{Filtro GARCH}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.2}{M\351todo POT}{section.3}% 8
+\BOOKMARK [1][-]{section.4}{Avalia\347\343o dos modelos}{}% 9
+\BOOKMARK [2][-]{subsection.4.1}{Testes estat\355sticos}{section.4}% 10
+\BOOKMARK [1][-]{section.5}{Comparativo entre \355ndices}{}% 11
+\BOOKMARK [1][-]{section.6}{Conclus\343o}{}% 12
+\BOOKMARK [1][-]{appendix.A}{}{}% 13
+\BOOKMARK [2][-]{subsection.A.1}{EVT condicional}{appendix.A}% 14
+\BOOKMARK [2][-]{subsection.A.2}{Riskmetrics}{appendix.A}% 15

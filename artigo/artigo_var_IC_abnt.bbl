@@ -1,0 +1,159 @@
+\providecommand{\abntreprintinfo}[1]{%
+ \citeonline{#1}}
+\setlength{\labelsep}{0pt}\begin{thebibliography}{}
+\providecommand{\abntrefinfo}[3]{}
+\providecommand{\abntbstabout}[1]{}
+\abntbstabout{v-1.9.6 }
+
+\bibitem[Balkema e Haan 1974]{Balkema1974}
+\abntrefinfo{Balkema e Haan}{BALKEMA; HAAN}{1974}
+{BALKEMA, A.~A.; HAAN, L. de. {Residual Life Time at Great Age}.
+\emph{The Annals of Probability}, v.~2, n.~5, p. 792--804, 1974.}
+
+\bibitem[Berkowitz e O'Brien 2002]{Berkowitz2002}
+\abntrefinfo{Berkowitz e O'Brien}{BERKOWITZ; O'BRIEN}{2002}
+{BERKOWITZ, J.; O'BRIEN, J. How accurate are value-at-risk models at commercial
+  banks?
+\emph{The Journal of Finance}, Blackwell Publishers, Inc., v.~57, n.~3, p.
+  1093--1111, 2002.
+ISSN 1540-6261.
+Dispon{\'\i}vel em: \url{http://dx.doi.org/10.1111/1540-6261.00455}.}
+
+\bibitem[Bystr{\"o}m 2004]{Bystroem2004}
+\abntrefinfo{Bystr{\"o}m}{BYSTR{\"O}M}{2004}
+{BYSTR{\"O}M, H.~N. Managing extreme risks in tranquil and volatile markets
+  using conditional extreme value theory.
+\emph{International Review of Financial Analysis}, Elsevier, v.~13, n.~2, p.
+  133--152, 2004.}
+
+\bibitem[Christoffersen e Pelletier 2004]{Christoffersen2004}
+\abntrefinfo{Christoffersen e Pelletier}{CHRISTOFFERSEN; PELLETIER}{2004}
+{CHRISTOFFERSEN, P.; PELLETIER, D. Backtesting value-at-risk: A duration-based
+  approach.
+\emph{Journal of Financial Econometrics}, Oxford University Press, v.~2, n.~1,
+  p. 84--108, 2004.}
+
+\bibitem[Cont 2001]{Cont2001}
+\abntrefinfo{Cont}{CONT}{2001}
+{CONT, R. {Empirical properties of asset returns: stylized facts and
+  statistical issues}.
+\emph{Quantitative Finance}, v.~1, n.~2, p. 223--236, 2001.
+Dispon{\'\i}vel em: \url{http://dx.doi.org/10.1080/713665670}.}
+
+\bibitem[Dan{\'\i}elsson e Morimoto 2000]{Danielsson2000}
+\abntrefinfo{Dan{\'\i}elsson e Morimoto}{DAN{\'I}ELSSON; MORIMOTO}{2000}
+{DAN{\'I}ELSSON, J.; MORIMOTO, Y. Forecasting extreme financial risk: a
+  critical analysis of practical methods for the japanese market.
+\emph{Monetary and Economic Studies}, Institute for Monetary and Economic
+  Studies, Bank of Japan, v.~2, n.~18, p. 25--48, 2000.}
+
+\bibitem[Embrechts, Kl{\"{u}}ppelberg e Mikosch 1997]{Embrechts1997}
+\abntrefinfo{Embrechts, Kl{\"{u}}ppelberg e Mikosch}{EMBRECHTS;
+  KL{\"{U}}PPELBERG; MIKOSCH}{1997}
+{EMBRECHTS, P.; KL{\"{U}}PPELBERG, C.; MIKOSCH, T. \emph{{Modelling Extremal
+  Events for Insurance and Finance}}. [S.l.]: Springer, 1997.}
+
+\bibitem[Fisher e Tippett 1928]{Fisher1928}
+\abntrefinfo{Fisher e Tippett}{FISHER; TIPPETT}{1928}
+{FISHER, R.~A.; TIPPETT, L. H.~C. {Limiting forms of the frequency distribution
+  of the largest or smallest member of a sample}.
+\emph{Proceedings of the Cambridge Philosophical Society}, v.~24, p. 180--190,
+  1928.}
+
+\bibitem[Gencay e Selcuk 2004]{Gencay2004}
+\abntrefinfo{Gencay e Selcuk}{GENCAY; SELCUK}{2004}
+{GENCAY, R.; SELCUK, F. Extreme value theory and value-at-risk: Relative
+  performance in emerging markets.
+\emph{International Journal of Forecasting}, Elsevier, v.~20, n.~2, p.
+  287--303, 2004.}
+
+\bibitem[Gnedenko 1941]{Gnedenko1941}
+\abntrefinfo{Gnedenko}{GNEDENKO}{1941}
+{GNEDENKO, B.~V. {Limit theorems for the maximal term of a variational series}.
+\emph{Comptes Rendus (Doklady) de L'Acad{\'{e}}mie des Sciences de l'URSS},
+  v.~32, p.~7--9, 1941.}
+
+\bibitem[Gnedenko 1943]{Gnedenko1943}
+\abntrefinfo{Gnedenko}{GNEDENKO}{1943}
+{GNEDENKO, B.~V. {Sur la distribution limite du terme maximum d'une s{\'{e}}rie
+  al{\'{e}}atoire.}
+\emph{Annals of Mathematics}, v.~44, p. 423--453, 1943.}
+
+\bibitem[Kuester, Mittnik e Paolella 2006]{Kuester2006}
+\abntrefinfo{Kuester, Mittnik e Paolella}{KUESTER; MITTNIK; PAOLELLA}{2006}
+{KUESTER, K.; MITTNIK, S.; PAOLELLA, M.~S. Value-at-risk prediction: A
+  comparison of alternative strategies.
+\emph{Journal of Financial Econometrics}, v.~4, n.~1, p. 53--89, 2006.
+Dispon{\'\i}vel em: \url{http://dx.doi.org/10.1093/jjfinec/nbj002}.}
+
+\bibitem[Kupiec 1995]{Kupiec1995}
+\abntrefinfo{Kupiec}{KUPIEC}{1995}
+{KUPIEC, P.~H. Techniques for verifying the accuracy of risk measurement
+  models.
+\emph{The journal of Derivatives}, Institutional Investor Journals, v.~3, n.~2,
+  p. 73--84, 1995.}
+
+\bibitem[Longin 2000]{Longin2000}
+\abntrefinfo{Longin}{LONGIN}{2000}
+{LONGIN, F.~M. From value at risk to stress testing: The extreme value
+  approach.
+\emph{Journal of Banking \& Finance}, v.~24, n.~7, p. 1097 -- 1130, 2000.
+ISSN 0378-4266.
+Dispon{\'\i}vel em:
+  \url{http://www.sciencedirect.com/science/article/pii/S0378426699000771}.}
+
+\bibitem[McNeil e Frey 2000]{McNeil2000}
+\abntrefinfo{McNeil e Frey}{MCNEIL; FREY}{2000}
+{MCNEIL, A.~J.; FREY, R. {Estimation of tail-related risk measures for
+  heteroscedastic financial time series: an extreme value approach}.
+\emph{Journal of Empirical Finance}, v.~7, n.~3-4, p. 271--300, 2000.}
+
+\bibitem[McNeil, Frey e Embrechts 2015]{McNeil2015}
+\abntrefinfo{McNeil, Frey e Embrechts}{MCNEIL; FREY; EMBRECHTS}{2015}
+{MCNEIL, A.~J.; FREY, R.; EMBRECHTS, P. \emph{{Quantitative risk management:
+  concepts, techniques and tools}}. Revised ed. [S.l.]: Princeton University
+  Press, 2015.}
+
+\bibitem[O'Brien e Szerszeń 2017]{OBrien2017}
+\abntrefinfo{O'Brien e Szerszeń}{O'BRIEN; SZERSZEń}{2017}
+{O'BRIEN, J.; SZERSZEń, P.~J. An evaluation of bank measures for market risk
+  before, during and after the financial crisis.
+\emph{Journal of Banking \& Finance}, v.~80, n. Supplement C, p. 215 -- 234,
+  2017.
+ISSN 0378-4266.
+Dispon{\'\i}vel em:
+  \url{http://www.sciencedirect.com/science/article/pii/S0378426617300511}.}
+
+\bibitem[Pickands 1975]{Pickands1975}
+\abntrefinfo{Pickands}{PICKANDS}{1975}
+{PICKANDS, J. {Statistical Inference Using Extreme Order Statistics}.
+\emph{Annals of Statistics}, v.~3, p. 119--131, 1975.}
+
+\bibitem[RiskMetrics 1995]{RiskMetrics1995}
+\abntrefinfo{RiskMetrics}{RISKMETRICS}{1995}
+{RISKMETRICS. \emph{{Technical Document - 3rd Edition}}.
+[S.l.], 1995.}
+
+\bibitem[Rocco 2014]{Rocco2014}
+\abntrefinfo{Rocco}{ROCCO}{2014}
+{ROCCO, M. {EXTREME VALUE THEORY IN FINANCE: A SURVEY}.
+\emph{Journal of Economic Surveys}, Wiley Online Library, v.~28, n.~1, p.
+  82--108, jul 2014.
+ISSN 09500804.
+Dispon{\'\i}vel em:
+  \url{http:https://dx.doi.org/10.1111/j.1467-6419.2012.00744.x}.}
+
+\bibitem[White 1982]{White1982}
+\abntrefinfo{White}{WHITE}{1982}
+{WHITE, H. Maximum likelihood estimation of misspecified models.
+\emph{Econometrica: Journal of the Econometric Society}, JSTOR, p. 1--25,
+  1982.}
+
+\bibitem[Wong, Cheng e Wong 2003]{Wong2003}
+\abntrefinfo{Wong, Cheng e Wong}{WONG; CHENG; WONG}{2003}
+{WONG, M. C.~S.; CHENG, W.~Y.; WONG, C. Y.~P. Market risk management of banks:
+  implications from the accuracy of value-at-risk forecasts.
+\emph{Journal of Forecasting}, Wiley Online Library, v.~22, n.~1, p. 23--33,
+  2003.}
+
+\end{thebibliography}

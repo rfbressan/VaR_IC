@@ -112,7 +112,7 @@
 \address[mymainaddress]{Avenida Madre Benvenuta, 2007 - Santa Mônica Florianópolis - SC 88035-901}
 %\address[mysecondaryaddress]{360 Park Avenue South, New York}
 
-\listoftodos
+%\listoftodos
 
 \begin{abstract}
 	Este trabalho faz um comparativo entre dois modelos univariados de estimação de valor em risco para seis índices de ações calculados na Bovespa. Os modelos testados são do tipo condicional e um período fora da amostra com mais de 3 anos de observações diárias é utilizado. A partir de dois procedimentos de avaliação, cobertura incondicional e teste de independência de violações, os melhores resultados são apresentados pelo modelo que une a teoria do valor extremo e modelagem condicional de variâncias heterocedásticas, o qual leva em conta o regime variável nas volatilidades das perdas assim como excesso de curtose. Em seguida uma comparação entre os níveis médios de risco entre os índices é analisado com o intuito de auferir quais índices se mostram os mais arriscados para o investidor.
@@ -174,7 +174,7 @@ O cálculo de VaR em instituições financeiras e bancos comerciais vem sendo im
 
 Este artigo busca avaliar, através de testes estatísticos, a capacidade preditiva de dois modelos distintos de cálculo da métrica de valor em risco comumente encontrados na literatura, por meio da técnica de \emph{backtest}. O modelo EVT condicional em dois estágios, proposto por \cite{McNeil2000}, e o modelo associados ao grupo \emph{RiskMetrics}, que pressupõe distribuição normal dos retornos. Os testes aplicados abrangem características importantes do VaR como cobertura incondicional e independência entre violações.
 
-O restante deste artigo está assim organizado, na seção \ref{sec:caudas} é apresentada a teoria do valor extremo, seus principais resultados para séries \emph{iid} utilizando o método \emph{peaks over treshold} e o modelo em dois estágios com filtragem inicial a partir de um modelo AR-GARCH. Na seção \ref{sec:descritivas} são apresentados os índices e seus períodos em análise. Algumas estatísticas descritivas dos retornos são calculadas. Já em \ref{sec:filtro} e \ref{sec:metpot} o modelo EVT condicional utilizado é revisto e seus parâmetros de análise são determinados a partir de uma amostra de trabalho (período dentro da amostra). Em \ref{sec:avaliacao}, a avaliação no período fora da amostra dos modelos é realizada, testes estatísticos para cobertura condicional e incondicional são feitos na subseção \ref{sec:testes}. Um comparativo entre os níveis de risco de cada um dos índices analisados é apresentado em \todo{Seção comparando níveis de risco. \ref{label}}. Ao final, uma conclusão sobre os resultados encontrados e no \ref{apendice} são apresentados em maiores detalhes os modelos analisados.
+O restante deste artigo está assim organizado, na seção \ref{sec:caudas} é apresentada a teoria do valor extremo, seus principais resultados para séries \emph{iid} utilizando o método \emph{peaks over treshold} e o modelo em dois estágios com filtragem inicial a partir de um modelo AR-GARCH. Na seção \ref{sec:descritivas} são apresentados os índices e seus períodos em análise. Algumas estatísticas descritivas dos retornos são calculadas. Já em \ref{sec:filtro} e \ref{sec:metpot} o modelo EVT condicional utilizado é revisto e seus parâmetros de análise são determinados a partir de uma amostra de trabalho (período dentro da amostra). Em \ref{sec:avaliacao}, a avaliação no período fora da amostra dos modelos é realizada, testes estatísticos para cobertura condicional e incondicional são feitos na subseção \ref{sec:testes}. Um comparativo entre os níveis de risco de cada um dos índices analisados é apresentado na seção \ref{sec:comparativo}. Ao final, uma conclusão sobre os resultados encontrados e no \ref{apendice} são apresentados em maiores detalhes os modelos analisados.
 
 \section{Modelando caudas e medidas de risco associadas com EVT}
 \label{sec:caudas}
@@ -392,9 +392,16 @@ onde $N_u$ é o número de excessos acima do valor de limiar escolhido e $Z^u_j$
 \section{Dados utilizados e estatísticas descritivas}
 \label{sec:descritivas}
 
-Neste artigo serão analisadas as séries de retornos (e perdas) de seis principais índices de ações de setores da Bovespa. Foram escolhidos os quatro maiores índices setoriais pelo critério de valor de mercado ao final de março de 2018, índices Financeiro (IFNC), Consumo (ICON), Industrial (INDX) e Materiais (IMAT), além do índice de Governança (IGCX) e o próprio índice Bovespa (IBOV). Os retornos coletados foram entre as datas de 01/01/2010 a 31/12/2014 para o período considerado dentro da amostra, no qual são feitas algumas análises preliminares. O período fora da amostra, de onde são retirados os resultados de \emph{backtest} se estende de 01/01/2015 a 08/05/2018. Em dias sem negociação nos mercados, os períodos iniciam-se na data útil seguinte e terminam em data útil imediatamente anterior.
+Neste artigo serão analisadas as séries de retornos (e perdas) de seis principais índices de ações de setores da Bovespa. Foram escolhidos os quatro maiores índices setoriais pelo critério de valor de mercado ao final de março de 2018, índices Financeiro (IFNC), Consumo (ICON), Industrial (INDX) e Materiais (IMAT), além do índice de Governança (IGCX) e o próprio índice Bovespa (IBOV). Os retornos coletados foram entre as datas de 01/01/2009 a 31/12/2013 para o período considerado dentro da amostra, no qual são feitas algumas análises preliminares. O período fora da amostra, de onde são retirados os resultados de \emph{backtest} se estende de 01/01/2014 a 08/05/2018. Em dias sem negociação nos mercados, os períodos iniciam-se na data útil seguinte e terminam em data útil imediatamente anterior.
 
 A tabela \ref{tab:descritivas} apresenta algumas das estatísticas descritivas mais importantes para as séries de \emph{retornos} dos ativos no período completo, dentro e fora da amostra. É possível verificar que os retornos não podem ser considerados normais, com a estatística de Jarque-Bera rejeitando a hipótese nula e com o alto grau de curtose em excesso verificado para todos os índices analisados.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-retornos}
+	\caption{Retornos dos índices do estudo. Período completo entre 02/01/2009 a 08/05/2018.}
+	\label{fig:artigo-retornos}
+\end{figure}
 
 Também é possível verificar a grande autocorrelação serial entre os quadrados dos retornos, uma \emph{proxy} para a autocorrelação das variâncias, através da estatística $Q^2(10)$ de Ljung-Box, o que corrobora os fatos estilizados de séries financeiras, vide \cite{Cont2001}.
 
@@ -404,6 +411,13 @@ Também é possível verificar a grande autocorrelação serial entre os quadrad
 
 %Na figura \ref{fig:artigo-retornos} são visualizadas as séries de retornos logarítmicos em estudo. Por inspeção visual simples é possível verificar a heterocedasticidade destes retornos, corroborando as estatísticas encontradas na tabela \ref{tab:descritivas}. 
 A figura \ref{fig:artigo-qqplots} é mais interessante para se apreciar a normalidade destes retornos. Tratam-se de gráficos quantil-quantil feitos entre a amostra completa dos retornos e uma distribuição normal de referência. Para todas as séries é observado um desvio da normalidade nas caudas, configurando distribuições leptocúrticas em todos os casos.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-qqplots}
+	\caption{Análise de normalidade dos retornos através de gráficos quantil-quantil.}
+	\label{fig:artigo-qqplots}
+\end{figure}
 
 \subsection{Filtro GARCH}
 \label{sec:filtro}
@@ -443,6 +457,13 @@ A tabela \ref{tab:evtcoef} apresenta os valores destes parâmetros e seus erros 
 
 Na figura \ref{fig:artigo-gpdfit} é possível visualizar os gráficos de ajuste das inovações em excesso de cada um dos índices contra suas distribuições GPD de referência, ou seja, aquelas com os parâmetros de forma e escala estimados para os respectivos índices. Verifica-se que a distribuição destes excessos pouco se desvia com relação a curva de referência, denotando um bom ajuste dos dados ao modelo teórico. Em contraste, quando modelados diretamente através de uma distribuição normal, as séries de retornos se afastavam consideravelmente de suas referências como já apresentado na figura \ref{fig:artigo-qqplots}. Ao se utilizar um método semi-paramétrico como o proposto, modelando apenas uma parte da cauda da distribuição, a parte que interessa para a modelagem de risco, obtém-se uma estimação muito mais próxima da realidade que os dados apresentam.
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-gpdfit}
+	\caption{Qualidade do ajuste dos dados de inovações em excesso contra uma GPD de referência. Período dentro da amostra.}
+	\label{fig:artigo-gpdfit}
+\end{figure}
+
 \section{Avaliação dos modelos}
 \label{sec:avaliacao}
 
@@ -456,10 +477,24 @@ O quantil para a definição do limiar \emph{u} é fixo em 0,90, o que resultar�
 
 A figura \ref{fig:artigo-backtest} apresenta o resultado do \emph{backtest} para o modelo EVT condicional para cada um dos índices analisados. É possível verificar como a medida condicional de risco oscila de valor, acompanhando a volatilidade do índice, sendo especialmente responsiva a grandes choques. Em comparação com o modelo \emph{Riskmetrics}, o EVT apresenta maior persistência em seu nível medido de risco após um choque de volatilidade, ou em outras palavras, uma menor taxa de decaimento. Através da figura \ref{fig:artigo-ibovevt} pode-se verificar esta condição para o índice IBovespa onde, após a grande perda ocorrida em 18 de maio de 2017, fica evidente que o modelo retorna aos seus níveis de risco anteriores de forma mais lenta que a medida \emph{Riskmetrics}.%Entende-se por modelos incondicionais aqueles em que a volatilidade histórica de toda a janela de dados é utilizada para calcular as medias de risco. É nítido como o modelo condicional, que utiliza a previsão para a média e volatilidade das perdas e então utiliza-os para obter a medida de risco, é muito mais responsivo a alterações no regime de volatilidade do ativo. Um modelo incondicional, por sua vez, não responde de forma acentuada a variações de curto-prazo na volatilidade do ativo, pois estas observações mais extremas são atenuadas em meio a todas as outras observações utilizadas da janela de dados.
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-backtest}
+	\caption{$VaR_{99\%}$ no modelo EVT condicional para todos os índices. Violações demarcadas.}
+	\label{fig:artigo-backtest}
+\end{figure}
+
 Uma violação é dita ocorrida quando a perda observada é maior que a medida de risco estimada no dia anterior, $x_{t+1}>VaR^t_\alpha$ para um $\alpha$ dentro do conjunto de níveis de significância, neste artigo $\alpha \in \{0,975; 0,990\}$. A tabela \ref{tab:varviol} apresenta em termos percentuais as violações ocorridas para cada um dos modelos para os níveis de cobertura dados. Dentre os dois modelos analisados, o EVT condicional se saiu melhor nos dois níveis de cobertura.
 %Os modelos condicionais apresentaram uma tendência a subestimação do risco, com um número superior de violações ao esperado. Os modelos incondicionais, ao contrário, superestimam o risco e apresentam tendência a um número menor de violações. Dentre os modelos estimados o EVT condicional apresentou as violações percentuais mais próximas ao valor esperado, $1-\alpha$.
 
 \input{tables/artigo-tab-varviol}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{figs/artigo-ibovevt}
+	\caption{Teste fora da amostra para o IBOV. O modelo EVT condicional (linha sólida) possui menor taxa de decaimento após um choque de volatilidde que o modelo Riskmetrics (linha tracejada).}
+	\label{fig:artigo-ibovevt}
+\end{figure}
 
 \subsection{Testes estatísticos}
 \label{sec:testes}
@@ -496,7 +531,14 @@ A tabela \ref{tab:vartest_suma} apresenta um sumário contendo a quantidade de r
 
 \section{Comparativo entre índices}
 \label{sec:comparativo}
-\todo{Incluir um comparativo entre os índices e seus VaR. Fazer um teste de comparação de médias par-a-par}
+
+Uma vez construídas das séries das medidas de risco, conforme a figura \ref{fig:artigo-backtest}, para cada um dos índices, pode-se fazer uma análise comparativa do nível médio de risco exibido por cada índice, e compará-los entre si para aferir quais índices apresentam maior nível de risco para o investidor, em média.
+
+Para tanto, é possível fazer um teste \emph{t} entre cada uma das combinações possíveis de dois índices, comparando os valores médios de suas medidas de risco VaR. Dado que o modelo EVT condicional ao nível de confiança de 99\% se mostrou superior ao \emph{Riskmetrics}, foi escolhida esta medida de risco para o comparativo. Os valores médios do VaR durante o período de \emph{backtest} entre 02/01/2014 e 08/05/2018 de cada um dos índices foram os seguintes: IBOV 0,0356; ICON 0,0284; IFNC 0,0405; IGCX 0,0305; IMAT 0,0414; INDX 0,0273. A tabela \ref{tab:t_test} apresenta os resultados obtidos através dos p-valores do teste, onde a hipótese nula é que o índice na linha da tabela possui nível de risco menor ou igual ao índice da coluna.
+ 
+\input{tables/artigo-tab-t_test}
+
+Ao analisar esta tabela podemos inferir que, em média, o índice Industrial - INDX não é mais arriscado que qualquer um  dos índices sob análise, enquanto que o  índice de Materiais - IMAT é mais arriscado, em média, que todos os outros índices com exceção do índice Financeiro - IFNC, ao qual a estatística é significativa somente ao nível de 90\% de confiança.
 
 %\subsection{Teste MCS de Hansen}
 %\label{sec:mcs}
@@ -526,7 +568,7 @@ Este artigo tratou de estimar e comparar dois modelos de VaR para seis índices 
 
 Nos testes estatísticos de cobertura incondicional e independência, a superioridade do modelo EVT condicional se apresenta de forma mais concreta. Este modelo não apresentou rejeição a hipótese nula da correta especificação, tanto para o teste de Kupiec quanto para o teste de duração de Christoffersen e Pelletier ao nível de confiança de 95\%. 
 
-\todo{Incluir na conclusão a análise comparativa}
+Em uma análise comparativa entre os índices, considerando a medida $VaR_{99\%}$ dada pelo modelo EVT condicional durante o período de \emph{backtest}, o índice IMAT se mostrou mais arriscado, em média, que os demais índices analisados, enquanto que o índice INDX não se mostrou mais arriscado que qualquer um  dos demais.
  %Modelos condicionais, como esperado, apresentam um comportamento que levam a uma melhor performance no teste de independência, não apresentando agrupamentos de violações porém, esta performance não se repete ao teste de cobertura incondicional, salvo o modelo EVT condicional.
 
 %Aplicando a metodologia de conjunto de confiança de modelos, o modelo EVT condicional se mostra novamente de forma destacada. Ao nível de cobertura de 1\% é o melhor modelo (no sentido que é aquele com p-valor igual a 1) para todos os índices analisados. Quando verificado o número de exclusões do conjunto superior, apenas os modelos EVT e normal condicionais não foram excluídos em nenhuma ocasião.
@@ -624,84 +666,5 @@ O algoritmo para seu cálculo, portanto, é direto.
 \section*{Referências}
 
 \bibliography{library}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-retornos}
-	\caption{Retornos dos índices do estudo. Período completo entre 02/01/2009 a 08/05/2018.}
-	\label{fig:artigo-retornos}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-qqplots}
-	\caption{Análise de normalidade dos retornos através de gráficos quantil-quantil.}
-	\label{fig:artigo-qqplots}
-\end{figure}
-
-
-%% Figuras com os gráficos ACF antes e depois da filtragem eGARCH
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=1\linewidth]{figs/artigo-acf-IBovespa}
-%	\caption{Ibovespa. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-%	\label{fig:artigo-acf-ibovespa}
-%\end{figure}
-%
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=1\linewidth]{figs/artigo-acf-IPC}
-%	\caption{IPC. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-%	\label{fig:artigo-acf-ipc}
-%\end{figure}
-%
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=1\linewidth]{figs/artigo-acf-IPSA}
-%	\caption{IPSA. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-%	\label{fig:artigo-acf-ipsa}
-%\end{figure}
-%
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=1\linewidth]{figs/artigo-acf-Merval}
-%	\caption{Merval. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-%	\label{fig:artigo-acf-merval}
-%\end{figure}
-%
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=1\linewidth]{figs/artigo-acf-SP-TSE}
-%	\caption{S\&P TSE. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-%	\label{fig:artigo-acf-sptse}
-%\end{figure}
-%
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=1\linewidth]{figs/artigo-acf-SP500}
-%	\caption{S\&P500. Na parte superior está o ACF das perdas observadas e seus quadrados, enquanto que na parte inferior os resíduos padronizados e seus quadrados após a modelagem eGARCH. Período dentro da amostra 01/01/2013 a 31/12/2008.}
-%	\label{fig:artigo-acf-sp500}
-%\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-gpdfit}
-	\caption{Qualidade do ajuste dos dados de inovações em excesso contra uma GPD de referência. Período dentro da amostra.}
-	\label{fig:artigo-gpdfit}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-backtest}
-	\caption{$VaR_{99\%}$ no modelo EVT condicional para todos os índices. Violações demarcadas.}
-	\label{fig:artigo-backtest}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{figs/artigo-ibovevt}
-	\caption{Teste fora da amostra para o IBOV. O modelo EVT condicional (linha sólida) possui menor taxa de decaimento após um choque de volatilidde que o modelo Riskmetrics (linha tracejada).}
-	\label{fig:artigo-ibovevt}
-\end{figure}
 
 \end{document}

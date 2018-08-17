@@ -1,33 +1,33 @@
 
-Inicio do map roll_fit: 2018-05-11 20:52:57
-roll_fit do ativo inicio: 2018-05-11 20:52:57
-cevt: 11.71269 secs
-riskmetrics: 0.03243256 secs
-roll_fit do ativo fim: 2018-05-11 20:58:21 
+Inicio do map roll_fit: 2018-05-12 19:45:49
+roll_fit do ativo inicio: 2018-05-12 19:45:50
+cevt: 12.90885 secs
+riskmetrics: 1.625298 secs
+roll_fit do ativo fim: 2018-05-12 19:51:15 
 
-roll_fit do ativo inicio: 2018-05-11 20:58:21
-cevt: 11.79272 secs
-riskmetrics: 0.04313803 secs
-roll_fit do ativo fim: 2018-05-11 21:03:26 
+roll_fit do ativo inicio: 2018-05-12 19:51:15
+cevt: 11.13738 secs
+riskmetrics: 1.532398 secs
+roll_fit do ativo fim: 2018-05-12 19:56:13 
 
-roll_fit do ativo inicio: 2018-05-11 21:03:26
-cevt: 11.73575 secs
-riskmetrics: 0.03239274 secs
-roll_fit do ativo fim: 2018-05-11 21:08:32 
+roll_fit do ativo inicio: 2018-05-12 19:56:13
+cevt: 11.17064 secs
+riskmetrics: 0.03246641 secs
+roll_fit do ativo fim: 2018-05-12 20:01:06 
 
-roll_fit do ativo inicio: 2018-05-11 21:08:32
-cevt: 11.48309 secs
-riskmetrics: 0.03206658 secs
-roll_fit do ativo fim: 2018-05-11 21:13:26 
+roll_fit do ativo inicio: 2018-05-12 20:01:06
+cevt: 5.737868 mins
+riskmetrics: 0.03216362 secs
+roll_fit do ativo fim: 2018-05-12 20:11:31 
 
-roll_fit do ativo inicio: 2018-05-11 21:13:26
-cevt: 12.7538 secs
-riskmetrics: 0.03207564 secs
-roll_fit do ativo fim: 2018-05-11 21:18:26 
+roll_fit do ativo inicio: 2018-05-12 20:11:31
+cevt: 11.40671 secs
+riskmetrics: 0.03194404 secs
+roll_fit do ativo fim: 2018-05-12 20:16:41 
 
-roll_fit do ativo inicio: 2018-05-11 21:18:26
-cevt: 13.19691 secs
-riskmetrics: 0.02931762 secs
-roll_fit do ativo fim: 2018-05-11 21:23:32 
+roll_fit do ativo inicio: 2018-05-12 20:16:41
+cevt: 11.40362 secs
+riskmetrics: 0.03194523 secs
+roll_fit do ativo fim: 2018-05-12 20:21:43 
 
-Fim do map roll_fit: 2018-05-11 21:23:32
+Fim do map roll_fit: 2018-05-12 20:21:45

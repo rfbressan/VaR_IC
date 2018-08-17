@@ -1,0 +1,38 @@
+---
+title: "Aplicando a teoria do valor extremo no cálculo de risco de índices setoriais da Bovespa"
+author: "Rafael Felipe Bressan"
+date: "`r Sys.Date()`"
+output:
+  iosp::ioslides_plus:
+    footer: "Grupo de Pesquisa em Economia Aplicada - GEA"
+    widescreen: false
+#    logo: ../artigo/figs/Marca_Udesc.jpeg
+    css: css/lecture.css
+#    smaller: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Slide using boxes
+
+IOSlides plus (`iosp`) extends `ioslides_presentation` and allows to create columns or boxes as level 3 headers.
+
+### Box 1{.box-4 .bg-red}
+
+Test 1
+
+### Box 2{.box-6 .bg-green}
+
+- line 1
+- line 2
+
+### Box 3{.box-6 .bg-blue}
+
+This box has again a width of 6 col and wraps to a new line.
+
+%end%
+
+We are able to exit the box using the keyword `%end%`.
+

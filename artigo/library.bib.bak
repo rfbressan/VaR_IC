@@ -113,9 +113,9 @@
 }
 
 @TechReport{BankingSupervision2014,
-  author        = {Basel Committee on Banking Supervision},
+  author        = {BCBS},
   title         = {{Basel III: The net stable funding ratio}},
-  institution   = {Bank for International Settlements},
+  institution   = {Bank for International Settlements - Basel Committee on Banking Supervision},
   year          = {2014},
   keywords      = {TCC},
   mendeley-tags = {TCC},
@@ -123,9 +123,9 @@
 }
 
 @TechReport{BankingSupervision2013,
-  author        = {Basel Committee on Banking Supervision},
+  author        = {BCBS},
   title         = {{Basel III: The liquidity coverage ratio and liquidity risk monitoring tools}},
-  institution   = {Bank for International Settlements},
+  institution   = {Bank for International Settlements - Basel Committee on Banking Supervision},
   year          = {2013},
   keywords      = {TCC},
   mendeley-tags = {TCC},
@@ -133,18 +133,18 @@
 }
 
 @TechReport{BankingSupervision2013a,
-  author      = {Basel Committee on Banking Supervision},
+  author      = {BCBS},
   title       = {{Fundamental review of the trading book: A revised market risk framework}},
-  institution = {Bank for International Settlements},
+  institution = {Bank for International Settlements - Basel Committee on Banking Supervision},
   year        = {2013},
   month       = {oct},
   url         = {http://www.bis.org/publ/bcbs265.pdf},
 }
 
 @TechReport{BankingSupervision2011,
-  author        = {Basel Committee on Banking Supervision},
+  author        = {BCBS},
   title         = {{Basel III: A global regulatory framework for more resilient banks and banking systems}},
-  institution   = {Bank for International Settlements},
+  institution   = {Bank for International Settlements -Basel Committee on Banking Supervision},
   year          = {2011},
   edition       = {revised ve},
   keywords      = {TCC},
@@ -1488,7 +1488,7 @@
 }
 
 @Article{Amarante2017,
-  author  = {de Amarante, Adriano and Cunha, Jefferson},
+  author  = {Amarante, Adriano de and Cunha, Jefferson},
   title   = {Dynamic interdependence and volatility transmission in the American stock markets during the attacks of September 11: a retrospective},
   journal = {Revista Brasileira de Economia de Empresas},
   year    = {2017},
