@@ -139,92 +139,166 @@ ggplot(df, aes(x = n, y = loss)) +
 	Seja *X* uma variável aleatória com função de distribuição $F \in MDA(H_\xi)$. A distribuição dos excessos sobre um limiar *u* adequado tem a função de Distribuição Generalizada de Pareto - GPD:
 
 $$
-  G_{\xi,\beta(u)}(X) = 
+  G_{\xi,\psi(u)}(X) = 
   \begin{cases}
-    1- \left(1+ \frac{\xi x}{\beta(u)} \right)^{-\frac{1}{\xi}}, & \xi \neq 0,\\
-    1-exp\left(-\frac{x}{\beta(u)}\right), & \xi = 0,\\
+    1- \left(1+ \frac{\xi x}{\psi(u)} \right)^{-\frac{1}{\xi}}, & \xi \neq 0,\\
+    1-exp\left(-\frac{x}{\psi(u)}\right), & \xi = 0,\\
   \end{cases}
 $$
 
-- Se $F \in MDA(H_\xi)$, então a distribuição dos excessos $F_u \rightarrow  G_{\xi,\beta(u)}$
+- Se $F \in MDA(H_\xi)$, então a distribuição dos excessos $F_u \rightarrow  G_{\xi,\psi(u)}$
 
 ## Teoria do valor extremo | peaks-over-threshold
 
 - Como se deve escolher o valor **adequado** do limiar?
-    + Gráficos de vida residual média
+    + Gráficos de vida residual média (função média dos excessos _versus_ _u_)
     + Escolher o menor valor de _u_ onde a relação é linear
     + Na prática, número de excessos observados em torno de 100 
 
-## Filtro EGARCH
-
-- O modelo GARCH exponencial ou EGARCH de @Nelson1991 lida também com o efeito alavancagem, além da heterocedasticidade
-
-\begin{align*}
-	L_t=&\mu+ \sum_{i=1}^r\phi_i L_{t-i}+ \sum\limits_{j=1}^{s}\theta_j\epsilon_{t-j} +\epsilon_t \\
-	\ln(\sigma_t^2)=&\omega+ \sum\limits_{i=1}^{p}(\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|))+ \sum\limits_{j=1}^{q}\beta_j \ln(\sigma_{t-j}^2) \\
-	\epsilon_t=&\sigma_t Z_t
-\end{align*}
+- _Trade-off_ entre limiar alto e número de excessos
+    + Limiar muito baixo, teorema PBH não é satisfeito
+    + Limiar muito alto, poucos excessos e alta variância nos parâmetros $\xi$ e $\psi$
 
 # Modelo
 
-## Modelo eGARCH-EVT
+## Modelo EGARCH-EVT | dois estágios{.smaller .build}
 
-- Seguiremos os passos propostos por @McNeil2000.
-- Modelo completo para as medidas de risco $VaR_\alpha$ e $ES_\alpha$ condicionais dada a distribuição de perdas $L_t$ de um ativo será, portanto:
+- Seguiu-se os passos propostos por @McNeil2000
+- Estimação feita em dois passos
+    + Filtragem EGARCH
+    + Aplicação da EVT aos resíduos padronizados
+- Modelo completo para a medida de risco $VaR_\alpha$ condicional
 
+$$
 \begin{align*}
-L_t=&\mu+ \phi_1 L_{t-1}+ \epsilon_t \\
-\epsilon_t=&\sigma_t Z_t\\
-\ln(\sigma_t^2)=&\omega+ \sum_{i=1}^{2}(\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|))+ \beta_1 \ln(\sigma_{t-1}^2) \\
-Z_t\sim &\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
+\mu_t=\;&\mu+ \phi_1 \mu_{t-1}+ \varepsilon_t \\
+\varepsilon_t=\;&\sigma_t Z_t\\
+\ln(\sigma_t^2)=\;&\omega+ \sum_{i=1}^{2}(\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|))+ \beta_1 \ln(\sigma_{t-1}^2) \\
+Z_t\sim \;&\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
 \end{align*}
+$$
 
-## VaR e ES parametrizados
+## Filtro EGARCH | fundamentos {.build}
 
-- Medidas de risco neste modelo condicional serão:
+- Modelo GARCH exponencial ou EGARCH de @Nelson1991 para retirar heterocedasticidade dos dados
+- Resíduos padronizados podem ser tratados como _iid_
+- EGARCH lida também com o efeito alavancagem
 
-\begin{align*}
-VaR_\alpha^t=&\mu_{t+1}+\sigma_{t+1}z_\alpha, \\
-ES_\alpha^t=&\mu_{t+1}+\sigma_{t+1}E[Z | Z>z_\alpha]
-\end{align*}
-onde $z_\alpha$ é o quantil $\alpha$ das inovações *Z*.
+## VaR parametrizado {.smaller}
 
-## Comparação EVT condicioanl _versus_ Normal incondicional
+### EVT condicional {.box-12 .practical .outline}
 
-<!-- ![S&P500](./figs/artigo-sp500backtest) -->
+$$
+VaR_\alpha^t=\mu_{t+1}+\sigma_{t+1}z_\alpha
+$$
+
+- $z_\alpha$ é o quantil $\alpha$ das inovações *Z* obtido pela EVT
+
+$$
+z_\alpha=q_\alpha(F_z) = u+\frac{\psi}{\xi}\left[ \left( \frac{1-\alpha}{\bar{F_z}(u)}\right)^{-\xi}-1 \right]
+$$
+
+### Riskmetrics {.box-12 .practical .outline}
+
+$$
+\begin{align}
+	\mu_t=\;& \varepsilon_t\\
+	\varepsilon_t=\;& \sigma_tZ_t\\
+	\sigma^2_t=\;& (1-\lambda)\varepsilon^2_{t-1}+\lambda \sigma^2_{t-1}\\
+	VaR_\alpha^t=\;& \sigma_t\Phi^{-1}(\alpha)
+\end{align}
+$$
 
 # Dados utilizados
 
-## Seis índices de ações
+## Seis índices de ações | segmentos da Bovespa
 
-<!-- ![Retornos logarítimicos dos índices de ações](./figs/artigo-retornos_2_3.pdf) -->
+- Seis principais índices setoriais de
+ações da Bovespa, por valor de mercado
+    + Financeiro (IFNC)
+    + Consumo (ICON)
+    + Industrial (INDX)
+    + Materiais (IMAT)
+    + Governança (IGCX) 
+    + e o próprio índice Bovespa (IBOV)
+    
+- Retornos diários
+    + Período dentro da amostra: 01/01/2009 a 31/12/2013
+    + Período fora da amostra: 01/01/2014 a 08/05/2018
 
-## Estatísticas descritivas dos retornos
+## Estatísticas descritivas | retornos não são normais
 
-## Descritivas pós filtragem
+![](figs/tab1.png)
 
-<!-- \include(tables/artigo-tab-garchstats) -->
+## QQ plots | retornos não são normais
+
+![](figs/qq_ibov.png)
+
+## Descritivas pós filtragem | sem autocorrelação na variância
+
+![](figs/tab3.png)
+
 
 # Resultados
 
-## Teste fora da amostra
+## Método POT | aplicação aos resíduos padronizados
 
-- Período de _backtest_ vai de 01/01/2009 a 30/08/2017
-- Avaliação dos modelos através de três testes estatístios
-- Cobertura incondicional de Kupiec
-- Independência entre violações de Christoffersen & Pelletier
-- Conjunto de confiança de modelos de Hansen
+![](figs/tab4.png)
 
-## Teste de Kupiec
+## Ajuste EVT | melhor aderência 
 
-<!-- \include(tables/artigo-tab-varviol) -->
+![](figs/qq_evt_ibov.png)
+
+## Gráficos dos modelos | EVT _vs_ Riskmetrics
+
+![](figs/ibov_evt_risk.png)
+
+## Violações | quando a perda é maior que o VaR {.build}
+
+- Violações ocorrem quando $\mu_{t+1} > VaR_\alpha^t$
+- Modelo bem especificado
+    + percentual de violações igual a $1-\alpha$
+    + violações são independentes entre si
+  
+- $1 - \alpha$ é a cobertura incondicional
+
+## Sumário de violações
+
+![](figs/tab5.png)
+
+## Teste fora da amostra | _backtest_
+
+- Período vai de 01/01/2014 a 08/05/2018
+- Avaliação dos modelos através de dois testes estatístios
+- Cobertura incondicional de @Kupiec1995
+- Independência entre violações de @Christoffersen2004
+
+## Testes Estatísticos | cobertura incondicional e independência {.build .smaller}
+
+### Teste de Kupiec de cobertura incondicional {.box-12 .outline .practical}
+
+- Inferir se a frequência de violações ao VaR é
+consistente com o nível de cobertura
+- H0: modelo corretamente especificado
+- Sob H0, a estatística $LR_{uc}$ segue uma distribuição binomial
+
+### Teste de Christoffersen \& Pelletier de independência {.box-12 .outline .practical}
+
+- Inferir se as violações não formam agrupamentos previsíveis
+- H0: modelo corretamente especificado
+- Única distribuição **sem** memória, exponencial
+    + Weibull é caso particular
+    + Teste sobre o parâmetro que se igual a zero transforma em exponencial
 
 ## Sumário de rejeições de modelo bem especificado
 
-<!-- \include(tables/artigo-tab-vartest_suma) -->
+![](figs/tab7.png)
 
-## MCS de Hansen
 
-<!-- \include(tables/artigo-tab-mcs) -->
+# Muito Obrigado!
+
+## Perguntas e Respostas | plot vida residual média
+
+## Perguntas e Respostas | 
 
 ## Referências {.smaller}

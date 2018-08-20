@@ -15,7 +15,7 @@ output:
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-## Slide using boxes
+## Slide using boxes `&reg` ®
 
 IOSlides plus (`iosp`) extends `ioslides_presentation` and allows to create columns or boxes as level 3 headers.
 
