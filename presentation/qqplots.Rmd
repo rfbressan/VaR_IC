@@ -1,0 +1,3 @@
+## QQ plots | retornos não são normais
+
+![](figs/qq_ibov.png)

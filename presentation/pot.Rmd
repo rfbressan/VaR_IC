@@ -1,0 +1,7 @@
+## Método POT | aplicação aos resíduos padronizados
+
+![](figs/tab4.png)
+
+## Ajuste EVT | melhor aderência 
+
+![](figs/qq_evt_ibov.png)

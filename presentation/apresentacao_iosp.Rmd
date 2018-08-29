@@ -8,6 +8,8 @@ output:
     widescreen: false
     logo: ../artigo/figs/marca_udesc.png
     css: ['css/box.css', 'css/lecture.css']
+params:
+  extended: true
 bibliography: library.bib
 ---
 
@@ -33,7 +35,7 @@ library(ggthemes)
 - Motivação
 - Valor em Risco - VaR
 - Teoria do Valor Extremo - EVT
-- Modelo EGARCH
+- Modelo GARCH
 - Índices Utilizados
 - Resultados
 
@@ -85,7 +87,7 @@ p + annotate("text", x = c(1.5, 1.6, 2.3), y = c(0.35, 0.03, 0.35),
 - EVT é um ramo da estatística que trata de eventos raros, distantes da mediana
 - Aplicações em hidrologia, geologia, seguros e finanças, entre outros
 - Distribuições de probabilidade com caudas longas
-- Se adequa aos fatos estilizados dos retornos financeiros
+- É adequada aos fatos estilizados dos retornos financeiros
 
 ## Teoria do valor extremo | definições {.build}
 
@@ -96,20 +98,8 @@ p + annotate("text", x = c(1.5, 1.6, 2.3), y = c(0.35, 0.03, 0.35),
 - POT é a mais utilizada na prática
 - Desperdiça um menor número de observações
 
-## Teoria do valor extremo | definições {.build}
-
-**Definição**(Distribuição de valores extremos generalizada - GEV). Uma distribuição GEV é definida por sua função de densidade de probabilidade:
-
-$$
-	H_\xi(x) = 
-	\begin{cases}
-	exp(-(1+\xi x)^{-\frac{1}{\xi}}), & \xi \neq 0,\\
-	exp(-e^{-x}), & \xi = 0,\\
-	\end{cases}
-$$
-
-- Teorema de Fisher-Tippett-Gnedenko demonstra que a distribuição de $M_n$ quando $n \rightarrow \infty$ converge para uma GEV e diz-se que $F \in MDA(H_\xi)$
-- Nossa distribuição de perdas $F$ pertence ao domínio de atração de máximos de $H_\xi$ 
+```{r defi_gev, child='gev.Rmd', eval = params$extended}
+```
 
 ## Teoria do valor extremo | definições {.build}
 
@@ -120,7 +110,7 @@ loss <- rnorm(length(n), 0, 0.05)
 u <- rep(median(sqrt(loss^2)), times = length(n))
 df <- tibble(n, loss, u)
 ggplot(df, aes(x = n, y = loss)) +
-  geom_segment(aes(y = 0, yend = loss, xend = n)) +
+  geom_segment(aes(y = 0, yend = loss, xend = n), size = 2) +
   geom_hline(aes(yintercept = u[1]), color = "darkgreen") +
   labs(title = "Peaks-over-threshold",
        x = "",
@@ -161,11 +151,13 @@ $$
 
 # Modelo
 
-## Modelo EGARCH-EVT | dois estágios{.smaller .build}
+## Modelo GARCH-EVT | dois estágios{.smaller .build}
 
 - Seguiu-se os passos propostos por @McNeil2000
 - Estimação feita em dois passos
-    + Filtragem EGARCH
+    + Filtragem GARCH
+        - Modelo GARCH(1, 1) de @Bollerslev1986 para retirar heterocedasticidade
+        - Resíduos padronizados podem ser tratados como _iid_
     + Aplicação da EVT aos resíduos padronizados
 - Modelo completo para a medida de risco $VaR_\alpha$ condicional
 
@@ -173,16 +165,10 @@ $$
 \begin{align*}
 \mu_t=\;&\mu+ \phi_1 \mu_{t-1}+ \varepsilon_t \\
 \varepsilon_t=\;&\sigma_t Z_t\\
-\ln(\sigma_t^2)=\;&\omega+ \sum_{i=1}^{2}(\alpha_i Z_{t-i}+ \gamma_i(|Z_{t-i}|-E|Z_{t-i}|))+ \beta_1 \ln(\sigma_{t-1}^2) \\
+\sigma_t^2=\;&\omega+ \alpha_1 \varepsilon_{t-1}^2+ \beta_1 \sigma_{t-1}^2 \\
 Z_t\sim \;&\mathcal{D}(0,1) \text{ e } \mathcal{D} \in MDA(H_\xi)
 \end{align*}
 $$
-
-## Filtro EGARCH | fundamentos {.build}
-
-- Modelo GARCH exponencial ou EGARCH de @Nelson1991 para retirar heterocedasticidade dos dados
-- Resíduos padronizados podem ser tratados como _iid_
-- EGARCH lida também com o efeito alavancagem
 
 ## VaR parametrizado {.smaller}
 
@@ -205,7 +191,7 @@ $$
 	\mu_t=\;& \varepsilon_t\\
 	\varepsilon_t=\;& \sigma_tZ_t\\
 	\sigma^2_t=\;& (1-\lambda)\varepsilon^2_{t-1}+\lambda \sigma^2_{t-1}\\
-	VaR_\alpha^t=\;& \sigma_t\Phi^{-1}(\alpha)
+	VaR_\alpha^t=\;& \sigma_{t+1}\Phi^{-1}(\alpha)
 \end{align}
 $$
 
@@ -230,9 +216,8 @@ ações da Bovespa, por valor de mercado
 
 ![](figs/tab1.png)
 
-## QQ plots | retornos não são normais
-
-![](figs/qq_ibov.png)
+```{r qqplots, child='qqplots.Rmd', eval = params$extended}
+```
 
 ## Descritivas pós filtragem | sem autocorrelação na variância
 
@@ -241,13 +226,8 @@ ações da Bovespa, por valor de mercado
 
 # Resultados
 
-## Método POT | aplicação aos resíduos padronizados
-
-![](figs/tab4.png)
-
-## Ajuste EVT | melhor aderência 
-
-![](figs/qq_evt_ibov.png)
+```{r pot, child='pot.Rmd', eval = params$extended}
+```
 
 ## Gráficos dos modelos | EVT _vs_ Riskmetrics
 
@@ -288,7 +268,10 @@ consistente com o nível de cobertura
 - H0: modelo corretamente especificado
 - Única distribuição **sem** memória, exponencial
     + Weibull é caso particular
-    + Teste sobre o parâmetro que se igual a zero transforma em exponencial
+    + Teste sobre o parâmetro que se igual a 1 se torna exponencial
+
+```{r testes, child='testes.Rmd', eval = params$extended}
+```
 
 ## Sumário de rejeições de modelo bem especificado
 
@@ -300,5 +283,8 @@ consistente com o nível de cobertura
 ## Perguntas e Respostas | plot vida residual média
 
 ## Perguntas e Respostas | 
+
+```{r pot2, child='pot.Rmd', eval = !params$extended}
+```
 
 ## Referências {.smaller}

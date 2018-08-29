@@ -1,0 +1,14 @@
+## Teoria do valor extremo | definições {.build}
+
+**Definição**(Distribuição de valores extremos generalizada - GEV). Uma distribuição GEV é definida por sua função de densidade de probabilidade:
+
+$$
+	H_\xi(x) = 
+	\begin{cases}
+	exp(-(1+\xi x)^{-\frac{1}{\xi}}), & \xi \neq 0,\\
+	exp(-e^{-x}), & \xi = 0,\\
+	\end{cases}
+$$
+
+- Teorema de Fisher-Tippett-Gnedenko demonstra que a distribuição de $M_n$ quando $n \rightarrow \infty$ converge para uma GEV e diz-se que $F \in MDA(H_\xi)$
+- Nossa distribuição de perdas $F$ pertence ao domínio de atração de máximos de $H_\xi$ 

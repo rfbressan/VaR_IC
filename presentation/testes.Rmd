@@ -1,0 +1,30 @@
+## Testes Estatísticos | cobertura incondicional e independência {.build .smaller}
+
+### Teste de Kupiec de cobertura incondicional {.box-12 .outline .practical}
+
+$$LR_{uc}=-2\ln\left(\frac{(1-p)^{N-X}p^X}{(1-\frac{X}{N})^{N-X}(\frac{X}{N})^X}\right)$$
+
+onde:
+
+- $p$ nível de cobertura 
+- $N$ número de observações do período fora da amostra, e 
+- $X$ número de violações
+
+$H0: LR_{uc}\rightarrow \chi^2_{df=1}$
+
+## Testes Estatísticos | cobertura incondicional e independência {.build .smaller}
+
+### Teste de Christoffersen \& Pelletier de independência {.box-12 .outline .practical}
+
+$$
+f_W(D; a, b) = \begin{cases}
+	                a^b b D^{b-1}e^{-(aD)^b}, &D \geq 0\\
+	                0,&D<0.
+	             \end{cases}
+$$
+
+onde:
+
+- $D$ duração entre violações
+
+$H0: b = 1$
