@@ -1,0 +1,14 @@
+## Teoria do valor extremo | definições {.build}
+
+**Teorema** (Pickands-Balkema-de Haan):
+	Seja *X* uma variável aleatória com função de distribuição $F \in MDA(H_\xi)$. A distribuição dos excessos sobre um limiar *u* adequado tem a função de Distribuição Generalizada de Pareto - GPD:
+
+$$
+  G_{\xi,\psi(u)}(X) = 
+  \begin{cases}
+    1- \left(1+ \frac{\xi x}{\psi(u)} \right)^{-\frac{1}{\xi}}, & \xi \neq 0,\\
+    1-exp\left(-\frac{x}{\psi(u)}\right), & \xi = 0,\\
+  \end{cases}
+$$
+
+- Se $F \in MDA(H_\xi)$, então a distribuição dos excessos $F_u \rightarrow  G_{\xi,\psi(u)}$

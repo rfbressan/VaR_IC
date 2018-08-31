@@ -41,13 +41,27 @@ library(ggthemes)
 
 # Introdução
 
-## Motivação 
+## Situação Problema 
 
 - Princípios de Basileia 
 - Instituições Financeiras devem manter reservas de capital contra riscos de mercado, crédito, liquidez, entre outros
 - Riscos de mercado,  Valor em Risco - VaR e *Expected Shortfall* - ES.
 - Estimação excessiva do risco gera excesso de capital em reserva. Custo para a instituição.
 - Subestimação deste risco pode levar a IF a uma crise de liquidez e eventualmente a insolvência.
+
+## Objetivo
+
+- Avaliar dois modelos de estimação de VaR
+- Índices setoriais Bovespa
+    + Financeiro (IFNC)
+    + Consumo (ICON)
+    + Industrial (INDX)
+    + Materiais (IMAT)
+    + Governança (IGCX) 
+    + IBovespa (IBOV)
+- Decidir modelo mais adequado através de dois testes estatísticos
+    + Cobertura incondicional
+    + Independência das violações
 
 ## Valor em Risco | definição
 
@@ -103,7 +117,7 @@ p + annotate("text", x = c(1.5, 1.6, 2.3), y = c(0.35, 0.03, 0.35),
 
 ## Teoria do valor extremo | definições {.build}
 
-```{r pot}
+```{r pot_plot}
 set.seed(123)
 n <- 1:20
 loss <- rnorm(length(n), 0, 0.05)
@@ -123,20 +137,11 @@ ggplot(df, aes(x = n, y = loss)) +
   theme_economist_white()
 ```
 
-## Teoria do valor extremo | definições {.build}
+```{r defi_gpd, child='defi_gpd.Rmd', eval = params$extended}
+```
 
-**Teorema** (Pickands-Balkema-de Haan):
-	Seja *X* uma variável aleatória com função de distribuição $F \in MDA(H_\xi)$. A distribuição dos excessos sobre um limiar *u* adequado tem a função de Distribuição Generalizada de Pareto - GPD:
-
-$$
-  G_{\xi,\psi(u)}(X) = 
-  \begin{cases}
-    1- \left(1+ \frac{\xi x}{\psi(u)} \right)^{-\frac{1}{\xi}}, & \xi \neq 0,\\
-    1-exp\left(-\frac{x}{\psi(u)}\right), & \xi = 0,\\
-  \end{cases}
-$$
-
-- Se $F \in MDA(H_\xi)$, então a distribuição dos excessos $F_u \rightarrow  G_{\xi,\psi(u)}$
+```{r gpd_ic, child='gpd_ic.Rmd', eval = !params$extended}
+```
 
 ## Teoria do valor extremo | peaks-over-threshold
 
@@ -151,7 +156,7 @@ $$
 
 # Modelo
 
-## Modelo GARCH-EVT | dois estágios{.smaller .build}
+## Modelo EVT Condicional | dois estágios{.smaller .build}
 
 - Seguiu-se os passos propostos por @McNeil2000
 - Estimação feita em dois passos
@@ -277,14 +282,94 @@ consistente com o nível de cobertura
 
 ![](figs/tab7.png)
 
+- Número de rejeições possíveis igual a 6
+- Modelo riskmetrics apresentou rejeição de modelo bem especificado para algum índice
 
 # Muito Obrigado!
 
-## Perguntas e Respostas | plot vida residual média
+## Perguntas e Respostas | tabela completa de testes
 
-## Perguntas e Respostas | 
+![](figs/tab6.png)
+
+<!-- ## Perguntas e Respostas | plot vida residual média -->
+
+```{r mrl_plot_setup, echo=FALSE, include=FALSE}
+library(xts)
+library(PerformanceAnalytics)
+library(rugarch)
+library(evir)
+
+start <- as.Date("2009-01-01")
+end <- as.Date("2013-12-31")
+
+######### Leitura do arquivo setoriais.csv
+setor_df <- read_csv("../input/setoriais.csv")
+setor_xts <- xts(setor_df[, -1], order.by = setor_df$Data) %>% 
+  Return.calculate(method = "log") %>% 
+  na.omit()
+setor_xts <- setor_xts[paste0(start, "/")]
+assets <- colnames(setor_xts) # Simbolos dos indices
+last <- index(last(setor_xts)) # Ultima data na amostra
+lista <- vector(mode = "list", length = length(assets))
+for (i in seq_along(assets)) {
+  lista[[i]] <- setor_xts[, i]
+}
+names(lista) <- assets
+assets.tbl <- enframe(lista) %>% 
+  bind_cols(tibble(id_name = c("Bovespa", "Consumo", "Financeiro", 
+                               "Governanca", "Materiais", "Industrial")))
+
+colnames(assets.tbl) <- c("indice", "ts", "id_name")
+# Qual o tamanho da janela in sample?
+insample <-  enframe(map_dbl(lista, ~ndays(.x[paste0("/", end)])))
+names(insample) <- c("indice", "insample")
+# Remove a variavel lista e assets que agora sao desnecessarios
+rm(lista)
+```
+
+```{r mrl_plot, include=FALSE}
+# Modelo GARCH in Sample-----------------------------------------------------------
+## Modelo GARCH(1,1) para a variancia condicional
+## Modelo AR(1) para a eq da media
+## LEMBRAR: ts contem os retornos e não as perdas!
+
+# Uma especificacao para cada ativo
+ruspec <- ugarchspec(mean.model = list(armaOrder = c(1,0)),
+                     variance.model = list(model = "sGARCH", garchOrder = c(1,1)),
+                     distribution.model = "norm")
+garch.specs <- replicate(length(assets), ruspec)
+names(garch.specs) <- assets
+garch.specs <- enframe(garch.specs)
+colnames(garch.specs) <- c("indice", "spec")
+## Modelando as PERDAS!! parametro eh loss para a funcao ugarchfit
+# Deixamos um numero outsample para fazer o backtesting. Diferente para cada ativo
+# garch.models vai conter o modelo GARCH dentro da amostra. Apresentar os 
+# parametros e seus erros padrao robustos
+# Depois apresentar novamente estatisticas como JB, Q e Q^2 para os erros padronizados
+garch.models <- assets.tbl[,1:3] %>% 
+  inner_join(insample, by = "indice") %>% 
+  inner_join(garch.specs, by = "indice") %>% 
+  mutate(loss = map(ts, ~-.x),
+         loss_in = map2(ts, insample, ~-.x[1:.y]),
+         garch_fit = map2(spec, loss_in, ~ugarchfit(.x, 
+                                                    .y,
+                                                    solver = "hybrid")),
+         ts = NULL)
+
+testez <- coredata(residuals(garch.models$garch_fit[[5]], standardize = TRUE))
+meplot(testez, type = "l")
+# shape(testez, models = 10, start = 90, end = 150)
+# ## Teste com o pacote evd
+# teste_evd <- fpot(testez, quantile(testez, 0.95))
+# fitted.values(teste_evd)
+# std.errors(teste_evd)  # Iguais ao fExtremes e evir
+# mrlplot(testez)
+```
 
 ```{r pot2, child='pot.Rmd', eval = !params$extended}
+```
+
+```{r testes_ic, child='testes.Rmd', eval = !params$extended}
 ```
 
 ## Referências {.smaller}
