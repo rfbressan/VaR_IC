@@ -31,7 +31,7 @@ library(tidyverse)
 library(ggthemes)
 ```
 
-## Agenda {.build}
+## Agenda 
 
 - Situação Problema
 - Valor em Risco - VaR
@@ -40,7 +40,7 @@ library(ggthemes)
 - Índices Utilizados
 - Resultados
 
-# Introdução
+<!-- # Introdução -->
 
 ## Situação Problema 
 
@@ -95,9 +95,9 @@ p + annotate("text", x = c(1.5, 1.6, 2.3), y = c(0.35, 0.03, 0.35),
            label = c("VaR[alpha]", "1 - alpha", "ES[alpha]"), parse = TRUE, size = 6)
 ```
 
-# Fundamentação Teórica
+<!-- # Fundamentação Teórica -->
 
-## Teoria do valor extremo | fundamentos {.build}
+## Teoria do valor extremo | fundamentos 
 
 - EVT é um ramo da estatística que trata de eventos raros, distantes da mediana
 - Aplicações em hidrologia, geologia, seguros e finanças, entre outros
@@ -119,7 +119,7 @@ p + annotate("text", x = c(1.5, 1.6, 2.3), y = c(0.35, 0.03, 0.35),
 ```{r defi_gev, child='gev.Rmd', eval = params$extended}
 ```
 
-## Teoria do valor extremo | definições {.build}
+## Teoria do valor extremo | definições 
 
 ```{r pot_plot}
 set.seed(123)
@@ -147,20 +147,12 @@ ggplot(df, aes(x = n, y = loss)) +
 ```{r gpd_ic, child='gpd_ic.Rmd', eval = !params$extended}
 ```
 
-## Teoria do valor extremo | peaks-over-threshold
+```{r limiar, child='limiar.Rmd', eval = params$extended}
+```
 
-- Como se deve escolher o valor **adequado** do limiar?
-    + Gráficos de vida residual média (função média dos excessos _versus_ _u_)
-    + Escolher o menor valor de _u_ onde a relação é linear
-    + Na prática, número de excessos observados em torno de 100 
+<!-- # Modelo -->
 
-- _Trade-off_ entre limiar alto e número de excessos
-    + Limiar muito baixo, teorema PBH não é satisfeito
-    + Limiar muito alto, poucos excessos e alta variância nos parâmetros $\xi$ e $\psi$
-
-# Modelo
-
-## Modelo EVT Condicional | dois estágios{.smaller .build}
+## Modelo EVT Condicional | dois estágios{.smaller }
 
 - Seguiu-se os passos propostos por @McNeil2000
 - Estimação feita em dois passos
@@ -204,7 +196,7 @@ $$
 \end{align}
 $$
 
-# Dados utilizados
+<!-- # Dados utilizados -->
 
 ## Seis índices de ações | segmentos da Bovespa
 
@@ -233,7 +225,7 @@ ações da Bovespa, por valor de mercado
 ![](figs/tab3.png)
 
 
-# Resultados
+<!-- # Resultados -->
 
 ```{r pot, child='pot.Rmd', eval = params$extended}
 ```
@@ -242,7 +234,7 @@ ações da Bovespa, por valor de mercado
 
 ![](figs/ibov_evt_risk.png)
 
-## Violações | quando a perda é maior que o VaR {.build}
+## Violações | quando a perda é maior que o VaR 
 
 - Violações ocorrem quando $\mu_{t+1} > VaR_\alpha^t$
 - Modelo bem especificado
@@ -255,14 +247,16 @@ ações da Bovespa, por valor de mercado
 
 ![](figs/tab5.png)
 
+<!--
 ## Teste fora da amostra | _backtest_
 
 - Período vai de 01/01/2014 a 08/05/2018
 - Avaliação dos modelos através de dois testes estatístios
 - Cobertura incondicional de @Kupiec1995
 - Independência entre violações de @Christoffersen2004
+-->
 
-## Testes Estatísticos | cobertura incondicional e independência {.build .smaller}
+## Testes Estatísticos | cobertura incondicional e independência {.smaller}
 
 ### Teste de Kupiec de cobertura incondicional {.box-12 .outline .practical}
 
@@ -371,6 +365,10 @@ meplot(testez, type = "l")
 ```
 
 ```{r pot2, child='pot.Rmd', eval = !params$extended}
+```
+
+
+```{r limiar_ic, child='limiar.Rmd', eval = !params$extended}
 ```
 
 ```{r testes_ic, child='testes.Rmd', eval = !params$extended}

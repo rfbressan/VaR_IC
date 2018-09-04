@@ -1,0 +1,10 @@
+## Teoria do valor extremo | peaks-over-threshold
+
+- Como se deve escolher o valor **adequado** do limiar?
+    + Gráficos de vida residual média (função média dos excessos _versus_ _u_)
+    + Escolher o menor valor de _u_ onde a relação é linear
+    + Na prática, número de excessos observados em torno de 100 
+
+- _Trade-off_ entre limiar alto e número de excessos
+    + Limiar muito baixo, teorema PBH não é satisfeito
+    + Limiar muito alto, poucos excessos e alta variância nos parâmetros $\xi$ e $\psi$
