@@ -1,11 +1,12 @@
 ---
 title: "Aplicando a teoria do valor extremo no cálculo de risco de índices setoriais da Bovespa"
 author: "Rafael Felipe Bressan"
-date: "`r format(Sys.Date(), '%d/%m/%Y')`"
+date: "06/09/2018"
 output:
   iosp::ioslides_plus:
     footer: "Grupo de Pesquisa em Economia Aplicada - GEA"
     widescreen: false
+    incremental: false
     logo: ../artigo/figs/marca_udesc.png
     css: ['css/box.css', 'css/lecture.css']
 params:
@@ -32,7 +33,7 @@ library(ggthemes)
 
 ## Agenda {.build}
 
-- Motivação
+- Situação Problema
 - Valor em Risco - VaR
 - Teoria do Valor Extremo - EVT
 - Modelo GARCH
@@ -45,9 +46,9 @@ library(ggthemes)
 
 - Princípios de Basileia 
 - Instituições Financeiras devem manter reservas de capital contra riscos de mercado, crédito, liquidez, entre outros
-- Riscos de mercado,  Valor em Risco - VaR e *Expected Shortfall* - ES.
 - Estimação excessiva do risco gera excesso de capital em reserva. Custo para a instituição.
 - Subestimação deste risco pode levar a IF a uma crise de liquidez e eventualmente a insolvência.
+- Risco de mercado medio por Valor em Risco - VaR
 
 ## Objetivo
 
@@ -59,7 +60,7 @@ library(ggthemes)
     + Materiais (IMAT)
     + Governança (IGCX) 
     + IBovespa (IBOV)
-- Decidir modelo mais adequado através de dois testes estatísticos
+- Avaliação do modelo mais adequado através de dois testes estatísticos
     + Cobertura incondicional
     + Independência das violações
 
@@ -102,8 +103,11 @@ p + annotate("text", x = c(1.5, 1.6, 2.3), y = c(0.35, 0.03, 0.35),
 - Aplicações em hidrologia, geologia, seguros e finanças, entre outros
 - Distribuições de probabilidade com caudas longas
 - É adequada aos fatos estilizados dos retornos financeiros
+    + Curtose em excesso
+    + Assimetria nos retornos
+    + Heterocedasticidade condicional
 
-## Teoria do valor extremo | definições {.build}
+## Teoria do valor extremo | definições 
 
 - Existem duas abordagens para a EVT
     + Máximos em bloco - $M_n$
@@ -265,7 +269,7 @@ ações da Bovespa, por valor de mercado
 - Inferir se a frequência de violações ao VaR é
 consistente com o nível de cobertura
 - H0: modelo corretamente especificado
-- Sob H0, a estatística $LR_{uc}$ segue uma distribuição binomial
+- Sob H0, a estatística $LR_{uc}$ segue uma distribuição $\chi^2_1$
 
 ### Teste de Christoffersen \& Pelletier de independência {.box-12 .outline .practical}
 

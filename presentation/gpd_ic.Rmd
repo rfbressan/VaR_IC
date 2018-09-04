@@ -4,8 +4,8 @@
     + Valor adequado de limiar
     + Distribuição dos excessos, $F_u$
     + Convergem para uma Distribuição Generalizada de Pareto - GPD
-    
-$$
+
+- $$
   G_{\xi,\psi(u)}(X) = 
   \begin{cases}
     1- \left(1+ \frac{\xi x}{\psi(u)} \right)^{-\frac{1}{\xi}}, & \xi \neq 0,\\
